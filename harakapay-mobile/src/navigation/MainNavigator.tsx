@@ -1,11 +1,11 @@
 // Main navigation for parent app
 import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import TabNavigator from './TabNavigator';
 import ProfileScreen from '../screens/parent/ProfileScreen';
 import SettingsScreen from '../screens/parent/SettingsScreen';
 
-const Stack = createNativeStackNavigator();
+const Stack = createStackNavigator();
 
 const MainNavigator = () => (
   <Stack.Navigator>
