@@ -1,20 +1,25 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { Provider } from 'react-redux';
+import { NavigationContainer } from '@react-navigation/native';
+import AuthNavigator from './src/navigation/AuthNavigator';
+import MainNavigator from './src/navigation/MainNavigator';
+import { store } from './src/store';
+import { useAuth } from './src/hooks/useAuth';
+
+const RootNavigation = () => {
+  const { user, token } = useAuth();
+  const isAuthenticated = !!user && !!token;
+  return (
+    <NavigationContainer>
+      {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
+    </NavigationContainer>
+  );
+};
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <Provider store={store}>
+      <RootNavigation />
+    </Provider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
