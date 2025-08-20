@@ -1,0 +1,204 @@
+# HarakaPay Mobile App Design Policy
+
+## Parent-Centric Mobile Design Philosophy
+
+The HarakaPay mobile app serves a fundamentally different audience and use case than the web portal. While the web version targets schools and administrators with enterprise-grade functionality, the mobile app is designed for parents who need quick, secure, and intuitive access to their children's school fee information.
+
+## Core Design Principles
+
+### 1. **Mobile-First Accessibility**
+- **Touch-optimized interfaces**: Minimum 44px touch targets following Apple's Human Interface Guidelines
+- **One-handed operation**: Critical actions accessible within thumb reach on typical screen sizes
+- **Parent-friendly navigation**: Shallow information hierarchy with maximum 3 levels deep
+- **Quick access patterns**: Most common tasks (check balance, make payment) accessible within 2 taps from home
+
+### 2. **Trust & Security Visual Language**
+- **Financial confidence**: Use visual cues that communicate security and reliability
+- **Transparent processes**: Clear visual feedback for all payment states and confirmations
+- **Professional credibility**: Maintain enterprise-grade visual quality adapted for mobile consumption
+- **Error prevention**: Generous use of confirmation dialogs and clear action previews
+
+### 3. **Multi-Child Management Focus**
+- **Child-centric organization**: Design around managing multiple children as primary use case
+- **Visual hierarchy**: Clear distinction between children and their respective schools
+- **Quick switching**: Seamless navigation between children's accounts
+- **Consolidated views**: Dashboard showing aggregate information across all children
+
+## Visual Design System
+
+### Typography
+- **Primary font**: IBM Plex Sans
+- **Mobile optimization**: Larger base font sizes (16px minimum) for readability
+- **Hierarchy**: 
+  - H1: 24px (page titles)
+  - H2: 20px (section headers)
+  - Body: 16px (primary content)
+  - Caption: 14px (secondary information)
+
+### Color Palette
+- **Primary brand**: #0080FF (rgba(0,128,255,255)) - used sparingly for CTAs and key actions
+- **Mobile adaptations**:
+  - Success states: #00C851 (payment confirmations)
+  - Warning states: #FF8800 (payment reminders)
+  - Error states: #FF4444 (failed transactions)
+  - Neutral base: #F8F9FA (background)
+  - Text primary: #1D1D1F (high contrast for mobile screens)
+
+### Layout & Spacing
+- **Grid system**: 16px base unit for consistent spacing
+- **Mobile margins**: 16px side margins, 24px vertical sections
+- **Card-based design**: Information grouped in clear, tappable cards
+- **Generous whitespace**: Prevent cognitive overload for busy parents
+
+## Mobile-Specific UX Patterns
+
+### 1. **Dashboard Design**
+- **Summary cards**: Quick overview of all children's fee status
+- **Action-oriented**: Prominent payment buttons when fees are due
+- **Notification center**: Centralized view of all school communications
+- **Quick stats**: Visual indicators for paid/pending amounts across children
+
+### 2. **Payment Flow**
+- **Progressive disclosure**: Step-by-step payment process with clear progress indicators
+- **Payment method selection**: Large, visual buttons for M-Pesa, Airtel Money, Orange Money
+- **Confirmation screens**: Multiple confirmation steps with amount breakdown
+- **Receipt generation**: Immediate digital receipt with share functionality
+
+### 3. **Child Management Interface**
+- **Profile cards**: Visual representation of each child with photo and key info
+- **School context**: Clear indication of which school each child attends
+- **Quick actions**: Swipe gestures for common tasks per child
+- **Status indicators**: Visual badges for payment status, notifications, etc.
+
+### 4. **Communication Hub**
+- **Message prioritization**: Important notices highlighted prominently
+- **Rich media support**: Handle images, PDFs, and attachments from schools
+- **Notification management**: Granular control over push notification preferences
+- **Archive system**: Easy access to historical communications
+
+## Mobile vs Web Differentiation
+
+### Mobile App (Parent-focused)
+- **Consumption-oriented**: Optimized for viewing and responding to information
+- **Task-specific**: Quick actions like payments, checking balances, reading notifications
+- **Personal**: Individual parent managing their children's accounts
+- **Convenience**: On-the-go access with offline capabilities where possible
+
+### Web Portal (School-focused)
+- **Management-oriented**: Complex administrative tasks and bulk operations
+- **Data-intensive**: Spreadsheets, reports, and detailed analytics
+- **Professional**: Multi-user environments with role-based permissions
+- **Comprehensive**: Full-featured administration and configuration tools
+
+## Component Design Standards
+
+### Navigation
+- **Tab bar navigation**: Maximum 5 primary sections
+- **Contextual navigation**: Floating action buttons for primary actions in each section
+- **Breadcrumbs**: Minimal breadcrumb system for deeper navigation
+- **Back gestures**: Support iOS swipe-back and Android hardware back button
+
+### Forms & Input
+- **Large input fields**: Generous touch targets with clear labels
+- **Smart keyboards**: Appropriate keyboard types for different inputs
+- **Validation**: Real-time, inline validation with helpful error messages
+- **Autocomplete**: Smart suggestions for repeated information
+
+### Feedback & States
+- **Loading states**: Skeleton screens during data fetching
+- **Empty states**: Helpful illustrations and actions when no data exists
+- **Success states**: Clear confirmation with next step suggestions
+- **Error handling**: Graceful error messages with recovery options
+
+## Accessibility Requirements
+
+### Universal Access
+- **Color contrast**: Minimum 4.5:1 ratio for all text
+- **Screen reader support**: Semantic markup and descriptive labels
+- **Dynamic type**: Support for iOS Dynamic Type and Android font scaling
+- **Gesture alternatives**: Button alternatives for all swipe gestures
+
+### Localization Considerations
+- **French/Lingala support**: Design flexibility for longer text strings
+- **RTL preparation**: Layout structure that can adapt to right-to-left languages
+- **Cultural sensitivity**: Color and imagery choices appropriate for Congolese context
+
+## Performance & Technical Guidelines
+
+### Mobile Optimization
+- **Image optimization**: WebP format with fallbacks, appropriate sizing
+- **Network awareness**: Graceful degradation on slow connections
+- **Battery efficiency**: Optimized animations and background processes
+- **Storage management**: Efficient caching of frequently accessed data
+
+### Development Standards
+- **Component library**: Consistent, reusable UI components
+- **Design tokens**: Centralized theme values for colors, spacing, typography
+- **Platform-specific adaptations**: Respect iOS and Android platform conventions
+- **Testing requirements**: Components must work across various screen sizes and orientations
+
+## Security & Privacy Design
+
+### Visual Security Indicators
+- **Biometric prompts**: Clear UI for fingerprint/face ID authentication
+- **Session timeouts**: Prominent warnings before automatic logout
+- **Payment confirmations**: Multiple verification steps with clear amount display
+- **Data protection**: Visual indicators for secure data transmission
+
+### Privacy Transparency
+- **Permission requests**: Clear explanations for camera, notification, and location permissions
+- **Data usage**: Transparent communication about what data is collected and why
+- **Parental controls**: Clear settings for managing child information sharing
+
+## Implementation Guidelines
+
+### Design Token Structure
+```javascript
+// Example token structure for mobile components
+const designTokens = {
+  spacing: {
+    xs: 4,
+    sm: 8,
+    md: 16,
+    lg: 24,
+    xl: 32
+  },
+  colors: {
+    primary: '#0080FF',
+    success: '#00C851',
+    warning: '#FF8800',
+    error: '#FF4444'
+  },
+  typography: {
+    fontFamily: 'IBM Plex Sans',
+    sizes: {
+      body: 16,
+      caption: 14,
+      h2: 20,
+      h1: 24
+    }
+  }
+}
+```
+
+### Responsive Breakpoints
+- **Small phones**: 320px - 375px width
+- **Standard phones**: 375px - 414px width
+- **Large phones**: 414px+ width
+- **Tablets**: Adaptive layout for iPad usage
+
+## Quality Assurance Standards
+
+### User Testing Requirements
+- **Parent usability**: Regular testing with actual parents in Congo
+- **Multi-child scenarios**: Test complex family structures and edge cases
+- **Payment flow validation**: Extensive testing of all payment methods
+- **Network conditions**: Testing on various connection qualities
+
+### Performance Metrics
+- **App launch time**: Under 3 seconds on average devices
+- **Payment completion**: Under 30 seconds for full payment flow
+- **Notification delivery**: Real-time or within 30 seconds
+- **Offline functionality**: Key information accessible without internet
+
+This design policy ensures the mobile app provides a parent-friendly experience that's distinctly different from the enterprise web portal while maintaining the overall HarakaPay brand integrity and security standards.

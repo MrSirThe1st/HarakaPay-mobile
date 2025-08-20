@@ -9,8 +9,7 @@ import SplashScreen from '../screens/auth/SplashScreen';
 const Stack = createStackNavigator();
 
 const AuthNavigator = () => (
-  <Stack.Navigator initialRouteName="Splash">
-    <Stack.Screen name="Splash" component={SplashScreen} />
+  <Stack.Navigator initialRouteName="Login">
     <Stack.Screen name="Login" component={LoginScreen} />
     <Stack.Screen name="Register" component={RegisterScreen} />
     <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
