@@ -6,9 +6,10 @@ import MainNavigator from './src/navigation/MainNavigator';
 import { store } from './src/store';
 import { useAuth } from './src/hooks/useAuth';
 
+
 const RootNavigation = () => {
-  const { user, token } = useAuth();
-  const isAuthenticated = !!user && !!token;
+  const { user, session } = useAuth();
+  const isAuthenticated = !!user && !!session;
   return (
     <NavigationContainer>
       {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
