@@ -8,4 +8,8 @@ export type RootStackParamList = {
   Profile: undefined;
   Settings: undefined;
   ConnectChild: undefined;
+  ChildDetails: {
+    childId: string;
+    studentName: string;
+  };
 };
