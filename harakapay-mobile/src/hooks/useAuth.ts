@@ -139,26 +139,51 @@ export const useAuth = () => {
   }, []);
 
   // Fetch parent data (changed from fetchProfile)
-  const fetchParent = useCallback(async (userId: string): Promise<Parent | null> => {
-    try {
-      // Fetch from parents table instead of profiles table
-      const { data, error } = await supabase
-        .from('parents') // Changed from 'profiles' to 'parents'
-        .select('*')
-        .eq('user_id', userId)
-        .single();
+  // Replace ONLY the fetchParent function in your mobile app's useAuth.ts
+// Find this function and replace it:
 
-      if (error) {
-        console.error('Error fetching parent:', error);
-        return null;
-      }
+const fetchParent = useCallback(async (userId: string): Promise<Parent | null> => {
+  try {
+    console.log('Fetching parent for user:', userId);
+    
+    // Use maybeSingle() instead of single() - it handles 0 rows gracefully
+    const { data, error } = await supabase
+      .from('parents')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle(); // This won't throw error for 0 rows
 
-      return data;
-    } catch (error) {
+    if (error) {
       console.error('Error fetching parent:', error);
       return null;
     }
-  }, []);
+
+    if (data) {
+      console.log('Parent record found:', data);
+      return data;
+    } else {
+      console.log('No parent record found for user:', userId);
+      // If no parent record, try to fetch from profiles table as fallback
+      console.log('Checking if user might be in profiles table...');
+      
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+        
+      if (profileData) {
+        console.log('User found in profiles table (school_staff/admin):', profileData);
+      }
+      
+      return null;
+    }
+    
+  } catch (error) {
+    console.error('Exception while fetching parent:', error);
+    return null;
+  }
+}, []);
 
   // Update auth state
   const updateAuthState = useCallback(async (session: Session | null) => {

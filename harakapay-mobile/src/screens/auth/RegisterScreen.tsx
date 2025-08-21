@@ -42,10 +42,8 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
   // Navigate to main app if user is already logged in
   useEffect(() => {
-    if (initialized && user) {
-  navigation.replace('Tabs');
-    }
-  }, [initialized, user, navigation]);
+    // When user is authenticated, root navigation will switch to main app automatically
+  }, [initialized, user]);
 
   const validateFirstName = (name: string): boolean => {
     if (!name.trim()) {
