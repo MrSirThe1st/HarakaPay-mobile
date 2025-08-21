@@ -176,51 +176,56 @@ export default function ConnectChildScreen({ navigation }: ConnectChildScreenPro
   };
 
   const createConnection = async () => {
-    if (!selectedStudent || !parent) return;
+  if (!selectedStudent || !parent) return;
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      // Check if connection already exists
-      const { data: existingConnection } = await supabase
-        .from('parent_students')
-        .select('id')
-        .eq('parent_id', parent.id)
-        .eq('student_id', selectedStudent.id)
-        .single();
+    // Check if connection already exists
+    const { data: existingConnection } = await supabase
+      .from('parent_students')
+      .select('id')
+      .eq('parent_id', parent.id)
+      .eq('student_id', selectedStudent.id) // ✅ Use selectedStudent.id (UUID), not selectedStudent.student_id (string)
+      .single();
 
-      if (existingConnection) {
-        Alert.alert('Already Connected', 'This child is already connected to your account.');
-        return;
-      }
-
-      // Create the connection
-      const { error } = await supabase
-        .from('parent_students')
-        .insert({
-          parent_id: parent.id,
-          student_id: selectedStudent.id,
-          relationship_type: 'parent',
-          is_primary: true,
-          can_make_payments: true,
-          can_receive_notifications: true,
-        });
-
-      if (error) throw error;
-
-      Alert.alert(
-        'Success!', 
-        `${selectedStudent.first_name} has been connected to your account.`,
-        [{ text: 'OK', onPress: () => navigation.goBack() }]
-      );
-
-    } catch (error) {
-      console.error('Error creating connection:', error);
-      Alert.alert('Error', 'Failed to connect child. Please try again or contact your school.');
-    } finally {
-      setLoading(false);
+    if (existingConnection) {
+      Alert.alert('Already Connected', 'This child is already connected to your account.');
+      return;
     }
-  };
+
+    console.log('🔗 Creating connection...');
+    console.log('📋 Parent ID:', parent.id);
+    console.log('📋 Student ID (UUID):', selectedStudent.id); // ✅ This should be the UUID
+    console.log('📋 Student ID (String):', selectedStudent.student_id); // ❌ This is the human-readable ID
+
+    // Create the connection - USE selectedStudent.id (the UUID)
+    const { error } = await supabase
+      .from('parent_students')
+      .insert({
+        parent_id: parent.id,
+        student_id: selectedStudent.id, // ✅ FIXED: Use the UUID, not the student_id string
+        relationship_type: 'parent',
+        is_primary: true,
+        can_make_payments: true,
+        can_receive_notifications: true,
+      });
+
+    if (error) throw error;
+
+    Alert.alert(
+      'Success!', 
+      `${selectedStudent.first_name} has been connected to your account.`,
+      [{ text: 'OK', onPress: () => navigation.goBack() }]
+    );
+
+  } catch (error) {
+    console.error('Error creating connection:', error);
+    Alert.alert('Error', 'Failed to connect child. Please try again or contact your school.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const goBack = () => {
     if (currentStep > 1) {

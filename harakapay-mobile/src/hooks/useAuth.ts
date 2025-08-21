@@ -1,10 +1,9 @@
-// Updated harakapay-mobile/src/hooks/useAuth.ts
+// harakapay-mobile/src/hooks/useAuth.ts - Fixed Session Persistence
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../config/supabase';
 import type { User, Session } from '@supabase/supabase-js';
 
-// Updated to use Parent type instead of Profile
 export interface Parent {
   id: string;
   user_id: string;
@@ -23,7 +22,7 @@ export interface Parent {
 
 export interface AuthState {
   user: User | null;
-  parent: Parent | null; // Changed from 'profile' to 'parent'
+  parent: Parent | null;
   session: Session | null;
   loading: boolean;
   error: string | null;
@@ -39,63 +38,209 @@ export interface AuthResponse {
 const STORAGE_KEYS = {
   SESSION: '@harakapay_session',
   USER: '@harakapay_user',
-  PARENT: '@harakapay_parent', // Changed from PROFILE to PARENT
+  PARENT: '@harakapay_parent',
 };
 
 export const useAuth = () => {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
-    parent: null, // Changed from profile to parent
+    parent: null,
     session: null,
     loading: true,
     error: null,
     initialized: false,
   });
 
-  // Clear stored auth data
   const clearStoredAuth = useCallback(async () => {
     try {
       await Promise.all([
         AsyncStorage.removeItem(STORAGE_KEYS.SESSION),
         AsyncStorage.removeItem(STORAGE_KEYS.USER),
-        AsyncStorage.removeItem(STORAGE_KEYS.PARENT), // Changed from PROFILE
+        AsyncStorage.removeItem(STORAGE_KEYS.PARENT),
       ]);
+      console.log('✅ Cleared stored auth data');
     } catch (error) {
-      console.error('Error clearing auth data:', error);
+      console.error('❌ Error clearing auth data:', error);
     }
   }, []);
 
-  // Load stored auth data
+  const storeAuthData = useCallback(async (session: Session, user: User, parent?: Parent) => {
+    try {
+      await Promise.all([
+        AsyncStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session)),
+        AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user)),
+        parent && AsyncStorage.setItem(STORAGE_KEYS.PARENT, JSON.stringify(parent)),
+      ]);
+      console.log('✅ Stored auth data successfully');
+    } catch (error) {
+      console.error('❌ Error storing auth data:', error);
+    }
+  }, []);
+
+  const fetchParent = useCallback(async (userId: string): Promise<Parent | null> => {
+    try {
+      console.log('🔍 Fetching parent for user:', userId);
+      
+      const { data, error } = await supabase
+        .from('parents')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('❌ Error fetching parent:', error);
+        return null;
+      }
+
+      if (data) {
+        console.log('✅ Parent record found:', data);
+        return data;
+      } else {
+        console.log('ℹ️ No parent record found for user:', userId);
+        return null;
+      }
+      
+    } catch (error) {
+      console.error('💥 Exception while fetching parent:', error);
+      return null;
+    }
+  }, []);
+
+  // Fixed session refresh logic
+  const refreshSession = useCallback(async (): Promise<Session | null> => {
+    try {
+      console.log('🔄 Attempting to refresh session...');
+      
+      const { data, error } = await supabase.auth.refreshSession();
+      
+      if (error) {
+        console.log('❌ Session refresh failed:', error.message);
+        return null;
+      }
+      
+      if (data.session) {
+        console.log('✅ Session refreshed successfully');
+        return data.session;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('💥 Session refresh exception:', error);
+      return null;
+    }
+  }, []);
+
   const loadStoredAuth = useCallback(async () => {
     try {
+      console.log('🔍 Loading stored auth data...');
+      
       const [sessionData, userData, parentData] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEYS.SESSION),
         AsyncStorage.getItem(STORAGE_KEYS.USER),
-        AsyncStorage.getItem(STORAGE_KEYS.PARENT), // Changed from PROFILE
+        AsyncStorage.getItem(STORAGE_KEYS.PARENT),
       ]);
 
-      if (sessionData && userData) {
-        const session = JSON.parse(sessionData);
-        const user = JSON.parse(userData);
-        const parent = parentData ? JSON.parse(parentData) : null;
+      console.log('📊 Stored session exists:', !!sessionData);
+      console.log('📊 Stored user exists:', !!userData);
+      console.log('📊 Stored parent exists:', !!parentData);
 
-        // Verify session is still valid
-        const { data: currentSession } = await supabase.auth.getSession();
+      if (sessionData && userData) {
+        const storedSession = JSON.parse(sessionData);
+        const storedUser = JSON.parse(userData);
+        const storedParent = parentData ? JSON.parse(parentData) : null;
+
+        console.log('🔍 Checking session validity...');
         
-        if (currentSession.session) {
+        // Check if session is expired
+        const expiresAt = storedSession.expires_at;
+        const now = Math.floor(Date.now() / 1000);
+        
+        if (expiresAt && expiresAt <= now) {
+          console.log('⏰ Session expired, attempting refresh...');
+          
+          // Try to refresh the session
+          const refreshedSession = await refreshSession();
+          
+          if (refreshedSession) {
+            console.log('✅ Session refreshed, updating stored data');
+            
+            let parentData = storedParent;
+            if (!parentData && refreshedSession.user.id) {
+              parentData = await fetchParent(refreshedSession.user.id);
+            }
+
+            setAuthState({
+              user: refreshedSession.user,
+              parent: parentData,
+              session: refreshedSession,
+              loading: false,
+              error: null,
+              initialized: true,
+            });
+
+            await storeAuthData(refreshedSession, refreshedSession.user, parentData || undefined);
+            return;
+          } else {
+            console.log('❌ Session refresh failed, clearing stored data');
+            await clearStoredAuth();
+            setAuthState({
+              user: null,
+              parent: null,
+              session: null,
+              loading: false,
+              error: null,
+              initialized: true,
+            });
+            return;
+          }
+        }
+
+        // Session is still valid, validate with Supabase
+        console.log('🔍 Session appears valid, verifying with Supabase...');
+        const { data: currentSession, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.log('❌ Session validation error:', error.message);
+          await clearStoredAuth();
           setAuthState({
-            user,
-            parent, // Changed from profile
-            session,
+            user: null,
+            parent: null,
+            session: null,
             loading: false,
             error: null,
             initialized: true,
           });
+          return;
+        }
+
+        if (currentSession.session && currentSession.session.access_token) {
+          console.log('✅ Session is valid, restoring auth state');
+          
+          let parentData = storedParent;
+          if (!parentData && currentSession.session.user.id) {
+            console.log('🔍 Parent data not stored, fetching...');
+            parentData = await fetchParent(currentSession.session.user.id);
+          }
+
+          setAuthState({
+            user: currentSession.session.user,
+            parent: parentData,
+            session: currentSession.session,
+            loading: false,
+            error: null,
+            initialized: true,
+          });
+
+          // Update stored data with fresh session if it changed
+          if (currentSession.session.access_token !== storedSession.access_token) {
+            await storeAuthData(currentSession.session, currentSession.session.user, parentData || undefined);
+          }
         } else {
+          console.log('❌ Session invalid, clearing stored data');
           await clearStoredAuth();
           setAuthState({
             user: null,
-            parent: null, // Changed from profile
+            parent: null,
             session: null,
             loading: false,
             error: null,
@@ -103,9 +248,10 @@ export const useAuth = () => {
           });
         }
       } else {
+        console.log('ℹ️ No stored auth data found');
         setAuthState({
           user: null,
-          parent: null, // Changed from profile
+          parent: null,
           session: null,
           loading: false,
           error: null,
@@ -113,86 +259,26 @@ export const useAuth = () => {
         });
       }
     } catch (error) {
-      console.error('Error loading stored auth:', error);
+      console.error('💥 Error loading stored auth:', error);
       setAuthState({
         user: null,
-        parent: null, // Changed from profile
+        parent: null,
         session: null,
         loading: false,
         error: 'Failed to load stored authentication',
         initialized: true,
       });
     }
-  }, [clearStoredAuth]);
+  }, [clearStoredAuth, fetchParent, storeAuthData, refreshSession]);
 
-  // Store auth data
-  const storeAuthData = useCallback(async (session: Session, user: User, parent?: Parent) => {
-    try {
-      await Promise.all([
-        AsyncStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session)),
-        AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user)),
-        parent && AsyncStorage.setItem(STORAGE_KEYS.PARENT, JSON.stringify(parent)), // Changed from PROFILE
-      ]);
-    } catch (error) {
-      console.error('Error storing auth data:', error);
-    }
-  }, []);
-
-  // Fetch parent data (changed from fetchProfile)
-  // Replace ONLY the fetchParent function in your mobile app's useAuth.ts
-// Find this function and replace it:
-
-const fetchParent = useCallback(async (userId: string): Promise<Parent | null> => {
-  try {
-    console.log('Fetching parent for user:', userId);
-    
-    // Use maybeSingle() instead of single() - it handles 0 rows gracefully
-    const { data, error } = await supabase
-      .from('parents')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle(); // This won't throw error for 0 rows
-
-    if (error) {
-      console.error('Error fetching parent:', error);
-      return null;
-    }
-
-    if (data) {
-      console.log('Parent record found:', data);
-      return data;
-    } else {
-      console.log('No parent record found for user:', userId);
-      // If no parent record, try to fetch from profiles table as fallback
-      console.log('Checking if user might be in profiles table...');
-      
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-        
-      if (profileData) {
-        console.log('User found in profiles table (school_staff/admin):', profileData);
-      }
-      
-      return null;
-    }
-    
-  } catch (error) {
-    console.error('Exception while fetching parent:', error);
-    return null;
-  }
-}, []);
-
-  // Update auth state
   const updateAuthState = useCallback(async (session: Session | null) => {
     if (session?.user) {
-      const parent = await fetchParent(session.user.id); // Changed from fetchProfile
+      console.log('🔄 Updating auth state with new session');
+      const parent = await fetchParent(session.user.id);
       
       setAuthState({
         user: session.user,
-        parent, // Changed from profile
+        parent,
         session,
         loading: false,
         error: null,
@@ -201,9 +287,10 @@ const fetchParent = useCallback(async (userId: string): Promise<Parent | null> =
 
       await storeAuthData(session, session.user, parent || undefined);
     } else {
+      console.log('🔄 Clearing auth state (no session)');
       setAuthState({
         user: null,
-        parent: null, // Changed from profile
+        parent: null,
         session: null,
         loading: false,
         error: null,
@@ -212,39 +299,77 @@ const fetchParent = useCallback(async (userId: string): Promise<Parent | null> =
 
       await clearStoredAuth();
     }
-  }, [fetchParent, storeAuthData, clearStoredAuth]); // Changed from fetchProfile
+  }, [fetchParent, storeAuthData, clearStoredAuth]);
 
-  // Initialize auth
+  // Initialize auth - only run once
   useEffect(() => {
-    loadStoredAuth();
+    console.log('🚀 Initializing auth...');
+    
+    let authSubscription: any = null;
+    
+    const initAuth = async () => {
+      // Load stored auth data first
+      await loadStoredAuth();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event);
-        
-        if (event === 'SIGNED_OUT') {
-          await clearStoredAuth();
+      // Set up auth state listener
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          console.log('🔄 Auth state changed:', event);
+          
+          // Handle different auth events
+          switch (event) {
+            case 'SIGNED_IN':
+              console.log('✅ User signed in');
+              await updateAuthState(session);
+              break;
+            case 'SIGNED_OUT':
+              console.log('👋 User signed out');
+              await clearStoredAuth();
+              await updateAuthState(null);
+              break;
+            case 'TOKEN_REFRESHED':
+              console.log('🔄 Token refreshed');
+              await updateAuthState(session);
+              break;
+            case 'INITIAL_SESSION':
+              // Only handle initial session if we don't have auth state yet
+              if (!authState.initialized) {
+                console.log('🔄 Initial session detected');
+                await updateAuthState(session);
+              }
+              break;
+            default:
+              console.log(`🔄 Auth event: ${event}`);
+          }
         }
-        
-        await updateAuthState(session);
+      );
+
+      authSubscription = subscription;
+    };
+
+    initAuth();
+
+    return () => {
+      console.log('🧹 Cleaning up auth subscription');
+      if (authSubscription) {
+        authSubscription.unsubscribe();
       }
-    );
+    };
+  }, []); // Empty dependency array - only run once
 
-    return () => subscription.unsubscribe();
-  }, [loadStoredAuth, updateAuthState, clearStoredAuth]);
-
-  // Sign in
   const signIn = async (email: string, password: string): Promise<AuthResponse> => {
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
 
     try {
+      console.log('🔐 Attempting sign in...');
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.toLowerCase().trim(),
         password,
       });
 
       if (error) {
+        console.log('❌ Sign in error:', error);
         setAuthState(prev => ({
           ...prev,
           loading: false,
@@ -254,13 +379,15 @@ const fetchParent = useCallback(async (userId: string): Promise<Parent | null> =
       }
 
       if (data.session && data.user) {
-        await updateAuthState(data.session);
+        console.log('✅ Sign in successful');
+        // Don't update auth state here - let the auth listener handle it
         return { success: true, error: null, user: data.user };
       }
 
       return { success: false, error: 'Login failed' };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      console.log('💥 Sign in exception:', errorMessage);
       setAuthState(prev => ({
         ...prev,
         loading: false,
@@ -270,7 +397,6 @@ const fetchParent = useCallback(async (userId: string): Promise<Parent | null> =
     }
   };
 
-  // Sign up (keeping the existing logic)
   const signUp = async (
     email: string,
     password: string,
@@ -281,6 +407,8 @@ const fetchParent = useCallback(async (userId: string): Promise<Parent | null> =
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
 
     try {
+      console.log('📝 Attempting sign up...');
+      
       const { data, error } = await supabase.auth.signUp({
         email: email.toLowerCase().trim(),
         password,
@@ -288,13 +416,14 @@ const fetchParent = useCallback(async (userId: string): Promise<Parent | null> =
           data: {
             first_name: firstName.trim(),
             last_name: lastName.trim(),
-            role: 'parent', // Mobile app is for parents only
+            role: 'parent',
             phone: phone?.trim(),
           },
         },
       });
 
       if (error) {
+        console.log('❌ Sign up error:', error);
         setAuthState(prev => ({
           ...prev,
           loading: false,
@@ -303,8 +432,8 @@ const fetchParent = useCallback(async (userId: string): Promise<Parent | null> =
         return { success: false, error: error.message };
       }
 
-      // For email confirmation, user won't be signed in immediately
       if (data.user && !data.session) {
+        console.log('📧 Email confirmation required');
         setAuthState(prev => ({ ...prev, loading: false }));
         return {
           success: true,
@@ -313,9 +442,9 @@ const fetchParent = useCallback(async (userId: string): Promise<Parent | null> =
         };
       }
 
-      // If auto-confirm is enabled, handle sign in
       if (data.session && data.user) {
-        await updateAuthState(data.session);
+        console.log('✅ Sign up successful with auto-confirm');
+        // Let the auth listener handle the state update
       } else {
         setAuthState(prev => ({ ...prev, loading: false }));
       }
@@ -323,6 +452,7 @@ const fetchParent = useCallback(async (userId: string): Promise<Parent | null> =
       return { success: true, error: null, user: data.user };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      console.log('💥 Sign up exception:', errorMessage);
       setAuthState(prev => ({
         ...prev,
         loading: false,
@@ -332,45 +462,16 @@ const fetchParent = useCallback(async (userId: string): Promise<Parent | null> =
     }
   };
 
-  // Reset password
-  const resetPassword = async (email: string): Promise<AuthResponse> => {
-    setAuthState(prev => ({ ...prev, loading: true, error: null }));
-
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(
-        email.toLowerCase().trim(),
-        {
-          redirectTo: 'harakapay://reset-password', // Deep link for mobile
-        }
-      );
-
-      setAuthState(prev => ({ ...prev, loading: false }));
-
-      if (error) {
-        setAuthState(prev => ({ ...prev, error: error.message }));
-        return { success: false, error: error.message };
-      }
-
-      return { success: true, error: null };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-      setAuthState(prev => ({
-        ...prev,
-        loading: false,
-        error: errorMessage,
-      }));
-      return { success: false, error: errorMessage };
-    }
-  };
-
-  // Sign out
   const signOut = async (): Promise<AuthResponse> => {
     setAuthState(prev => ({ ...prev, loading: true }));
 
     try {
+      console.log('🚪 Signing out...');
+      
       const { error } = await supabase.auth.signOut();
 
       if (error) {
+        console.log('❌ Sign out error:', error);
         setAuthState(prev => ({
           ...prev,
           loading: false,
@@ -379,19 +480,12 @@ const fetchParent = useCallback(async (userId: string): Promise<Parent | null> =
         return { success: false, error: error.message };
       }
 
-      await clearStoredAuth();
-      setAuthState({
-        user: null,
-        parent: null, // Changed from profile
-        session: null,
-        loading: false,
-        error: null,
-        initialized: true,
-      });
-
+      console.log('✅ Sign out successful');
+      // Let the auth listener handle the cleanup
       return { success: true, error: null };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      console.log('💥 Sign out exception:', errorMessage);
       setAuthState(prev => ({
         ...prev,
         loading: false,
@@ -401,9 +495,9 @@ const fetchParent = useCallback(async (userId: string): Promise<Parent | null> =
     }
   };
 
-  // Refresh parent data
   const refreshParent = async (): Promise<void> => {
     if (authState.user) {
+      console.log('🔄 Refreshing parent data...');
       const parent = await fetchParent(authState.user.id);
       setAuthState(prev => ({
         ...prev,
@@ -421,7 +515,6 @@ const fetchParent = useCallback(async (userId: string): Promise<Parent | null> =
     signIn,
     signUp,
     signOut,
-    resetPassword,
-    refreshParent, // Changed from refreshProfile
+    refreshParent,
   };
 };

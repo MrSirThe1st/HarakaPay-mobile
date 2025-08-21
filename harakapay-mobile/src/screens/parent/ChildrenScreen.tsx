@@ -1,4 +1,4 @@
-// harakapay-mobile/src/screens/ChildrenTabScreen.tsx
+// harakapay-mobile/src/screens/ChildrenTabScreen.tsx - Debug Version
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -9,60 +9,18 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
-  Image,
-  Dimensions,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../../config/supabase';
 import { useAuth } from '../../hooks/useAuth';
 
-const { width } = Dimensions.get('window');
-
-interface Student {
-  id: string;
-  student_id: string;
-  first_name: string;
-  last_name: string;
-  grade_level: string | null;
-  status: 'active' | 'inactive' | 'graduated';
-  avatar_url: string | null;
-  date_of_birth: string | null;
-  gender: 'male' | 'female' | 'other' | null;
-  school: {
-    id: string;
-    name: string;
-    address: string | null;
-  };
-}
-
-interface ParentStudent {
-  id: string;
-  relationship_type: string;
-  is_primary: boolean;
-  can_make_payments: boolean;
-  can_receive_notifications: boolean;
-  student: Student;
-}
-
-interface Payment {
-  id: string;
-  amount: number;
-  payment_date: string;
-  status: 'pending' | 'completed' | 'failed' | 'cancelled';
-}
-
-interface ChildrenTabScreenProps {
-  navigation: any;
-}
-
-export default function ChildrenScreen({ navigation }: ChildrenTabScreenProps) {
+export default function ChildrenScreen({ navigation }) {
   const { parent } = useAuth();
-  const [children, setChildren] = useState<ParentStudent[]>([]);
+  const [children, setChildren] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [recentPayments, setRecentPayments] = useState<{ [studentId: string]: Payment }>({});
+  const [debugInfo, setDebugInfo] = useState('');
 
-  // Load children data when screen is focused
   useFocusEffect(
     useCallback(() => {
       loadChildren();
@@ -70,12 +28,45 @@ export default function ChildrenScreen({ navigation }: ChildrenTabScreenProps) {
   );
 
   const loadChildren = async () => {
-    if (!parent) return;
+    console.log('🔍 Starting to load children...');
+    console.log('📋 Parent data:', parent);
+
+    if (!parent) {
+      console.log('❌ No parent data available');
+      setDebugInfo('No parent data available');
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
+      console.log('🔍 Parent ID:', parent.id);
 
-      // Fetch connected children with school info
+      // Step 1: Check if parent_students table has any records for this parent
+      console.log('🔍 Step 1: Checking parent_students table...');
+      const { data: parentStudentsData, error: parentStudentsError } = await supabase
+        .from('parent_students')
+        .select('*')
+        .eq('parent_id', parent.id);
+
+      console.log('📊 Parent-students raw data:', parentStudentsData);
+      console.log('❌ Parent-students error:', parentStudentsError);
+
+      if (parentStudentsError) {
+        console.log('❌ Error fetching parent_students:', parentStudentsError);
+        setDebugInfo(`Error fetching parent_students: ${parentStudentsError.message}`);
+        return;
+      }
+
+      if (!parentStudentsData || parentStudentsData.length === 0) {
+        console.log('📝 No parent-student relationships found');
+        setDebugInfo(`No children connected for parent ID: ${parent.id}`);
+        setChildren([]);
+        return;
+      }
+
+      // Step 2: Get detailed data with joins
+      console.log('🔍 Step 2: Getting detailed data with joins...');
       const { data, error } = await supabase
         .from('parent_students')
         .select(`
@@ -88,46 +79,24 @@ export default function ChildrenScreen({ navigation }: ChildrenTabScreenProps) {
         .eq('parent_id', parent.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      console.log('📊 Detailed children data:', JSON.stringify(data, null, 2));
+      console.log('❌ Detailed query error:', error);
 
-      setChildren(data || []);
-
-      // Load recent payments for each child
-      if (data && data.length > 0) {
-        await loadRecentPayments(data.map(c => c.student.id));
+      if (error) {
+        console.log('❌ Error fetching detailed children data:', error);
+        setDebugInfo(`Error fetching detailed data: ${error.message}`);
+        return;
       }
 
+      setChildren(data || []);
+      setDebugInfo(`Successfully loaded ${data?.length || 0} children`);
+
     } catch (error) {
-      console.error('Error loading children:', error);
+      console.error('💥 Unexpected error loading children:', error);
+      setDebugInfo(`Unexpected error: ${error.message}`);
       Alert.alert('Error', 'Failed to load children. Please try again.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadRecentPayments = async (studentIds: string[]) => {
-    try {
-      const { data, error } = await supabase
-        .from('payments')
-        .select('*')
-        .in('student_id', studentIds)
-        .eq('status', 'completed')
-        .order('payment_date', { ascending: false })
-        .limit(studentIds.length); // Get latest payment for each student
-
-      if (error) throw error;
-
-      // Group payments by student_id (latest payment per student)
-      const paymentsMap: { [studentId: string]: Payment } = {};
-      data?.forEach(payment => {
-        if (!paymentsMap[payment.student_id]) {
-          paymentsMap[payment.student_id] = payment;
-        }
-      });
-
-      setRecentPayments(paymentsMap);
-    } catch (error) {
-      console.error('Error loading recent payments:', error);
     }
   };
 
@@ -137,44 +106,30 @@ export default function ChildrenScreen({ navigation }: ChildrenTabScreenProps) {
     setRefreshing(false);
   };
 
-  const handleChildPress = (child: ParentStudent) => {
-    navigation.navigate('ChildDetails', { 
-      childId: child.student.id,
-      studentName: `${child.student.first_name} ${child.student.last_name}`
-    });
-  };
-
   const handleAddChild = () => {
     navigation.navigate('ConnectChild');
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return '#10B981';
-      case 'inactive': return '#F59E0B';
-      case 'graduated': return '#6B7280';
-      default: return '#6B7280';
+  // Debug: Check parent_students table manually
+  const checkParentStudentsTable = async () => {
+    try {
+      console.log('🔍 Manual check of parent_students table...');
+      
+      // Get all records in parent_students table
+      const { data: allRecords, error } = await supabase
+        .from('parent_students')
+        .select('*');
+
+      console.log('📊 All parent_students records:', allRecords);
+      console.log('❌ Error:', error);
+
+      Alert.alert(
+        'Debug Info', 
+        `Total records in parent_students: ${allRecords?.length || 0}\n\nCheck console for details.`
+      );
+    } catch (error) {
+      console.error('Error checking parent_students table:', error);
     }
-  };
-
-  const getGradeDisplay = (grade: string | null) => {
-    return grade || 'Not specified';
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('fr-CD', {
-      style: 'currency',
-      currency: 'CDF',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
   };
 
   if (loading) {
@@ -188,12 +143,17 @@ export default function ChildrenScreen({ navigation }: ChildrenTabScreenProps) {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>My Children</Text>
-        <Text style={styles.subtitle}>
-          {children.length} {children.length === 1 ? 'child' : 'children'} connected
-        </Text>
+      {/* Debug Header */}
+      <View style={styles.debugHeader}>
+        <Text style={styles.debugTitle}>Children Tab - Debug Mode</Text>
+        <Text style={styles.debugText}>Parent ID: {parent?.id}</Text>
+        <Text style={styles.debugText}>Status: {debugInfo}</Text>
+        <TouchableOpacity 
+          style={styles.debugButton}
+          onPress={checkParentStudentsTable}
+        >
+          <Text style={styles.debugButtonText}>Check Database</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -201,123 +161,41 @@ export default function ChildrenScreen({ navigation }: ChildrenTabScreenProps) {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        showsVerticalScrollIndicator={false}
       >
         {children.length > 0 ? (
           <>
-            {/* Children List */}
-            <View style={styles.childrenList}>
-              {children.map((child) => {
-                const lastPayment = recentPayments[child.student.id];
-                
-                return (
-                  <TouchableOpacity
-                    key={child.id}
-                    style={styles.childCard}
-                    onPress={() => handleChildPress(child)}
-                    activeOpacity={0.7}
-                  >
-                    {/* Child Avatar */}
-                    <View style={styles.avatarContainer}>
-                      {child.student.avatar_url ? (
-                        <Image
-                          source={{ uri: child.student.avatar_url }}
-                          style={styles.avatar}
-                        />
-                      ) : (
-                        <View style={[styles.avatarPlaceholder, { backgroundColor: child.student.gender === 'female' ? '#F472B6' : '#3B82F6' }]}>
-                          <Text style={styles.avatarText}>
-                            {child.student.first_name.charAt(0)}{child.student.last_name.charAt(0)}
-                          </Text>
-                        </View>
-                      )}
-                      
-                      {/* Status Badge */}
-                      <View style={[styles.statusBadge, { backgroundColor: getStatusColor(child.student.status) }]}>
-                        <View style={styles.statusDot} />
-                      </View>
-                    </View>
-
-                    {/* Child Info */}
-                    <View style={styles.childInfo}>
-                      <Text style={styles.childName}>
-                        {child.student.first_name} {child.student.last_name}
-                      </Text>
-                      <Text style={styles.schoolName}>
-                        {child.student.school.name}
-                      </Text>
-                      <Text style={styles.gradeText}>
-                        Grade: {getGradeDisplay(child.student.grade_level)}
-                      </Text>
-                      <Text style={styles.studentId}>
-                        ID: {child.student.student_id}
-                      </Text>
-                    </View>
-
-                    {/* Payment Info */}
-                    <View style={styles.paymentInfo}>
-                      {lastPayment ? (
-                        <>
-                          <Text style={styles.lastPaymentLabel}>Last Payment</Text>
-                          <Text style={styles.lastPaymentAmount}>
-                            {formatCurrency(lastPayment.amount)}
-                          </Text>
-                          <Text style={styles.lastPaymentDate}>
-                            {formatDate(lastPayment.payment_date)}
-                          </Text>
-                        </>
-                      ) : (
-                        <Text style={styles.noPaymentText}>No payments yet</Text>
-                      )}
-                    </View>
-
-                    {/* Permissions */}
-                    <View style={styles.permissionsContainer}>
-                      {child.can_make_payments && (
-                        <View style={styles.permissionBadge}>
-                          <Text style={styles.permissionText}>💳</Text>
-                        </View>
-                      )}
-                      {child.can_receive_notifications && (
-                        <View style={styles.permissionBadge}>
-                          <Text style={styles.permissionText}>🔔</Text>
-                        </View>
-                      )}
-                      {child.is_primary && (
-                        <View style={[styles.permissionBadge, styles.primaryBadge]}>
-                          <Text style={styles.primaryText}>Primary</Text>
-                        </View>
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            {/* Add Another Child Button */}
+            <Text style={styles.successText}>✅ Found {children.length} children!</Text>
+            {children.map((child, index) => (
+              <View key={child.id} style={styles.childCard}>
+                <Text style={styles.childName}>
+                  Child {index + 1}: {child.student?.first_name} {child.student?.last_name}
+                </Text>
+                <Text style={styles.schoolName}>
+                  School: {child.student?.school?.name || 'Unknown'}
+                </Text>
+                <Text style={styles.gradeText}>
+                  Grade: {child.student?.grade_level || 'Not specified'}
+                </Text>
+                <Text style={styles.studentId}>
+                  Student ID: {child.student?.student_id}
+                </Text>
+                <Text style={styles.relationshipText}>
+                  Relationship: {child.relationship_type}
+                </Text>
+              </View>
+            ))}
+          </>
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyTitle}>No Children Found</Text>
+            <Text style={styles.emptyDescription}>
+              Debug Info: {debugInfo}
+            </Text>
             <TouchableOpacity
               style={styles.addChildButton}
               onPress={handleAddChild}
-              activeOpacity={0.8}
             >
-              <Text style={styles.addChildIcon}>+</Text>
-              <Text style={styles.addChildText}>Connect Another Child</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          /* Empty State */
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>👨‍👩‍👧‍👦</Text>
-            <Text style={styles.emptyTitle}>No Children Connected</Text>
-            <Text style={styles.emptyDescription}>
-              Connect your children to view their school information and make payments.
-            </Text>
-            <TouchableOpacity
-              style={styles.connectFirstChildButton}
-              onPress={handleAddChild}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.connectFirstChildText}>Connect Your First Child</Text>
+              <Text style={styles.addChildText}>Connect Your First Child</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -342,84 +220,54 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6B7280',
   },
-  header: {
+  debugHeader: {
+    backgroundColor: '#FEF3C7',
     padding: 16,
-    paddingTop: 12,
-    backgroundColor: 'white',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#FDE68A',
   },
-  title: {
-    fontSize: 24,
+  debugTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: '#92400E',
+    marginBottom: 8,
+  },
+  debugText: {
+    fontSize: 12,
+    color: '#92400E',
     marginBottom: 4,
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#6B7280',
+  debugButton: {
+    backgroundColor: '#D97706',
+    padding: 8,
+    borderRadius: 6,
+    marginTop: 8,
+    alignSelf: 'flex-start',
+  },
+  debugButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
   },
   scrollContent: {
     padding: 16,
   },
-  childrenList: {
-    gap: 16,
+  successText: {
+    fontSize: 16,
+    color: '#10B981',
+    fontWeight: 'bold',
+    marginBottom: 16,
   },
   childCard: {
     backgroundColor: 'white',
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 16,
+    marginBottom: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-    position: 'relative',
-  },
-  avatarContainer: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-  },
-  avatarPlaceholder: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  statusBadge: {
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'white',
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: 'white',
-  },
-  childInfo: {
-    flex: 1,
-    marginRight: 80, // Space for avatar
+    shadowRadius: 2,
+    elevation: 2,
   },
   childName: {
     fontSize: 18,
@@ -430,7 +278,6 @@ const styles = StyleSheet.create({
   schoolName: {
     fontSize: 14,
     color: '#0080FF',
-    fontWeight: '600',
     marginBottom: 2,
   },
   gradeText: {
@@ -441,85 +288,16 @@ const styles = StyleSheet.create({
   studentId: {
     fontSize: 12,
     color: '#9CA3AF',
-  },
-  paymentInfo: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
-  },
-  lastPaymentLabel: {
-    fontSize: 12,
-    color: '#6B7280',
     marginBottom: 2,
   },
-  lastPaymentAmount: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#10B981',
-    marginBottom: 2,
-  },
-  lastPaymentDate: {
+  relationshipText: {
     fontSize: 12,
     color: '#9CA3AF',
-  },
-  noPaymentText: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    fontStyle: 'italic',
-  },
-  permissionsContainer: {
-    flexDirection: 'row',
-    marginTop: 8,
-    gap: 6,
-  },
-  permissionBadge: {
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  permissionText: {
-    fontSize: 12,
-  },
-  primaryBadge: {
-    backgroundColor: '#EEF2FF',
-  },
-  primaryText: {
-    fontSize: 10,
-    color: '#4F46E5',
-    fontWeight: '600',
-  },
-  addChildButton: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    marginTop: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#E5E7EB',
-    borderStyle: 'dashed',
-  },
-  addChildIcon: {
-    fontSize: 24,
-    color: '#0080FF',
-    marginRight: 8,
-  },
-  addChildText: {
-    fontSize: 16,
-    color: '#0080FF',
-    fontWeight: '600',
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: 60,
     paddingHorizontal: 32,
-  },
-  emptyIcon: {
-    fontSize: 64,
-    marginBottom: 16,
   },
   emptyTitle: {
     fontSize: 20,
@@ -529,19 +307,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   emptyDescription: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 20,
     marginBottom: 32,
   },
-  connectFirstChildButton: {
+  addChildButton: {
     backgroundColor: '#0080FF',
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 12,
   },
-  connectFirstChildText: {
+  addChildText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
