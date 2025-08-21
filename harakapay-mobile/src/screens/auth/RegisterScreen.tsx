@@ -49,11 +49,11 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
   const validateFirstName = (name: string): boolean => {
     if (!name.trim()) {
-      setFirstNameError('First name is required');
+      setFirstNameError('Le prénom est obligatoire');
       return false;
     }
     if (name.trim().length < 2) {
-      setFirstNameError('First name must be at least 2 characters');
+      setFirstNameError('Le prénom doit contenir au moins 2 caractères');
       return false;
     }
     setFirstNameError('');
@@ -62,11 +62,11 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
   const validateLastName = (name: string): boolean => {
     if (!name.trim()) {
-      setLastNameError('Last name is required');
+      setLastNameError('Le nom de famille est obligatoire');
       return false;
     }
     if (name.trim().length < 2) {
-      setLastNameError('Last name must be at least 2 characters');
+      setLastNameError('Le nom de famille doit contenir au moins 2 caractères');
       return false;
     }
     setLastNameError('');
@@ -76,11 +76,11 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email.trim()) {
-      setEmailError('Email is required');
+      setEmailError('L\'adresse email est obligatoire');
       return false;
     }
     if (!emailRegex.test(email)) {
-      setEmailError('Please enter a valid email address');
+      setEmailError('Veuillez entrer une adresse email valide');
       return false;
     }
     setEmailError('');
@@ -90,7 +90,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const validatePhone = (phone: string): boolean => {
     // Congo phone number format validation (optional field)
     if (phone.trim() && phone.trim().length < 9) {
-      setPhoneError('Please enter a valid phone number');
+      setPhoneError('Veuillez entrer un numéro de téléphone valide');
       return false;
     }
     setPhoneError('');
@@ -99,15 +99,15 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
   const validatePassword = (password: string): boolean => {
     if (!password) {
-      setPasswordError('Password is required');
+      setPasswordError('Le mot de passe est obligatoire');
       return false;
     }
     if (password.length < 8) {
-      setPasswordError('Password must be at least 8 characters');
+      setPasswordError('Le mot de passe doit contenir au moins 8 caractères');
       return false;
     }
     if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-      setPasswordError('Password must contain uppercase, lowercase, and number');
+      setPasswordError('Le mot de passe doit contenir une majuscule, une minuscule et un chiffre');
       return false;
     }
     setPasswordError('');
@@ -116,11 +116,11 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
   const validateConfirmPassword = (confirmPass: string): boolean => {
     if (!confirmPass) {
-      setConfirmPasswordError('Please confirm your password');
+      setConfirmPasswordError('Veuillez confirmer votre mot de passe');
       return false;
     }
     if (confirmPass !== password) {
-      setConfirmPasswordError('Passwords do not match');
+      setConfirmPasswordError('Les mots de passe ne correspondent pas');
       return false;
     }
     setConfirmPasswordError('');
@@ -158,8 +158,8 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
       if (result.success) {
         Alert.alert(
-          'Registration Successful',
-          'Your account has been created successfully! Please check your email for verification instructions.',
+          'Inscription réussie',
+          'Votre compte a été créé avec succès ! Veuillez vérifier votre email pour confirmer votre inscription.',
           [
             {
               text: 'OK',
@@ -169,15 +169,15 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
         );
       } else {
         Alert.alert(
-          'Registration Failed',
-          result.error || 'Unable to create account. Please try again.',
+          'Échec de l\'inscription',
+          result.error || 'Impossible de créer le compte. Veuillez réessayer.',
           [{ text: 'OK' }]
         );
       }
     } catch (error) {
       Alert.alert(
-        'Error',
-        'An unexpected error occurred. Please try again.',
+        'Erreur',
+        'Une erreur inattendue s\'est produite. Veuillez réessayer.',
         [{ text: 'OK' }]
       );
     }
@@ -201,72 +201,70 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.logo}>HarakaPay</Text>
-            <Text style={styles.subtitle}>Create Account</Text>
+            <Text style={styles.subtitle}>Créer un compte</Text>
             <Text style={styles.description}>
-              Join thousands of parents making school fees simple
+              Rejoignez des milliers de parents qui simplifient le paiement des frais scolaires
             </Text>
           </View>
 
           {/* Form */}
           <View style={styles.form}>
-            {/* Name Fields Row */}
-            <View style={styles.nameRow}>
-              <View style={[styles.inputContainer, styles.nameInput]}>
-                <Text style={styles.label}>First Name</Text>
-                <TextInput
-                  style={[
-                    styles.input,
-                    firstNameError ? styles.inputError : null,
-                  ]}
-                  placeholder="First name"
-                  placeholderTextColor="#9CA3AF"
-                  value={firstName}
-                  onChangeText={(text) => {
-                    setFirstName(text);
-                    if (firstNameError) setFirstNameError('');
-                  }}
-                  onBlur={() => validateFirstName(firstName)}
-                  autoCapitalize="words"
-                  editable={!loading}
-                />
-                {firstNameError ? (
-                  <Text style={styles.errorText}>{firstNameError}</Text>
-                ) : null}
-              </View>
+            {/* Name Fields - Congolese Convention */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Prénom</Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  firstNameError ? styles.inputError : null,
+                ]}
+                placeholder="Entrez votre prénom"
+                placeholderTextColor="#9CA3AF"
+                value={firstName}
+                onChangeText={(text) => {
+                  setFirstName(text);
+                  if (firstNameError) setFirstNameError('');
+                }}
+                onBlur={() => validateFirstName(firstName)}
+                autoCapitalize="words"
+                editable={!loading}
+              />
+              {firstNameError ? (
+                <Text style={styles.errorText}>{firstNameError}</Text>
+              ) : null}
+            </View>
 
-              <View style={[styles.inputContainer, styles.nameInput]}>
-                <Text style={styles.label}>Last Name</Text>
-                <TextInput
-                  style={[
-                    styles.input,
-                    lastNameError ? styles.inputError : null,
-                  ]}
-                  placeholder="Last name"
-                  placeholderTextColor="#9CA3AF"
-                  value={lastName}
-                  onChangeText={(text) => {
-                    setLastName(text);
-                    if (lastNameError) setLastNameError('');
-                  }}
-                  onBlur={() => validateLastName(lastName)}
-                  autoCapitalize="words"
-                  editable={!loading}
-                />
-                {lastNameError ? (
-                  <Text style={styles.errorText}>{lastNameError}</Text>
-                ) : null}
-              </View>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Nom de famille</Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  lastNameError ? styles.inputError : null,
+                ]}
+                placeholder="Entrez votre nom de famille"
+                placeholderTextColor="#9CA3AF"
+                value={lastName}
+                onChangeText={(text) => {
+                  setLastName(text);
+                  if (lastNameError) setLastNameError('');
+                }}
+                onBlur={() => validateLastName(lastName)}
+                autoCapitalize="words"
+                editable={!loading}
+              />
+              {lastNameError ? (
+                <Text style={styles.errorText}>{lastNameError}</Text>
+              ) : null}
             </View>
 
             {/* Email Input */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email Address</Text>
+              <Text style={styles.label}>Adresse email</Text>
               <TextInput
                 style={[
                   styles.input,
                   emailError ? styles.inputError : null,
                 ]}
-                placeholder="Enter your email"
+                placeholder="Entrez votre adresse email"
                 placeholderTextColor="#9CA3AF"
                 value={email}
                 onChangeText={(text) => {
@@ -286,13 +284,13 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
             {/* Phone Input */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Phone Number (Optional)</Text>
+              <Text style={styles.label}>Numéro de téléphone (Optionnel)</Text>
               <TextInput
                 style={[
                   styles.input,
                   phoneError ? styles.inputError : null,
                 ]}
-                placeholder="Enter your phone number"
+                placeholder="Ex: +243 XXX XXX XXX"
                 placeholderTextColor="#9CA3AF"
                 value={phone}
                 onChangeText={(text) => {
@@ -310,14 +308,14 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
             {/* Password Input */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Password</Text>
+              <Text style={styles.label}>Mot de passe</Text>
               <View style={styles.passwordContainer}>
                 <TextInput
                   style={[
                     styles.passwordInput,
                     passwordError ? styles.inputError : null,
                   ]}
-                  placeholder="Create a password"
+                  placeholder="Créez un mot de passe sécurisé"
                   placeholderTextColor="#9CA3AF"
                   value={password}
                   onChangeText={(text) => {
@@ -349,14 +347,14 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
             {/* Confirm Password Input */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Confirm Password</Text>
+              <Text style={styles.label}>Confirmez le mot de passe</Text>
               <View style={styles.passwordContainer}>
                 <TextInput
                   style={[
                     styles.passwordInput,
                     confirmPasswordError ? styles.inputError : null,
                   ]}
-                  placeholder="Confirm your password"
+                  placeholder="Confirmez votre mot de passe"
                   placeholderTextColor="#9CA3AF"
                   value={confirmPassword}
                   onChangeText={(text) => {
@@ -385,9 +383,9 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
             {/* Terms and Conditions */}
             <View style={styles.termsContainer}>
               <Text style={styles.termsText}>
-                By creating an account, you agree to our{' '}
-                <Text style={styles.linkText}>Terms of Service</Text> and{' '}
-                <Text style={styles.linkText}>Privacy Policy</Text>
+                En créant un compte, vous acceptez nos{' '}
+                <Text style={styles.linkText}>Conditions d'utilisation</Text> et notre{' '}
+                <Text style={styles.linkText}>Politique de confidentialité</Text>
               </Text>
             </View>
 
@@ -401,7 +399,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
               disabled={loading}
             >
               <Text style={styles.signUpButtonText}>
-                {loading ? 'Creating Account...' : 'Create Account'}
+                {loading ? 'Création du compte...' : 'Créer le compte'}
               </Text>
             </TouchableOpacity>
 
@@ -415,9 +413,9 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
           {/* Footer */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
+            <Text style={styles.footerText}>Vous avez déjà un compte ? </Text>
             <TouchableOpacity onPress={navigateToLogin} disabled={loading}>
-              <Text style={styles.signInText}>Sign In</Text>
+              <Text style={styles.signInText}>Se connecter</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -473,6 +471,7 @@ const styles = StyleSheet.create({
   nameInput: {
     flex: 1,
     marginRight: 8,
+    marginBottom: 0,
   },
   inputContainer: {
     marginBottom: 20,
