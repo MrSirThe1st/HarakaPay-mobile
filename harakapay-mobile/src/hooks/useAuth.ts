@@ -1,23 +1,29 @@
+// Updated harakapay-mobile/src/hooks/useAuth.ts
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../config/supabase';
-import type { User, Session, AuthError } from '@supabase/supabase-js';
+import type { User, Session } from '@supabase/supabase-js';
 
-export interface Profile {
+// Updated to use Parent type instead of Profile
+export interface Parent {
   id: string;
   user_id: string;
   first_name: string;
   last_name: string;
-  role: 'parent' | 'school_staff' | 'admin';
-  school_id?: string;
-  phone?: string;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  national_id: string | null;
+  avatar_url: string | null;
+  notification_preferences: any;
+  payment_preferences: any;
   created_at: string;
   updated_at: string;
 }
 
 export interface AuthState {
   user: User | null;
-  profile: Profile | null;
+  parent: Parent | null; // Changed from 'profile' to 'parent'
   session: Session | null;
   loading: boolean;
   error: string | null;
@@ -33,71 +39,18 @@ export interface AuthResponse {
 const STORAGE_KEYS = {
   SESSION: '@harakapay_session',
   USER: '@harakapay_user',
-  PROFILE: '@harakapay_profile',
+  PARENT: '@harakapay_parent', // Changed from PROFILE to PARENT
 };
 
 export const useAuth = () => {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
-    profile: null,
+    parent: null, // Changed from profile to parent
     session: null,
     loading: true,
     error: null,
     initialized: false,
   });
-
-  // Load stored auth data
-  const loadStoredAuth = useCallback(async () => {
-    try {
-      const [storedSession, storedUser, storedProfile] = await Promise.all([
-        AsyncStorage.getItem(STORAGE_KEYS.SESSION),
-        AsyncStorage.getItem(STORAGE_KEYS.USER),
-        AsyncStorage.getItem(STORAGE_KEYS.PROFILE),
-      ]);
-
-      if (storedSession && storedUser) {
-        const session = JSON.parse(storedSession);
-        const user = JSON.parse(storedUser);
-        const profile = storedProfile ? JSON.parse(storedProfile) : null;
-
-        // Check if session is still valid
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        
-        if (currentSession) {
-          setAuthState({
-            user,
-            profile,
-            session: currentSession,
-            loading: false,
-            error: null,
-            initialized: true,
-          });
-        } else {
-          // Session expired, clear storage
-          await clearStoredAuth();
-          setAuthState(prev => ({
-            ...prev,
-            loading: false,
-            initialized: true,
-          }));
-        }
-      } else {
-        setAuthState(prev => ({
-          ...prev,
-          loading: false,
-          initialized: true,
-        }));
-      }
-    } catch (error) {
-      console.error('Error loading stored auth:', error);
-      setAuthState(prev => ({
-        ...prev,
-        loading: false,
-        error: 'Failed to load stored authentication',
-        initialized: true,
-      }));
-    }
-  }, []);
 
   // Clear stored auth data
   const clearStoredAuth = useCallback(async () => {
@@ -105,43 +58,104 @@ export const useAuth = () => {
       await Promise.all([
         AsyncStorage.removeItem(STORAGE_KEYS.SESSION),
         AsyncStorage.removeItem(STORAGE_KEYS.USER),
-        AsyncStorage.removeItem(STORAGE_KEYS.PROFILE),
+        AsyncStorage.removeItem(STORAGE_KEYS.PARENT), // Changed from PROFILE
       ]);
     } catch (error) {
-      console.error('Error clearing stored auth:', error);
+      console.error('Error clearing auth data:', error);
     }
   }, []);
 
+  // Load stored auth data
+  const loadStoredAuth = useCallback(async () => {
+    try {
+      const [sessionData, userData, parentData] = await Promise.all([
+        AsyncStorage.getItem(STORAGE_KEYS.SESSION),
+        AsyncStorage.getItem(STORAGE_KEYS.USER),
+        AsyncStorage.getItem(STORAGE_KEYS.PARENT), // Changed from PROFILE
+      ]);
+
+      if (sessionData && userData) {
+        const session = JSON.parse(sessionData);
+        const user = JSON.parse(userData);
+        const parent = parentData ? JSON.parse(parentData) : null;
+
+        // Verify session is still valid
+        const { data: currentSession } = await supabase.auth.getSession();
+        
+        if (currentSession.session) {
+          setAuthState({
+            user,
+            parent, // Changed from profile
+            session,
+            loading: false,
+            error: null,
+            initialized: true,
+          });
+        } else {
+          await clearStoredAuth();
+          setAuthState({
+            user: null,
+            parent: null, // Changed from profile
+            session: null,
+            loading: false,
+            error: null,
+            initialized: true,
+          });
+        }
+      } else {
+        setAuthState({
+          user: null,
+          parent: null, // Changed from profile
+          session: null,
+          loading: false,
+          error: null,
+          initialized: true,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading stored auth:', error);
+      setAuthState({
+        user: null,
+        parent: null, // Changed from profile
+        session: null,
+        loading: false,
+        error: 'Failed to load stored authentication',
+        initialized: true,
+      });
+    }
+  }, [clearStoredAuth]);
+
   // Store auth data
-  const storeAuthData = useCallback(async (session: Session, user: User, profile?: Profile) => {
+  const storeAuthData = useCallback(async (session: Session, user: User, parent?: Parent) => {
     try {
       await Promise.all([
         AsyncStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session)),
         AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user)),
-        profile && AsyncStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile)),
+        parent && AsyncStorage.setItem(STORAGE_KEYS.PARENT, JSON.stringify(parent)), // Changed from PROFILE
       ]);
     } catch (error) {
       console.error('Error storing auth data:', error);
     }
   }, []);
 
-  // Fetch user profile
-  const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
+  // Fetch parent data (changed from fetchProfile)
+  const fetchParent = useCallback(async (userId: string): Promise<Parent | null> => {
     try {
+      // Fetch from parents table instead of profiles table
       const { data, error } = await supabase
-        .from('profiles')
+        .from('parents') // Changed from 'profiles' to 'parents'
         .select('*')
         .eq('user_id', userId)
         .single();
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error fetching parent:', error);
         return null;
       }
 
       return data;
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error fetching parent:', error);
       return null;
     }
   }, []);
@@ -149,22 +163,22 @@ export const useAuth = () => {
   // Update auth state
   const updateAuthState = useCallback(async (session: Session | null) => {
     if (session?.user) {
-      const profile = await fetchProfile(session.user.id);
+      const parent = await fetchParent(session.user.id); // Changed from fetchProfile
       
       setAuthState({
         user: session.user,
-        profile,
+        parent, // Changed from profile
         session,
         loading: false,
         error: null,
         initialized: true,
       });
 
-      await storeAuthData(session, session.user, profile || undefined);
+      await storeAuthData(session, session.user, parent || undefined);
     } else {
       setAuthState({
         user: null,
-        profile: null,
+        parent: null, // Changed from profile
         session: null,
         loading: false,
         error: null,
@@ -173,7 +187,7 @@ export const useAuth = () => {
 
       await clearStoredAuth();
     }
-  }, [fetchProfile, storeAuthData, clearStoredAuth]);
+  }, [fetchParent, storeAuthData, clearStoredAuth]); // Changed from fetchProfile
 
   // Initialize auth
   useEffect(() => {
@@ -231,7 +245,7 @@ export const useAuth = () => {
     }
   };
 
-  // Sign up
+  // Sign up (keeping the existing logic)
   const signUp = async (
     email: string,
     password: string,
@@ -343,7 +357,7 @@ export const useAuth = () => {
       await clearStoredAuth();
       setAuthState({
         user: null,
-        profile: null,
+        parent: null, // Changed from profile
         session: null,
         loading: false,
         error: null,
@@ -362,17 +376,17 @@ export const useAuth = () => {
     }
   };
 
-  // Refresh profile
-  const refreshProfile = async (): Promise<void> => {
+  // Refresh parent data
+  const refreshParent = async (): Promise<void> => {
     if (authState.user) {
-      const profile = await fetchProfile(authState.user.id);
+      const parent = await fetchParent(authState.user.id);
       setAuthState(prev => ({
         ...prev,
-        profile,
+        parent,
       }));
 
-      if (profile) {
-        await AsyncStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
+      if (parent) {
+        await AsyncStorage.setItem(STORAGE_KEYS.PARENT, JSON.stringify(parent));
       }
     }
   };
@@ -383,6 +397,6 @@ export const useAuth = () => {
     signUp,
     signOut,
     resetPassword,
-    refreshProfile,
+    refreshParent, // Changed from refreshProfile
   };
 };

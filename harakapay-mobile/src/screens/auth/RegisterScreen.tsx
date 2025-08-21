@@ -43,7 +43,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   // Navigate to main app if user is already logged in
   useEffect(() => {
     if (initialized && user) {
-      navigation.replace('Main');
+  navigation.replace('Tabs');
     }
   }, [initialized, user, navigation]);
 

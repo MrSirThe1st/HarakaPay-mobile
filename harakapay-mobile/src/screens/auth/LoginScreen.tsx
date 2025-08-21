@@ -31,10 +31,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
   // Navigate to main app if user is already logged in
   useEffect(() => {
-    if (initialized && user) {
-      navigation.replace('Main');
-    }
-  }, [initialized, user, navigation]);
+      if (initialized && user) {
+    navigation.replace('Tabs');
+      }
+    }, [initialized, user, navigation]);
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
