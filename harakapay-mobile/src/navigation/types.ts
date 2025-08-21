@@ -7,4 +7,5 @@ export type RootStackParamList = {
   Tabs: undefined;
   Profile: undefined;
   Settings: undefined;
+  ConnectChild: undefined;
 };
