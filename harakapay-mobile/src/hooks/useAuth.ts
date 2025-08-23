@@ -52,6 +52,21 @@ export interface AuthResponse {
 export const useAuth = () => {
   const dispatch = useDispatch<AppDispatch>();
   const authState = useSelector((state: RootState) => state.auth);
+  
+    // Add this effect to set session on Supabase client whenever Redux session/user changes
+    useEffect(() => {
+      // Whenever we have a session in Redux, set it on the Supabase client
+      if (authState.session && authState.user) {
+        console.log("🔧 Setting session on Supabase client");
+        supabase.auth.setSession(authState.session)
+          .then(() => {
+            console.log("✅ Session set successfully on Supabase client");
+          })
+          .catch((error) => {
+            console.error("❌ Failed to set session on Supabase client:", error);
+          });
+      }
+    }, [authState.session, authState.user]);
 
   // Check if Redux persist is still rehydrating
   const isRehydrating = useSelector(
