@@ -1,26 +1,11 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { supabase } from "../config/supabase";
 import type { User, Session } from "@supabase/supabase-js";
-
-export interface Parent {
-  id: string;
-  user_id: string;
-  first_name: string;
-  last_name: string;
-  phone: string | null;
-  email: string | null;
-  address: string | null;
-  national_id: string | null;
-  avatar_url: string | null;
-  notification_preferences: any;
-  payment_preferences: any;
-  created_at: string;
-  updated_at: string;
-}
+import { UserProfile } from "../types/auth";
 
 export interface AuthState {
   user: User | null;
-  parent: Parent | null;
+  profile: UserProfile | null;
   session: Session | null;
   loading: boolean;
   error: string | null;
@@ -30,7 +15,7 @@ export interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  parent: null,
+  profile: null,
   session: null,
   loading: false,
   error: null,
@@ -38,9 +23,9 @@ const initialState: AuthState = {
   initialized: false,
 };
 
-// Async thunk for fetching parent data
-export const fetchParent = createAsyncThunk(
-  "auth/fetchParent",
+// Async thunk for fetching user profile data
+export const fetchProfile = createAsyncThunk(
+  "auth/fetchProfile",
   async (userId: string, thunkAPI) => {
     try {
       const { data, error } = await supabase
@@ -50,12 +35,19 @@ export const fetchParent = createAsyncThunk(
         .maybeSingle();
 
       if (error) {
-        return thunkAPI.rejectWithValue("Failed to fetch parent data");
+        console.error("Profile fetch error:", error);
+        return thunkAPI.rejectWithValue("Failed to fetch profile data");
+      }
+
+      if (!data) {
+        console.log("No parent profile found for user:", userId);
+        return thunkAPI.rejectWithValue("No parent profile found");
       }
 
       return data;
     } catch (error) {
-      return thunkAPI.rejectWithValue("Failed to fetch parent data");
+      console.error("Profile fetch exception:", error);
+      return thunkAPI.rejectWithValue("Failed to fetch profile data");
     }
   }
 );
@@ -96,16 +88,15 @@ export const signIn = createAsyncThunk(
       }
 
       if (data.session && data.user) {
-        // Fetch parent data
-        const parent = await thunkAPI
-          .dispatch(fetchParent(data.user.id))
+        // Fetch profile data
+        const profile = await thunkAPI
+          .dispatch(fetchProfile(data.user.id))
           .unwrap();
 
-        // Don't manually store to AsyncStorage - let Redux persist handle it
         return {
           session: data.session,
           user: data.user,
-          parent,
+          profile,
         };
       }
 
@@ -141,35 +132,31 @@ export const signUp = createAsyncThunk(
         password,
         options: {
           data: {
-            first_name: firstName.trim(),
-            last_name: lastName.trim(),
-            role: "parent",
-            phone: phone?.trim(),
-          },
-        },
+            first_name: firstName,
+            last_name: lastName,
+            phone: phone || '',
+          }
+        }
       });
 
       if (error) {
         return thunkAPI.rejectWithValue(error.message);
       }
 
-      if (data.user && !data.session) {
-        // Email confirmation required
-        return { user: data.user, requiresConfirmation: true };
-      }
-
-      if (data.session && data.user) {
-        // Auto-confirm enabled
-        const parent = await thunkAPI
-          .dispatch(fetchParent(data.user.id))
+      if (data.user) {
+        console.log("✅ User created successfully, waiting for profile creation...");
+        
+        // Wait a moment for the database trigger to create the profile
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Fetch the profile created by the database trigger
+        const profile = await thunkAPI
+          .dispatch(fetchProfile(data.user.id))
           .unwrap();
 
-        // Don't manually store to AsyncStorage - let Redux persist handle it
         return {
-          session: data.session,
           user: data.user,
-          parent,
-          requiresConfirmation: false,
+          profile,
         };
       }
 
@@ -179,6 +166,21 @@ export const signUp = createAsyncThunk(
     }
   }
 );
+
+// Async thunk for sign out
+export const signOut = createAsyncThunk("auth/signOut", async (_, thunkAPI) => {
+  try {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+
+    return true;
+  } catch (error) {
+    return thunkAPI.rejectWithValue("An error occurred during logout");
+  }
+});
 
 // Async thunk for forgot password
 export const forgotPassword = createAsyncThunk(
@@ -193,26 +195,10 @@ export const forgotPassword = createAsyncThunk(
 
       return true;
     } catch (error) {
-      return thunkAPI.rejectWithValue("Password reset failed");
+      return thunkAPI.rejectWithValue("An error occurred during password reset");
     }
   }
 );
-
-// Async thunk for sign out
-export const signOut = createAsyncThunk("auth/signOut", async (_, thunkAPI) => {
-  try {
-    const { error } = await supabase.auth.signOut();
-
-    if (error) {
-      return thunkAPI.rejectWithValue(error.message);
-    }
-
-    // Don't manually clear AsyncStorage - let Redux persist handle it
-    return true;
-  } catch (error) {
-    return thunkAPI.rejectWithValue("Sign out failed");
-  }
-});
 
 const authSlice = createSlice({
   name: "auth",
@@ -224,24 +210,17 @@ const authSlice = createSlice({
     clearSuccess: (state) => {
       state.success = false;
     },
-    setInitialized: (state, action: PayloadAction<boolean>) => {
-      state.initialized = action.payload;
-    },
-    updateParent: (state, action: PayloadAction<Parent>) => {
-      state.parent = action.payload;
-    },
     updateInitialSession: (
       state,
       action: PayloadAction<{
-        user: User | null;
-        session: Session | null;
-        parent?: Parent | null;
+        user: User;
+        session: Session;
+        profile?: UserProfile;
       }>
     ) => {
       state.user = action.payload.user;
       state.session = action.payload.session;
-      state.parent = action.payload.parent || null;
-      state.initialized = true;
+      state.profile = action.payload.profile || null;
       state.loading = false;
       state.error = null;
     },
@@ -251,17 +230,50 @@ const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    // Fetch profile
     builder
-      // Sign in
+      .addCase(fetchProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.profile = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // Refresh session
+    builder
+      .addCase(refreshSession.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(refreshSession.fulfilled, (state, action) => {
+        state.loading = false;
+        state.session = action.payload;
+        state.error = null;
+      })
+      .addCase(refreshSession.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // Sign in
+    builder
       .addCase(signIn.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.success = false;
       })
       .addCase(signIn.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        state.parent = action.payload.parent;
         state.session = action.payload.session;
+        state.profile = action.payload.profile;
         state.error = null;
         state.success = true;
       })
@@ -269,54 +281,38 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
         state.success = false;
-      })
-      // Sign up
+      });
+
+    // Sign up
+    builder
       .addCase(signUp.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.success = false;
       })
       .addCase(signUp.fulfilled, (state, action) => {
         state.loading = false;
-        if (action.payload.requiresConfirmation) {
-          state.user = action.payload.user;
-          state.success = true;
-        } else {
-          state.user = action.payload.user;
-          state.parent = action.payload.parent;
-          state.session = action.payload.session;
-          state.success = true;
-        }
+        state.user = action.payload.user;
+        state.profile = action.payload.profile;
         state.error = null;
+        state.success = true;
       })
       .addCase(signUp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
         state.success = false;
-      })
-      // Forgot password
-      .addCase(forgotPassword.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-        state.success = false;
-      })
-      .addCase(forgotPassword.fulfilled, (state) => {
-        state.loading = false;
-        state.success = true;
-        state.error = null;
-      })
-      .addCase(forgotPassword.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-        state.success = false;
-      })
-      // Sign out
+      });
+
+    // Sign out
+    builder
       .addCase(signOut.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(signOut.fulfilled, (state) => {
         state.loading = false;
         state.user = null;
-        state.parent = null;
+        state.profile = null;
         state.session = null;
         state.error = null;
         state.success = false;
@@ -324,17 +320,22 @@ const authSlice = createSlice({
       .addCase(signOut.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      });
+
+    // Forgot password
+    builder
+      .addCase(forgotPassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
-      // Fetch parent
-      .addCase(fetchParent.fulfilled, (state, action) => {
-        state.parent = action.payload;
+      .addCase(forgotPassword.fulfilled, (state) => {
+        state.loading = false;
+        state.error = null;
+        state.success = true;
       })
-      // Refresh session
-      .addCase(refreshSession.fulfilled, (state, action) => {
-        state.session = action.payload;
-        if (action.payload?.user) {
-          state.user = action.payload.user;
-        }
+      .addCase(forgotPassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
@@ -342,9 +343,8 @@ const authSlice = createSlice({
 export const {
   clearError,
   clearSuccess,
-  setInitialized,
-  updateParent,
   updateInitialSession,
   markAsInitialized,
 } = authSlice.actions;
+
 export default authSlice.reducer;

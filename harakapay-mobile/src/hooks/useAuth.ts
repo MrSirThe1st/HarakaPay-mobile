@@ -8,7 +8,7 @@ import {
   signOut,
   forgotPassword,
   refreshSession,
-  fetchParent,
+  fetchProfile,
   clearError,
   clearSuccess,
   updateInitialSession,
@@ -17,25 +17,9 @@ import {
 import { supabase } from "../config/supabase";
 import type { User, Session } from "@supabase/supabase-js";
 
-export interface Parent {
-  id: string;
-  user_id: string;
-  first_name: string;
-  last_name: string;
-  phone: string | null;
-  email: string | null;
-  address: string | null;
-  national_id: string | null;
-  avatar_url: string | null;
-  notification_preferences: any;
-  payment_preferences: any;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface AuthState {
   user: User | null;
-  parent: Parent | null;
+  profile: any | null;
   session: Session | null;
   loading: boolean;
   error: string | null;
@@ -121,10 +105,10 @@ export const useAuth = () => {
             console.log("🔄 Initial session detected");
             if (session?.user) {
               console.log("✅ Initial session has user, updating state");
-              // Fetch parent data and update Redux state
+              // Fetch profile data and update Redux state
               try {
-                const parent = await dispatch(
-                  fetchParent(session.user.id)
+                const profile = await dispatch(
+                  fetchProfile(session.user.id)
                 ).unwrap();
 
                 // Update Redux state with the initial session
@@ -132,7 +116,7 @@ export const useAuth = () => {
                   updateInitialSession({
                     user: session.user,
                     session: session,
-                    parent: parent || undefined,
+                    profile: profile || undefined,
                   })
                 );
 
@@ -152,8 +136,8 @@ export const useAuth = () => {
           case "SIGNED_IN":
             console.log("✅ User signed in");
             if (session?.user) {
-              const parent = await dispatch(
-                fetchParent(session.user.id)
+              const profile = await dispatch(
+                fetchProfile(session.user.id)
               ).unwrap();
               // Don't manually update storage - let Redux persist handle it
             }
@@ -238,9 +222,9 @@ export const useAuth = () => {
     [dispatch]
   );
 
-  const handleRefreshParent = useCallback(async (): Promise<void> => {
+  const handleRefreshProfile = useCallback(async (): Promise<void> => {
     if (authState.user) {
-      await dispatch(fetchParent(authState.user.id));
+      await dispatch(fetchProfile(authState.user.id));
     }
   }, [dispatch, authState.user]);
 
@@ -258,7 +242,7 @@ export const useAuth = () => {
     signUp: handleSignUp,
     signOut: handleSignOut,
     forgotPassword: handleForgotPassword,
-    refreshParent: handleRefreshParent,
+    refreshProfile: handleRefreshProfile,
     clearError: handleClearError,
     clearSuccess: handleClearSuccess,
   };

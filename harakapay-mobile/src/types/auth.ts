@@ -1,5 +1,41 @@
-// Auth types
+// Auth types - aligned with web version
+export interface User {
+  id: string;
+  email: string;
+  name?: string;
+  role?: UserRole;
+  created_at: string;
+  updated_at: string;
+}
+
+export type UserRole = 
+  | "super_admin" 
+  | "platform_admin" 
+  | "support_admin" 
+  | "school_admin" 
+  | "school_staff"
+  | "parent";
+
+export interface UserProfile {
+  id: string;
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  national_id: string | null;
+  avatar_url: string | null;
+  notification_preferences: Record<string, unknown> | null;
+  payment_preferences: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AuthState {
-  token: string;
-  userId: string;
+  user: User | null;
+  profile: UserProfile | null;
+  loading: boolean;
+  error: string | null;
+  initialized: boolean;
 }
