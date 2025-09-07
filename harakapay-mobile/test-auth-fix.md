@@ -36,3 +36,4 @@ The mobile app was getting "Failed to fetch profile data" error during signup be
 - Signup should complete without "Failed to fetch profile data" error
 - User should be able to log in and access the app
 - Profile data should be properly stored in the `parents` table
+

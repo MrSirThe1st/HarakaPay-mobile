@@ -21,13 +21,15 @@ export interface UserProfile {
   user_id: string;
   first_name: string;
   last_name: string;
+  role: UserRole;
+  admin_type: "super_admin" | "platform_admin" | "support_admin" | null;
+  school_id: string | null;
   phone: string | null;
   email: string | null;
   address: string | null;
-  national_id: string | null;
   avatar_url: string | null;
-  notification_preferences: Record<string, unknown> | null;
-  payment_preferences: Record<string, unknown> | null;
+  permissions: Record<string, unknown> | null;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -71,17 +71,28 @@ export default function ConnectChildScreen({ navigation }: ConnectChildScreenPro
   const loadSchools = async () => {
     try {
       setLoading(true);
+      console.log('🔍 Loading schools...');
+      
       const { data, error } = await supabase
         .from('schools')
-        .select('*')
+        .select('id, name, address, contact_phone, status')
         .eq('status', 'approved')
         .order('name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Schools query error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Schools loaded:', data?.length || 0);
       setSchools(data || []);
     } catch (error) {
-      console.error('Error loading schools:', error);
-      Alert.alert('Error', 'Failed to load schools. Please try again.');
+      console.error('💥 Error loading schools:', error);
+      Alert.alert(
+        'Error', 
+        'Failed to load schools. This might be due to a database configuration issue. Please try again or contact support.',
+        [{ text: 'OK' }]
+      );
     } finally {
       setLoading(false);
     }

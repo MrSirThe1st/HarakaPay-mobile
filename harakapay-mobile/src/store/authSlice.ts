@@ -28,6 +28,8 @@ export const fetchProfile = createAsyncThunk(
   "auth/fetchProfile",
   async (userId: string, thunkAPI) => {
     try {
+      console.log("🔍 Fetching profile for user:", userId);
+      
       const { data, error } = await supabase
         .from("parents")
         .select("*")
@@ -35,19 +37,20 @@ export const fetchProfile = createAsyncThunk(
         .maybeSingle();
 
       if (error) {
-        console.error("Profile fetch error:", error);
-        return thunkAPI.rejectWithValue("Failed to fetch profile data");
+        console.error("❌ Profile fetch error:", error);
+        return thunkAPI.rejectWithValue(`Profile fetch failed: ${error.message}`);
       }
 
       if (!data) {
-        console.log("No parent profile found for user:", userId);
-        return thunkAPI.rejectWithValue("No parent profile found");
+        console.log("⚠️ No parent profile found for user:", userId);
+        return thunkAPI.rejectWithValue("No parent profile found. Please try signing up again.");
       }
 
+      console.log("✅ Profile found:", data);
       return data;
     } catch (error) {
-      console.error("Profile fetch exception:", error);
-      return thunkAPI.rejectWithValue("Failed to fetch profile data");
+      console.error("💥 Profile fetch exception:", error);
+      return thunkAPI.rejectWithValue(`Profile fetch failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 );
@@ -146,18 +149,28 @@ export const signUp = createAsyncThunk(
       if (data.user) {
         console.log("✅ User created successfully, waiting for profile creation...");
         
-        // Wait a moment for the database trigger to create the profile
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Wait for database trigger to create the profile
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
         // Fetch the profile created by the database trigger
-        const profile = await thunkAPI
-          .dispatch(fetchProfile(data.user.id))
-          .unwrap();
+        try {
+          const profile = await thunkAPI
+            .dispatch(fetchProfile(data.user.id))
+            .unwrap();
 
-        return {
-          user: data.user,
-          profile,
-        };
+          console.log("✅ Signup completed successfully with profile");
+          return {
+            user: data.user,
+            profile,
+          };
+        } catch (profileError) {
+          console.error("❌ Profile not found after signup:", profileError);
+          // Return user without profile - they can complete it later
+          return {
+            user: data.user,
+            profile: null,
+          };
+        }
       }
 
       return thunkAPI.rejectWithValue("Registration failed");

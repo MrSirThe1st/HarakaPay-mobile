@@ -157,11 +157,12 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
       if (result.success) {
         Alert.alert(
           'Inscription réussie',
-          'Votre compte a été créé avec succès ! Veuillez vérifier votre email pour confirmer votre inscription.',
+          'Votre compte a été créé avec succès ! Vous êtes maintenant connecté.',  
           [
             {
               text: 'OK',
-              onPress: () => navigation.navigate('Login'),
+              // Don't navigate - the app will automatically redirect to main app
+              // because the user is now authenticated
             },
           ]
         );
