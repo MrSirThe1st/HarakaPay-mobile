@@ -245,5 +245,6 @@ export const useAuth = () => {
     refreshProfile: handleRefreshProfile,
     clearError: handleClearError,
     clearSuccess: handleClearSuccess,
+    isParent: authState.profile?.role === 'parent',
   };
 };

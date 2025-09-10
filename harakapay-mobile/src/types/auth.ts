@@ -19,8 +19,8 @@ export type UserRole =
 export interface UserProfile {
   id: string;
   user_id: string;
-  first_name: string;
-  last_name: string;
+  first_name: string | null;
+  last_name: string | null;
   role: UserRole;
   admin_type: "super_admin" | "platform_admin" | "support_admin" | null;
   school_id: string | null;

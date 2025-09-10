@@ -21,6 +21,59 @@ export interface SupabaseUser {
 export interface Database {
 	public: {
 		Tables: {
+			profiles: {
+				Row: {
+					id: string;
+					user_id: string;
+					first_name: string | null;
+					last_name: string | null;
+					role: "super_admin" | "platform_admin" | "support_admin" | "school_admin" | "school_staff" | "parent";
+					admin_type: "super_admin" | "platform_admin" | "support_admin" | null;
+					school_id: string | null;
+					phone: string | null;
+					email: string | null;
+					address: string | null;
+					avatar_url: string | null;
+					permissions: Json | null;
+					is_active: boolean;
+					created_at: string;
+					updated_at: string;
+				};
+				Insert: {
+					id?: string;
+					user_id: string;
+					first_name?: string | null;
+					last_name?: string | null;
+					role: "super_admin" | "platform_admin" | "support_admin" | "school_admin" | "school_staff" | "parent";
+					admin_type?: "super_admin" | "platform_admin" | "support_admin" | null;
+					school_id?: string | null;
+					phone?: string | null;
+					email?: string | null;
+					address?: string | null;
+					avatar_url?: string | null;
+					permissions?: Json | null;
+					is_active?: boolean;
+					created_at?: string;
+					updated_at?: string;
+				};
+				Update: {
+					id?: string;
+					user_id?: string;
+					first_name?: string | null;
+					last_name?: string | null;
+					role?: "super_admin" | "platform_admin" | "support_admin" | "school_admin" | "school_staff" | "parent";
+					admin_type?: "super_admin" | "platform_admin" | "support_admin" | null;
+					school_id?: string | null;
+					phone?: string | null;
+					email?: string | null;
+					address?: string | null;
+					avatar_url?: string | null;
+					permissions?: Json | null;
+					is_active?: boolean;
+					created_at?: string;
+					updated_at?: string;
+				};
+			};
 			parents: {
 				Row: {
 					id: string;
@@ -243,6 +296,10 @@ export interface Database {
 }
 
 // Convenience types for mobile app usage
+export type Profile = Database['public']['Tables']['profiles']['Row'];
+export type ProfileInsert = Database['public']['Tables']['profiles']['Insert'];
+export type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
+
 export type Parent = Database['public']['Tables']['parents']['Row'];
 export type ParentInsert = Database['public']['Tables']['parents']['Insert'];
 export type ParentUpdate = Database['public']['Tables']['parents']['Update'];
@@ -315,5 +372,15 @@ export interface ChildSummary {
 	payment_status: 'up_to_date' | 'due' | 'overdue';
 	notifications_count: number;
 }
+
+// Enhanced parent type with profile
+export type ParentWithProfile = Parent & {
+  profile: Profile;
+};
+
+// Enhanced profile type with parent data
+export type ProfileWithParent = Profile & {
+  parent?: Parent;
+};
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

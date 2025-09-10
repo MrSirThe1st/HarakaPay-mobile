@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { supabase } from "../config/supabase";
 import type { User, Session } from "@supabase/supabase-js";
 import { UserProfile } from "../types/auth";
+import { createParentProfile } from "../services/parentProfileService";
 
 export interface AuthState {
   user: User | null;
@@ -31,9 +32,10 @@ export const fetchProfile = createAsyncThunk(
       console.log("🔍 Fetching profile for user:", userId);
       
       const { data, error } = await supabase
-        .from("parents")
+        .from("profiles")
         .select("*")
         .eq("user_id", userId)
+        .eq("role", "parent")
         .maybeSingle();
 
       if (error) {
@@ -43,7 +45,32 @@ export const fetchProfile = createAsyncThunk(
 
       if (!data) {
         console.log("⚠️ No parent profile found for user:", userId);
-        return thunkAPI.rejectWithValue("No parent profile found. Please try signing up again.");
+        
+        // Try to create a profile for existing users who don't have one
+        console.log("🔄 Attempting to create profile for existing user...");
+        
+        // Get user data from auth
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          return thunkAPI.rejectWithValue("No user session found");
+        }
+
+        // Create profile using the manual API approach
+        const profileResult = await createParentProfile({
+          user_id: userId,
+          first_name: user.user_metadata?.first_name || '',
+          last_name: user.user_metadata?.last_name || '',
+          email: user.email || '',
+          phone: user.user_metadata?.phone || '',
+        });
+
+        if (!profileResult.success) {
+          console.error("❌ Failed to create profile for existing user:", profileResult.error);
+          return thunkAPI.rejectWithValue(profileResult.error || "Failed to create profile");
+        }
+
+        console.log("✅ Profile created for existing user:", profileResult.profile?.id);
+        return profileResult.profile;
       }
 
       console.log("✅ Profile found:", data);
@@ -147,24 +174,29 @@ export const signUp = createAsyncThunk(
       }
 
       if (data.user) {
-        console.log("✅ User created successfully, waiting for profile creation...");
+        console.log("✅ User created successfully, creating parent profile...");
         
-        // Wait for database trigger to create the profile
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Fetch the profile created by the database trigger
+        // Create parent profile using the manual API approach
         try {
-          const profile = await thunkAPI
-            .dispatch(fetchProfile(data.user.id))
-            .unwrap();
+          const profileResult = await createParentProfile({
+            user_id: data.user.id,
+            first_name: firstName,
+            last_name: lastName,
+            phone: phone || '',
+            email: email.toLowerCase().trim(),
+          });
+
+          if (!profileResult.success) {
+            throw new Error(profileResult.error || 'Failed to create profile');
+          }
 
           console.log("✅ Signup completed successfully with profile");
           return {
             user: data.user,
-            profile,
+            profile: profileResult.profile,
           };
         } catch (profileError) {
-          console.error("❌ Profile not found after signup:", profileError);
+          console.error("❌ Failed to create parent profile:", profileError);
           // Return user without profile - they can complete it later
           return {
             user: data.user,
