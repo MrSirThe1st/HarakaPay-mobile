@@ -1,21 +1,23 @@
 // Bottom tab navigation
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import DashboardScreen from '../screens/parent/DashboardScreen';
-import ChildrenScreen from '../screens/parent/ChildrenScreen';
+import HomeScreen from '../screens/parent/DashboardScreen';
 import PaymentsScreen from '../screens/parent/PaymentsScreen';
-import PaymentHistoryScreen from '../screens/parent/PaymentHistoryScreen';
 import NotificationsScreen from '../screens/parent/NotificationsScreen';
+import ProfileScreen from '../screens/parent/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
 const TabNavigator = () => (
-  <Tab.Navigator>
-    <Tab.Screen name="Dashboard" component={DashboardScreen} />
-    <Tab.Screen name="Children" component={ChildrenScreen} />
+  <Tab.Navigator
+    screenOptions={{
+      headerShown: false,
+    }}
+  >
+    <Tab.Screen name="Home" component={HomeScreen} />
     <Tab.Screen name="Payments" component={PaymentsScreen} />
-    <Tab.Screen name="History" component={PaymentHistoryScreen} />
     <Tab.Screen name="Notifications" component={NotificationsScreen} />
+    <Tab.Screen name="Profile" component={ProfileScreen} />
   </Tab.Navigator>
 );
 

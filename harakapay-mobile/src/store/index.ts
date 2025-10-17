@@ -12,10 +12,12 @@ import {
 } from "redux-persist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import authReducer from "./authSlice";
+import studentReducer from "./studentSlice";
 
 // Root reducer
 const rootReducer = combineReducers({
   auth: authReducer,
+  student: studentReducer,
   // add other reducers here
 });
 
@@ -24,7 +26,7 @@ const persistConfig = {
   key: "root",
   storage: AsyncStorage,
   whitelist: ["auth"], // Only persist auth state
-  blacklist: [], // Don't persist these reducers
+  blacklist: ["student"], // Don't persist student state (will be refetched)
   debug: true, // Enable debug logging
 };
 
@@ -73,9 +75,24 @@ if (__DEV__) {
         initialized: state.auth.initialized,
         loading: state.auth.loading,
       },
+      student: {
+        linkedStudents: state.student.linkedStudents.length,
+        loadingStudents: state.student.loadingStudents,
+        loadingSearch: state.student.loadingSearch,
+      },
     });
   });
 }
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+
+// Define the student state type for better type safety
+export interface StudentState {
+  linkedStudents: any[];
+  searchResults: any[];
+  loadingStudents: boolean;
+  loadingSearch: boolean;
+  linkingStudent: boolean;
+  error: string | null;
+}

@@ -25,11 +25,23 @@ export interface CreateParentProfileResponse {
   error?: string;
 }
 
+// Track ongoing profile creation requests to prevent duplicates
+const ongoingRequests = new Map<string, Promise<CreateParentProfileResponse>>();
+
 export const createParentProfile = async (
   profileData: CreateParentProfileRequest
 ): Promise<CreateParentProfileResponse> => {
-  try {
-    console.log('🔄 Creating parent profile for user:', profileData.user_id);
+  const userId = profileData.user_id;
+  
+  // Check if there's already an ongoing request for this user
+  if (ongoingRequests.has(userId)) {
+    console.log('🔄 Profile creation already in progress for user:', userId);
+    return ongoingRequests.get(userId)!;
+  }
+
+  const requestPromise = (async () => {
+    try {
+      console.log('🔄 Creating parent profile for user:', userId);
     
     // Get the current session to ensure we're authenticated
     const { data: { session } } = await supabase.auth.getSession();
@@ -87,5 +99,14 @@ export const createParentProfile = async (
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
     };
+  } finally {
+    // Clean up the ongoing request
+    ongoingRequests.delete(userId);
   }
+  })();
+
+  // Store the promise to prevent duplicate requests
+  ongoingRequests.set(userId, requestPromise);
+  
+  return requestPromise;
 };

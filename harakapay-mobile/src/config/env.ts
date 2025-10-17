@@ -13,7 +13,7 @@ export const SUPABASE_SERVICE_ROLE_KEY = extra.SUPABASE_SERVICE_ROLE_KEY || '';
 export const PAYMENT_API_URL = extra.PAYMENT_API_URL || '';
 
 // Web API Configuration (for profile creation)
-export const WEB_API_URL = extra.WEB_API_URL || 'http://192.168.1.111:3000';
+export const WEB_API_URL = extra.WEB_API_URL || 'http://192.168.1.120:3001';
 
 // Validation
 const validateEnvironment = () => {
