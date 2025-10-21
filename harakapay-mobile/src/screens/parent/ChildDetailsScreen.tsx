@@ -49,7 +49,7 @@ export default function ChildDetailsScreen({ navigation, route }: ChildDetailsSc
   }
 
   const handleMakePayment = () => {
-    // Navigate to payment screen
+    // Navigate directly to Payments screen in the stack and pass params
     navigation.navigate('Payments', { studentId: student.id });
   };
 
@@ -147,8 +147,8 @@ export default function ChildDetailsScreen({ navigation, route }: ChildDetailsSc
           <View style={styles.infoCard}>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Enrollment Date</Text>
-              <Text style={styles.infoValue}>
-                {new Date(student.enrollment_date).toLocaleDateString()}
+            <Text style={styles.infoValue}>
+                {student.enrollment_date ? new Date(student.enrollment_date).toLocaleDateString() : '—'}
               </Text>
             </View>
             

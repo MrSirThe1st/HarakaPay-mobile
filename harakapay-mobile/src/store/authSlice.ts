@@ -249,6 +249,9 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
     clearError: (state) => {
       state.error = null;
     },
@@ -386,6 +389,7 @@ const authSlice = createSlice({
 });
 
 export const {
+  setLoading,
   clearError,
   clearSuccess,
   updateInitialSession,

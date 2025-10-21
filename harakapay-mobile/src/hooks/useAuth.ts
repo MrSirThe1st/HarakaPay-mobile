@@ -1,5 +1,5 @@
 // Redux-based auth hook
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../store";
 import {
@@ -13,6 +13,7 @@ import {
   clearSuccess,
   updateInitialSession,
   markAsInitialized,
+  setLoading,
 } from "../store/authSlice";
 import { supabase } from "../config/supabase";
 import type { User, Session } from "@supabase/supabase-js";
@@ -36,6 +37,7 @@ export interface AuthResponse {
 export const useAuth = () => {
   const dispatch = useDispatch<AppDispatch>();
   const authState = useSelector((state: RootState) => state.auth);
+  const isProcessingAuthRef = useRef(false);
   
     // Add this effect to set session on Supabase client whenever Redux session/user changes
     useEffect(() => {
@@ -94,8 +96,18 @@ export const useAuth = () => {
           "🔄 Auth state changed:",
           event,
           "Session exists:",
-          !!session
+          !!session,
+          "isProcessingAuth:",
+          isProcessingAuthRef.current
         );
+
+        // Prevent multiple simultaneous auth processing
+        if (isProcessingAuthRef.current) {
+          console.log("⏸️ Auth processing already in progress, skipping");
+          return;
+        }
+        
+        isProcessingAuthRef.current = true;
 
         // Clear timeout when we get any auth event
         clearTimeout(timeoutId);
@@ -105,6 +117,7 @@ export const useAuth = () => {
             console.log("🔄 Initial session detected");
             if (session?.user) {
               console.log("✅ Initial session has user, updating state");
+              isProcessingAuthRef.current = true;
               // Fetch profile data and update Redux state
               try {
                 const profile = await dispatch(
@@ -126,20 +139,38 @@ export const useAuth = () => {
                   "⚠️ Failed to update initial session state:",
                   error
                 );
+              } finally {
+                isProcessingAuthRef.current = false;
               }
             } else {
               console.log("ℹ️ Initial session has no user");
               // If no initial session, mark as initialized so we can show auth screen
               dispatch(markAsInitialized());
+              isProcessingAuthRef.current = false;
             }
             break;
           case "SIGNED_IN":
             console.log("✅ User signed in");
             if (session?.user) {
-              const profile = await dispatch(
-                fetchProfile(session.user.id)
-              ).unwrap();
-              // Don't manually update storage - let Redux persist handle it
+              try {
+                const profile = await dispatch(
+                  fetchProfile(session.user.id)
+                ).unwrap();
+
+                dispatch(
+                  updateInitialSession({
+                    user: session.user,
+                    session: session,
+                    profile: profile || undefined,
+                  })
+                );
+              } catch (error) {
+                console.log("⚠️ Failed to fetch profile during sign in:", error);
+              } finally {
+                isProcessingAuthRef.current = false;
+              }
+            } else {
+              isProcessingAuthRef.current = false;
             }
             break;
           case "SIGNED_OUT":
