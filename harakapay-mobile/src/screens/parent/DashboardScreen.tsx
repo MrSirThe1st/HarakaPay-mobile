@@ -47,8 +47,8 @@ const HomeScreen: React.FC<{ navigation?: any }> = ({ navigation }) => {
   };
 
   const handleChildPress = (student: LinkedStudent) => {
-    // Navigate to child details screen with student data
-    navigation?.navigate('ChildDetails', { student });
+    // Navigate to fee details screen with student data
+    navigation?.navigate('FeeDetails', { student });
   };
 
   if (authLoading || loadingStudents) {

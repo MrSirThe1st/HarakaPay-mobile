@@ -65,45 +65,7 @@ export default function ChildDetailsScreen({ navigation, route }: ChildDetailsSc
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.backButtonText}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Child Details</Text>
-        </View>
 
-        {/* Student Details Card */}
-        <View style={styles.studentCard}>
-          {/* Profile Photo */}
-          <View style={styles.photoContainer}>
-            <View style={styles.photoPlaceholder}>
-              <Text style={styles.photoText}>
-                {(student.first_name || 'S').charAt(0)}{(student.last_name || 'T').charAt(0)}
-              </Text>
-            </View>
-          </View>
-
-          {/* Student Info */}
-          <View style={styles.studentInfo}>
-            <Text style={styles.studentName}>
-              {student.first_name || 'Unknown'} {student.last_name || 'Student'}
-            </Text>
-            
-            {student.grade_level && (
-              <Text style={styles.studentDetail}>Grade {student.grade_level}</Text>
-            )}
-            
-            {student.school_name && (
-              <Text style={styles.studentDetail}>{student.school_name}</Text>
-            )}
-            
-            <Text style={styles.studentDetail}>Student ID: {student.student_id}</Text>
-          </View>
-        </View>
 
         {/* Action Buttons */}
         <View style={styles.actionsSection}>
@@ -140,49 +102,8 @@ export default function ChildDetailsScreen({ navigation, route }: ChildDetailsSc
           </TouchableOpacity>
         </View>
 
-        {/* Additional Info Section */}
-        <View style={styles.infoSection}>
-          <Text style={styles.sectionTitle}>Information</Text>
-          
-          <View style={styles.infoCard}>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Enrollment Date</Text>
-            <Text style={styles.infoValue}>
-                {student.enrollment_date ? new Date(student.enrollment_date).toLocaleDateString() : '—'}
-              </Text>
-            </View>
-            
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Status</Text>
-              <Text style={[styles.infoValue, { 
-                color: student.status === 'active' ? '#10B981' : '#EF4444' 
-              }]}>
-                {(student.status || 'Unknown').charAt(0).toUpperCase() + (student.status || 'Unknown').slice(1)}
-              </Text>
-            </View>
-            
-            {student.parent_name && (
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Parent Name</Text>
-                <Text style={styles.infoValue}>{student.parent_name}</Text>
-              </View>
-            )}
-            
-            {student.parent_email && (
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Parent Email</Text>
-                <Text style={styles.infoValue}>{student.parent_email}</Text>
-              </View>
-            )}
-            
-            {student.parent_phone && (
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Parent Phone</Text>
-                <Text style={styles.infoValue}>{student.parent_phone}</Text>
-              </View>
-            )}
-          </View>
-        </View>
+ 
+       
       </ScrollView>
     </SafeAreaView>
   );

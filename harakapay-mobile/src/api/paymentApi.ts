@@ -18,9 +18,19 @@ export interface FeeCategoryItem {
 }
 
 export const fetchStudentFeeCategories = async (studentId: string): Promise<FeeCategoryItem[]> => {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.access_token) {
-    throw new Error('No authentication token available');
+  // Try to get session, and refresh if needed
+  let { data: { session }, error } = await supabase.auth.getSession();
+  
+  if (error || !session?.access_token) {
+    console.log('No valid session, attempting to refresh...');
+    const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+    
+    if (refreshError || !refreshedSession?.access_token) {
+      console.error('Failed to refresh session:', refreshError);
+      throw new Error('No authentication token available - please log in again');
+    }
+    
+    session = refreshedSession;
   }
 
   const resp = await fetch(`${WEB_API_URL}/api/parent/student-fees-detailed`, {
@@ -73,9 +83,19 @@ export interface PaymentScheduleItem {
 }
 
 export const fetchStudentPaymentSchedules = async (studentId: string): Promise<PaymentScheduleItem[]> => {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.access_token) {
-    throw new Error('No authentication token available');
+  // Try to get session, and refresh if needed
+  let { data: { session }, error } = await supabase.auth.getSession();
+  
+  if (error || !session?.access_token) {
+    console.log('No valid session, attempting to refresh...');
+    const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+    
+    if (refreshError || !refreshedSession?.access_token) {
+      console.error('Failed to refresh session:', refreshError);
+      throw new Error('No authentication token available - please log in again');
+    }
+    
+    session = refreshedSession;
   }
 
   const resp = await fetch(`${WEB_API_URL}/api/parent/student-fees-detailed`, {
