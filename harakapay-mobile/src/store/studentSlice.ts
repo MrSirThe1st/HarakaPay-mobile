@@ -23,10 +23,21 @@ const initialState: StudentState = {
 // Async thunks
 export const fetchLinkedStudentsAsync = createAsyncThunk(
   'student/fetchLinkedStudents',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
       console.log('🚀 fetchLinkedStudentsAsync: Starting thunk');
-      const students = await fetchLinkedStudents();
+      
+      // Get session from Redux state
+      const state = getState() as any;
+      const session = state.auth.session;
+      
+      if (!session?.access_token) {
+        console.log('❌ fetchLinkedStudentsAsync: No session in Redux state');
+        return rejectWithValue('No authentication token available');
+      }
+      
+      console.log('✅ fetchLinkedStudentsAsync: Using session from Redux');
+      const students = await fetchLinkedStudents(session);
       console.log('✅ fetchLinkedStudentsAsync: Success, students:', students.length);
       return students;
     } catch (error) {

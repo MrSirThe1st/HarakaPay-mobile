@@ -43,6 +43,10 @@ interface PaymentPlansScreenProps {
 }
 
 export default function PaymentPlansScreen({ navigation, route }: PaymentPlansScreenProps) {
+  console.log('PaymentPlansScreen route:', route);
+  console.log('PaymentPlansScreen params:', route?.params);
+  console.log('PaymentPlansScreen params keys:', route?.params ? Object.keys(route.params) : 'no params');
+  
   const { category, student, feeStructure } = route.params || {};
   const [paymentPlans, setPaymentPlans] = useState<PaymentPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,12 +54,27 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
 
   // Safety check for missing params
   if (!category || !student || !feeStructure) {
+    console.log('Missing params:', { category, student, feeStructure });
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle" size={48} color="#EF4444" />
+          <Ionicons name="alert-circle" size={48} color="#EF4444"/>
           <Text style={styles.errorTitle}>Missing Information</Text>
           <Text style={styles.errorText}>Required data is missing. Please go back and try again.</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Additional safety check for category amount
+  if (!category.amount) {
+    console.log('Category amount is missing:', category);
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle" size={48} color="#EF4444"/>
+          <Text style={styles.errorTitle}>Invalid Category Data</Text>
+          <Text style={styles.errorText}>Category amount is missing. Please go back and try again.</Text>
         </View>
       </SafeAreaView>
     );
@@ -123,6 +142,8 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
         })) || [];
         
         console.log('Payment plans assigned to this student:', studentPaymentPlans);
+        console.log('First payment plan installments:', studentPaymentPlans[0]?.installments);
+        console.log('First installment structure:', studentPaymentPlans[0]?.installments?.[0]);
         setPaymentPlans(studentPaymentPlans);
       } else {
         throw new Error('No payment plans found for this fee structure');
@@ -187,19 +208,20 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
 
   const getPlanAmount = (plan: PaymentPlan) => {
     if (plan.type === 'upfront') {
-      return formatCurrency(category.amount * (1 - (plan.discount_percentage || 0) / 100));
+      return formatCurrency((category?.amount || 0) * (1 - (plan.discount_percentage || 0) / 100));
     } else {
       const firstInstallment = plan.installments?.[0];
-      return firstInstallment ? formatCurrency(firstInstallment.amount) : 'N/A';
+      return firstInstallment ? formatCurrency(firstInstallment.amount || 0) : 'N/A';
     }
   };
 
   const getPlanSubAmount = (plan: PaymentPlan) => {
     if (plan.type === 'upfront') {
-      return `Total: ${formatCurrency(category.amount * (1 - (plan.discount_percentage || 0) / 100))}`;
+      return `Total: ${formatCurrency((category?.amount || 0) * (1 - (plan.discount_percentage || 0) / 100))}`;
     } else {
       const period = plan.type === 'monthly' ? 'monthly' : 
-                    plan.type === 'per-term' ? 'per term' : 'per installment';
+                    plan.type === 'per-term' ? 'per term' : 
+                    plan.type === 'custom' ? 'per installment' : 'per payment';
       return `${period.charAt(0).toUpperCase() + period.slice(1)}: ${getPlanAmount(plan)}`;
     }
   };
@@ -207,10 +229,10 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
   const getDueDate = (plan: PaymentPlan) => {
     if (plan.type === 'upfront') {
       const firstInstallment = plan.installments?.[0];
-      return firstInstallment ? `Due by: ${new Date(firstInstallment.due_date).toLocaleDateString()}` : '';
+      return firstInstallment?.due_date ? `Due by: ${new Date(firstInstallment.due_date).toLocaleDateString()}` : '';
     } else {
       const firstInstallment = plan.installments?.[0];
-      return firstInstallment ? `First due: ${new Date(firstInstallment.due_date).toLocaleDateString()}` : '';
+      return firstInstallment?.due_date ? `First due: ${new Date(firstInstallment.due_date).toLocaleDateString()}` : '';
     }
   };
 
@@ -260,21 +282,21 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
                 <Text style={styles.categoryName}>{category.name || 'Unknown Category'}</Text>
                 <Text style={styles.categoryAmount}>{formatCurrency(category.amount || 0)}</Text>
             <View style={styles.categoryBadges}>
-              {category.is_mandatory === true && (
+              {category.is_mandatory === true ? (
                 <View style={styles.mandatoryBadge}>
                   <Text style={styles.mandatoryText}>Mandatory</Text>
                 </View>
-              )}
-              {category.supports_recurring === true && (
+              ) : null}
+              {category.supports_recurring === true ? (
                 <View style={styles.recurringBadge}>
                   <Text style={styles.recurringText}>Recurring</Text>
                 </View>
-              )}
-              {category.supports_one_time === true && (
+              ) : null}
+              {category.supports_one_time === true ? (
                 <View style={styles.oneTimeBadge}>
                   <Text style={styles.oneTimeText}>One-time</Text>
                 </View>
-              )}
+              ) : null}
             </View>
           </View>
         </View>
@@ -282,45 +304,52 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
         {/* Payment Plans */}
         <View style={styles.plansSection}>
           <Text style={styles.sectionTitle}>Available Payment Plans</Text>
-          {paymentPlans.map((plan) => (
-            <TouchableOpacity
-              key={plan.id}
-              style={styles.planCard}
-              onPress={() => handlePlanPress(plan)}
-            >
-              <View style={styles.planHeader}>
-                <View style={styles.planIconContainer}>
-                  <Ionicons 
-                    name={getPlanIcon(plan.type)} 
-                    size={24} 
-                    color={plan.type === 'upfront' ? '#10B981' : '#3B82F6'} 
-                  />
+          {paymentPlans.length > 0 ? (
+            paymentPlans.map((plan) => (
+              <TouchableOpacity
+                key={plan.id}
+                style={styles.planCard}
+                onPress={() => handlePlanPress(plan)}
+              >
+                <View style={styles.planHeader}>
+                  <View style={styles.planIconContainer}>
+                    <Ionicons 
+                      name={getPlanIcon(plan.type)} 
+                      size={24} 
+                      color={plan.type === 'upfront' ? '#10B981' : '#3B82F6'} 
+                    />
+                  </View>
+                  <View style={styles.planInfo}>
+                    <Text style={styles.planTitle}>{getPlanTitle(plan.type || 'unknown')}</Text>
+                    <Text style={styles.planDescription}>{getPlanDescription(plan)}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
                 </View>
-                <View style={styles.planInfo}>
-                  <Text style={styles.planTitle}>{getPlanTitle(plan.type || 'unknown')}</Text>
-                  <Text style={styles.planDescription}>{getPlanDescription(plan)}</Text>
+                
+                <View style={styles.planDetails}>
+                  <View style={styles.planAmountContainer}>
+                    <Text style={styles.planAmount}>{getPlanAmount(plan)}</Text>
+                    <Text style={styles.planSubAmount}>{getPlanSubAmount(plan)}</Text>
+                  </View>
+                  <Text style={styles.planDueDate}>{getDueDate(plan)}</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-              </View>
-              
-              <View style={styles.planDetails}>
-                <View style={styles.planAmountContainer}>
-                  <Text style={styles.planAmount}>{getPlanAmount(plan)}</Text>
-                  <Text style={styles.planSubAmount}>{getPlanSubAmount(plan)}</Text>
-                </View>
-                <Text style={styles.planDueDate}>{getDueDate(plan)}</Text>
-              </View>
 
-              {plan.discount_percentage && plan.discount_percentage > 0 && (
-                <View style={styles.discountBadge}>
-                  <Ionicons name="gift" size={16} color="#10B981" />
-                  <Text style={styles.discountText}>
-                    {plan.discount_percentage}% discount
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          ))}
+                {plan.discount_percentage && plan.discount_percentage > 0 ? (
+                  <View style={styles.discountBadge}>
+                    <Ionicons name="gift" size={16} color="#10B981" />
+                    <Text style={styles.discountText}>
+                      {(plan.discount_percentage || 0)}% discount
+                    </Text>
+                  </View>
+                ) : null}
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View style={styles.emptyState}>
+              <Ionicons name="calendar-outline" size={48} color="#9CA3AF" />
+              <Text style={styles.emptyStateText}>No payment plans available</Text>
+            </View>
+          )}
         </View>
 
         {/* Help Text */}
@@ -588,5 +617,16 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginLeft: 8,
     flex: 1,
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#9CA3AF',
+    marginTop: 16,
+    textAlign: 'center',
   },
 });

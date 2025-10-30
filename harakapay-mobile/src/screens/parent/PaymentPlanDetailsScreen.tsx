@@ -153,12 +153,12 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
               <Text style={styles.amountLabel}>Original Amount:</Text>
               <Text style={styles.amountValue}>{formatCurrency(category.amount)}</Text>
             </View>
-            {plan.discount_percentage && plan.discount_percentage > 0 && (
+            {plan.discount_percentage && plan.discount_percentage > 0 ? (
               <View style={styles.amountRow}>
                 <Text style={styles.amountLabel}>Discount ({plan.discount_percentage}%):</Text>
                 <Text style={styles.discountValue}>-{formatCurrency(getSavings())}</Text>
               </View>
-            )}
+            ) : null}
             <View style={[styles.amountRow, styles.totalRow]}>
               <Text style={styles.totalLabel}>Total Amount:</Text>
               <Text style={styles.totalValue}>{formatCurrency(getTotalAmount())}</Text>
@@ -169,7 +169,8 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
         {/* Installment Timeline */}
         <View style={styles.timelineSection}>
           <Text style={styles.sectionTitle}>Payment Schedule</Text>
-          {plan.installments?.map((installment, index) => (
+          {plan.installments && plan.installments.length > 0 ? (
+            plan.installments.map((installment, index) => (
             <View key={installment.installment_number} style={styles.installmentCard}>
               <View style={styles.installmentHeader}>
                 <View style={styles.installmentNumber}>
@@ -206,13 +207,19 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
                 <Text style={styles.dueDateLabel}>Due Date:</Text>
                 <Text style={[
                   styles.dueDateValue,
-                  isOverdue(installment.due_date) && styles.overdueDate
+                  isOverdue(installment.due_date) ? styles.overdueDate : null
                 ]}>
                   {formatDate(installment.due_date)}
                 </Text>
               </View>
             </View>
-          ))}
+            ))
+          ) : (
+            <View style={styles.emptyState}>
+              <Ionicons name="calendar-outline" size={48} color="#9CA3AF" />
+              <Text style={styles.emptyStateText}>No installments available</Text>
+            </View>
+          )}
         </View>
 
         {/* Payment Actions */}
@@ -524,5 +531,16 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginLeft: 8,
     flex: 1,
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#9CA3AF',
+    marginTop: 16,
+    textAlign: 'center',
   },
 });

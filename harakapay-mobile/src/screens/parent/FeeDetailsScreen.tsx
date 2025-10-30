@@ -8,12 +8,12 @@ import {
   Alert,
   Dimensions,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { fetchStudentFeeCategories, fetchStudentPaymentSchedules, FeeCategoryItem, PaymentScheduleItem } from '../../api/paymentApi';
-import { supabase } from '../../config/supabase';
-import { WEB_API_URL } from '../../config/env';
+import { FeeCategoryItem, PaymentScheduleItem } from '../../api/paymentApi';
+import usePaymentData from '../../hooks/usePaymentData';
 
 const { width } = Dimensions.get('window');
 
@@ -40,54 +40,29 @@ interface ChildDetailsScreenProps {
 
 export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScreenProps) {
   const { student } = route.params;
-  const [categories, setCategories] = useState<FeeCategoryItem[]>([]);
-  const [paymentSchedules, setPaymentSchedules] = useState<PaymentScheduleItem[]>([]);
-  const [feeStructure, setFeeStructure] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  
+  // Use the new payment data hook with smart caching
+  const {
+    categories,
+    paymentPlans,
+    feeStructure,
+    isLoading,
+    error,
+    hasCachedData,
+    isCacheValid,
+    refreshData,
+    clearError,
+  } = usePaymentData(student.id);
 
-  useEffect(() => {
-    loadFeeData();
-  }, []);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const loadFeeData = async () => {
+  // Handle pull-to-refresh
+  const onRefresh = async () => {
+    setIsRefreshing(true);
     try {
-      setLoading(true);
-      setError(null);
-
-      // Fetch fee categories and payment schedules using existing API functions
-      const [categoriesData, schedulesData] = await Promise.all([
-        fetchStudentFeeCategories(student.id),
-        fetchStudentPaymentSchedules(student.id)
-      ]);
-
-      setCategories(categoriesData);
-      setPaymentSchedules(schedulesData);
-
-      // Also fetch the full API response to get fee structure information
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) {
-        const response = await fetch(`${WEB_API_URL}/api/parent/student-fees-detailed`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const studentData = data.student_fees?.find((s: any) => s?.student?.id === student.id);
-          if (studentData?.fee_template) {
-            setFeeStructure(studentData.fee_template);
-          }
-        }
-      }
-    } catch (err) {
-      console.error('Error loading fee data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load fee information');
+      await refreshData();
     } finally {
-      setLoading(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -120,7 +95,7 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
     return categories.reduce((total, category) => total + category.amount, 0);
   };
 
-  if (loading) {
+  if (isLoading && !hasCachedData) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
@@ -131,14 +106,14 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
     );
   }
 
-  if (error) {
+  if (error && !hasCachedData) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={48} color="#EF4444" />
           <Text style={styles.errorTitle}>Unable to Load Fees</Text>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={loadFeeData}>
+          <TouchableOpacity style={styles.retryButton} onPress={refreshData}>
             <Text style={styles.retryButtonText}>Try Again</Text>
           </TouchableOpacity>
         </View>
@@ -160,7 +135,18 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
         </View>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            colors={['#3B82F6']}
+            tintColor="#3B82F6"
+          />
+        }
+      >
         {/* Summary Card */}
         <View style={styles.summaryCard}>
           <Text style={styles.summaryTitle}>Fee Summary</Text>
@@ -173,49 +159,56 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
         {/* Fee Categories */}
         <View style={styles.categoriesSection}>
           <Text style={styles.sectionTitle}>Fee Categories</Text>
-          {categories.map((category) => (
-            <TouchableOpacity
-              key={category.id}
-              style={styles.categoryCard}
-              onPress={() => handleCategoryPress(category)}
-            >
-              <View style={styles.categoryHeader}>
-                <View style={styles.categoryIconContainer}>
-                  <Ionicons 
-                    name={getCategoryIcon(category.name)} 
-                    size={24} 
-                    color="#3B82F6" 
-                  />
-                </View>
-                <View style={styles.categoryInfo}>
-                  <Text style={styles.categoryName}>{category.name}</Text>
-                  <View style={styles.categoryBadges}>
-                    {category.is_mandatory === true && (
-                      <View style={styles.mandatoryBadge}>
-                        <Text style={styles.mandatoryText}>Mandatory</Text>
-                      </View>
-                    )}
-                    {category.supports_recurring === true && (
-                      <View style={styles.recurringBadge}>
-                        <Text style={styles.recurringText}>Recurring</Text>
-                      </View>
-                    )}
-                    {category.supports_one_time === true && (
-                      <View style={styles.oneTimeBadge}>
-                        <Text style={styles.oneTimeText}>One-time</Text>
-                      </View>
-                    )}
+          {categories.length > 0 ? (
+            categories.map((category) => (
+              <TouchableOpacity
+                key={category.id}
+                style={styles.categoryCard}
+                onPress={() => handleCategoryPress(category)}
+              >
+                <View style={styles.categoryHeader}>
+                  <View style={styles.categoryIconContainer}>
+                    <Ionicons 
+                      name={getCategoryIcon(category.name)} 
+                      size={24} 
+                      color="#3B82F6" 
+                    />
+                  </View>
+                  <View style={styles.categoryInfo}>
+                    <Text style={styles.categoryName}>{category.name}</Text>
+                    <View style={styles.categoryBadges}>
+                      {category.is_mandatory === true && (
+                        <View style={styles.mandatoryBadge}>
+                          <Text style={styles.mandatoryText}>Mandatory</Text>
+                        </View>
+                      )}
+                      {category.supports_recurring === true && (
+                        <View style={styles.recurringBadge}>
+                          <Text style={styles.recurringText}>Recurring</Text>
+                        </View>
+                      )}
+                      {category.supports_one_time === true && (
+                        <View style={styles.oneTimeBadge}>
+                          <Text style={styles.oneTimeText}>One-time</Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                  <View style={styles.categoryAmount}>
+                    <Text style={styles.categoryAmountText}>
+                      {formatCurrency(category.amount)}
+                    </Text>
+                    <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
                   </View>
                 </View>
-                <View style={styles.categoryAmount}>
-                  <Text style={styles.categoryAmountText}>
-                    {formatCurrency(category.amount)}
-                  </Text>
-                  <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View style={styles.emptyState}>
+              <Ionicons name="receipt-outline" size={48} color="#9CA3AF" />
+              <Text style={styles.emptyStateText}>No fee categories available</Text>
+            </View>
+          )}
         </View>
 
        
@@ -450,5 +443,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#10B981',
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#9CA3AF',
+    marginTop: 16,
+    textAlign: 'center',
   },
 });

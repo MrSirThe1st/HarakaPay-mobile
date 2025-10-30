@@ -2,6 +2,7 @@
 import { Student } from '../types/student';
 import { supabase } from '../config/supabase';
 import { WEB_API_URL } from '../config/env';
+import type { Session } from '@supabase/supabase-js';
 
 export interface LinkedStudent extends Student {
   school_name?: string;
@@ -16,12 +17,18 @@ export interface StudentMatch extends Student {
 }
 
 // Fetch students linked to the current parent
-export const fetchLinkedStudents = async (): Promise<LinkedStudent[]> => {
+export const fetchLinkedStudents = async (session?: Session | null): Promise<LinkedStudent[]> => {
   try {
     console.log('🔍 fetchLinkedStudents: Starting API call');
-    const { data: { session } } = await supabase.auth.getSession();
     
-    if (!session?.access_token) {
+    // Use passed session or fallback to Supabase
+    let authSession = session;
+    if (!authSession) {
+      const { data: { session: supabaseSession } } = await supabase.auth.getSession();
+      authSession = supabaseSession;
+    }
+    
+    if (!authSession?.access_token) {
       console.log('❌ fetchLinkedStudents: No authentication token available');
       throw new Error('No authentication token available');
     }
@@ -30,7 +37,7 @@ export const fetchLinkedStudents = async (): Promise<LinkedStudent[]> => {
     const response = await fetch(`${WEB_API_URL}/api/parent/linked-students`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${session.access_token}`,
+        'Authorization': `Bearer ${authSession.access_token}`,
         'Content-Type': 'application/json',
       },
     });

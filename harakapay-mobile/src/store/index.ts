@@ -13,19 +13,20 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import authReducer from "./authSlice";
 import studentReducer from "./studentSlice";
+import paymentReducer from "./paymentSlice";
 
 // Root reducer
 const rootReducer = combineReducers({
   auth: authReducer,
   student: studentReducer,
-  // add other reducers here
+  payment: paymentReducer,
 });
 
 // Persist configuration
 const persistConfig = {
   key: "root",
   storage: AsyncStorage,
-  whitelist: ["auth"], // Only persist auth state
+  whitelist: ["auth", "payment"], // Persist auth and payment cache
   blacklist: ["student"], // Don't persist student state (will be refetched)
   debug: true, // Enable debug logging
 };
