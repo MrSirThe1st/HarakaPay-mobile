@@ -50,7 +50,7 @@ export default function ChildDetailsScreen({ navigation, route }: ChildDetailsSc
 
   const handleMakePayment = () => {
     // Navigate directly to Payments screen in the stack and pass params
-    navigation.navigate('Payments', { studentId: student.id });
+    navigation.navigate('Payments', { student: student });
   };
 
   const handleDownloadReceipt = () => {
