@@ -105,8 +105,13 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
   };
 
   const handleMakePayment = () => {
-    // TODO: Implement payment functionality
     console.log('Make payment for plan:', plan.id);
+    // Navigate to PaymentsScreen with student and payment plan data
+    navigation.navigate('Payments', {
+      student: student,
+      paymentPlan: plan,
+      feeAssignment: null // Will be loaded in PaymentsScreen
+    });
   };
 
   const isOverdue = (dueDate: string) => {

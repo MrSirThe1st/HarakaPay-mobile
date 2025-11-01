@@ -32,7 +32,7 @@ interface PaymentScreenProps {
 }
 
 export default function PaymentScreen({ route, navigation }: PaymentScreenProps) {
-  const { student } = route.params;
+  const { student, paymentPlan } = route.params;
   
   // State
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -76,6 +76,43 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
   const loadFeeDetails = async () => {
     try {
       setIsLoading(true);
+
+      // If paymentPlan is passed directly, use it
+      if (paymentPlan) {
+        console.log('Using payment plan from route params:', paymentPlan);
+        
+        // Create a mock fee assignment with the payment plan
+        const mockAssignment = {
+          id: 'mock-assignment',
+          student_id: student.id,
+          payment_plan_id: paymentPlan.id,
+          total_due: paymentPlan.total_amount || 0,
+          paid_amount: 0,
+          status: 'active',
+          payment_plans: paymentPlan
+        };
+        
+        setFeeDetails(mockAssignment);
+        
+        // Set payment type based on plan
+        const planType = paymentPlan.type;
+        if (planType === 'one_time') {
+          setPaymentType('one_time');
+          setAmount(paymentPlan.total_amount?.toString() || '0');
+        } else if (planType === 'monthly') {
+          setPaymentType('monthly');
+        } else {
+          setPaymentType('installment');
+          if (paymentPlan.installments && paymentPlan.installments.length > 0) {
+            const currentInstallment = paymentPlan.installments[0];
+            setCurrentInstallment(currentInstallment);
+            setAmount(currentInstallment.amount?.toString() || '0');
+          }
+        }
+        
+        setIsLoading(false);
+        return;
+      }
 
       // Get current academic year
       const { data: academicYear } = await supabase
@@ -228,7 +265,7 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
             studentId: student.id,
             amount: paymentAmount,
             phoneNumber: formattedPhone,
-            paymentPlanId: feeDetails.payment_plan_id,
+            paymentPlanId: feeDetails.payment_plan_id || paymentPlan?.id,
             installmentNumber: currentInstallment?.installment_number || 1,
             paymentType: paymentType,
             selectedMonth: selectedMonth,
