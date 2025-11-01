@@ -253,6 +253,17 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
       }
 
       // Call your Next.js API endpoint
+      console.log('💳 Making API call to:', `${process.env.EXPO_PUBLIC_API_URL}/api/payments/initiate`);
+      console.log('💳 Request payload:', {
+        studentId: student.id,
+        amount: paymentAmount,
+        phoneNumber: formattedPhone,
+        paymentPlanId: feeDetails.payment_plan_id || paymentPlan?.id,
+        installmentNumber: currentInstallment?.installment_number || 1,
+        paymentType: paymentType,
+        selectedMonth: selectedMonth,
+      });
+      
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/payments/initiate`,
         {
@@ -273,7 +284,20 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
         }
       );
 
-      const data = await response.json();
+      console.log('💳 Response status:', response.status);
+      console.log('💳 Response headers:', response.headers);
+      
+      const responseText = await response.text();
+      console.log('💳 Raw response:', responseText);
+      
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('💳 JSON Parse Error:', parseError);
+        console.error('💳 Response was:', responseText);
+        throw new Error(`Server returned invalid response: ${responseText.substring(0, 200)}...`);
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Payment initiation failed');
