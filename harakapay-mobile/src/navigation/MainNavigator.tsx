@@ -12,6 +12,7 @@ import PaymentPlansScreen from '../screens/parent/PaymentPlansScreen';
 import PaymentPlanDetailsScreen from '../screens/parent/PaymentPlanDetailsScreen';
 import PaymentsScreen from '../screens/parent/PaymentsScreen';
 import PaymentScheduleScreen from '../screens/parent/PaymentScheduleScreen';
+import PaymentStatusScreen from '../screens/parent/PaymentStatusScreen';
 
 const Stack = createStackNavigator();
 
@@ -28,6 +29,7 @@ const MainNavigator = () => (
     <Stack.Screen name="PaymentPlanDetails" component={PaymentPlanDetailsScreen} options={{ title: 'Payment Plan Details' }} />
     <Stack.Screen name="Payments" component={PaymentsScreen} options={{ title: 'Payments' }} />
     <Stack.Screen name="PaymentSchedule" component={PaymentScheduleScreen} options={{ title: 'Payment Options' }} />
+    <Stack.Screen name="PaymentStatus" component={PaymentStatusScreen} options={{ title: 'Payment Status' }} />
   </Stack.Navigator>
 );
 

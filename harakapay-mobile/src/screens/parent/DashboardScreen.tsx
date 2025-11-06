@@ -72,7 +72,7 @@ const HomeScreen: React.FC<{ navigation?: any }> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={{ paddingBottom: 90 }} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
           <View>
@@ -117,7 +117,7 @@ const HomeScreen: React.FC<{ navigation?: any }> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+     backgroundColor: '#FFFFFF',
   },
   loadingContainer: {
     flex: 1,
