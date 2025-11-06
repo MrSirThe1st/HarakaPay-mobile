@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinkedStudent } from '../../api/studentApi';
+import colors from '../../constants/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -112,29 +113,29 @@ export default function ChildDetailsScreen({ navigation, route }: ChildDetailsSc
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.background, // Very dark blue
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.background,
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#6B7280',
+    color: colors.text.secondary,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.background,
     padding: 20,
   },
   errorText: {
     fontSize: 18,
-    color: '#EF4444',
+    color: colors.error,
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -146,34 +147,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: 'white',
+    backgroundColor: colors.background,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: colors.border,
   },
   backButton: {
     marginRight: 16,
   },
   backButtonText: {
     fontSize: 16,
-    color: '#0080FF',
+    color: colors.blue.light, // Light blue
     fontWeight: '600',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: colors.text.primary, // White
   },
   studentCard: {
-    backgroundColor: 'white',
+    backgroundColor: colors.cardBackground, // Light blue card
     margin: 20,
     padding: 24,
     borderRadius: 16,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 12,
     elevation: 4,
+    borderWidth: 1,
+    borderColor: colors.blue.light, // Light blue border
   },
   photoContainer: {
     marginBottom: 20,
@@ -182,7 +185,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#0080FF',
+    backgroundColor: colors.primary, // Bright blue
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -197,28 +200,29 @@ const styles = StyleSheet.create({
   studentName: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: colors.text.inverse, // Dark text for light card
     marginBottom: 8,
     textAlign: 'center',
   },
   studentDetail: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#4A5568', // Darker gray for light blue background
     marginBottom: 4,
     textAlign: 'center',
   },
   actionsSection: {
     paddingHorizontal: 20,
     marginBottom: 24,
+    paddingTop: 20,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1F2937',
+    color: colors.text.primary, // White
     marginBottom: 16,
   },
   actionButton: {
-    backgroundColor: 'white',
+    backgroundColor: colors.cardBackground, // Light blue card
     flexDirection: 'row',
     alignItems: 'center',
     padding: 20,
@@ -226,15 +230,17 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.blue.lighter, // Sky blue border
   },
   actionIcon: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.blue.pale, // Pale blue background
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -248,16 +254,16 @@ const styles = StyleSheet.create({
   actionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
+    color: colors.text.inverse, // Dark text for light card
     marginBottom: 4,
   },
   actionSubtitle: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#4A5568', // Darker gray
   },
   actionArrow: {
     fontSize: 24,
-    color: '#9CA3AF',
+    color: colors.blue.medium, // Medium blue
     fontWeight: 'bold',
   },
   infoSection: {
@@ -265,14 +271,16 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   infoCard: {
-    backgroundColor: 'white',
+    backgroundColor: colors.cardBackground, // Light blue card
     padding: 20,
     borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.blue.lighter, // Sky blue border
   },
   infoRow: {
     flexDirection: 'row',
@@ -280,16 +288,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: colors.blue.lighter, // Sky blue divider
   },
   infoLabel: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#4A5568', // Darker gray
     fontWeight: '500',
   },
   infoValue: {
     fontSize: 16,
-    color: '#1F2937',
+    color: colors.text.inverse, // Dark text
     fontWeight: '600',
     textAlign: 'right',
     flex: 1,

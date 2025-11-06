@@ -5,7 +5,6 @@ import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import QuickRegisterScreen from '../screens/auth/QuickRegisterScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
-import SplashScreen from '../screens/auth/SplashScreen';
 
 const Stack = createStackNavigator();
 

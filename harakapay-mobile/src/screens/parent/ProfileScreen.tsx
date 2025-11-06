@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../hooks/useAuth';
+import colors from '../../constants/colors';
 
 const ProfileScreen: React.FC = () => {
   const { user, profile, signOut } = useAuth();
@@ -33,7 +34,7 @@ const ProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background, // Very dark blue
   },
   scrollView: {
     flex: 1,

@@ -35,24 +35,25 @@ const TabNavigator = () => {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#3B82F6',
-        tabBarInactiveTintColor: '#6B7280',
+        tabBarActiveTintColor: '#0080FF',
+        tabBarInactiveTintColor: '#87CEEB',
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopWidth: 0,
-          paddingBottom: Math.max(insets.bottom, 8),
-          paddingTop: 8,
-          height: 65 + Math.max(insets.bottom, 8),
-          elevation: 0,
-          shadowOpacity: 0,
+          backgroundColor: '#040A13', // Very dark blue to match background
+          borderTopWidth: 0, // Remove top border
+          borderTopColor: 'transparent', // Ensure no border color
+          paddingBottom: Math.max(insets.bottom, 2),
+          paddingTop: 4,
+          height: 50 + Math.max(insets.bottom, 2),
+          elevation: 0, // Remove shadow on Android
+          shadowOpacity: 0, // Remove shadow on iOS
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '600',
-          marginTop: -2,
+          marginTop: -6,
         },
         tabBarIconStyle: {
-          marginTop: 4,
+          marginTop: 0,
         },
       })}
     >

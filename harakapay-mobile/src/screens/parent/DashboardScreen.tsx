@@ -10,6 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../store';
 import { useAuth } from '../../hooks/useAuth';
@@ -17,6 +18,7 @@ import { fetchLinkedStudentsAsync } from '../../store/studentSlice';
 import { ChildCard } from '../../components/home/ChildCard';
 import { EmptyState } from '../../components/home/EmptyState';
 import { LinkedStudent } from '../../api/studentApi';
+import colors from '../../constants/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -70,9 +72,14 @@ const HomeScreen: React.FC<{ navigation?: any }> = ({ navigation }) => {
     );
   }
 
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={{ paddingBottom: 90 }} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header */}
         <View style={styles.header}>
           <View>
@@ -81,33 +88,31 @@ const HomeScreen: React.FC<{ navigation?: any }> = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Children Carousel */}
-        <View style={styles.carouselSection}>
+        {/* Children List */}
+        <View style={styles.childrenSection}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Your Children</Text>
             <TouchableOpacity
-              style={styles.linkButton}
+              style={styles.linkButtonContainer}
               onPress={handleLinkStudent}
               activeOpacity={0.8}
             >
-              <Text style={styles.linkButtonText}>+ Link Child</Text>
+              <View style={styles.linkButton}>
+                <Ionicons name="add" size={32} color="white" />
+              </View>
+              <Text style={styles.linkButtonLabel}>Add Child</Text>
             </TouchableOpacity>
           </View>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.carouselContent}
-            style={styles.carousel}
-          >
-            {linkedStudents.map((student: LinkedStudent) => (
+          <View style={styles.childrenList}>
+            {linkedStudents.map((student: LinkedStudent, index: number) => (
               <ChildCard
                 key={student.id}
                 student={student}
                 onPress={() => handleChildPress(student)}
+                variant={index % 5} // Cycle through variants
               />
             ))}
-          </ScrollView>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -117,21 +122,24 @@ const HomeScreen: React.FC<{ navigation?: any }> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-     backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background, // Very dark blue
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.background,
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#6B7280',
+    color: colors.text.secondary,
   },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 80,
   },
   header: {
     paddingHorizontal: 20,
@@ -139,46 +147,55 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   greeting: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: colors.text.primary, // White text
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: colors.text.secondary, // Light gray-blue
   },
-  carouselSection: {
+  childrenSection: {
     marginBottom: 32,
   },
   sectionHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
-    marginBottom: 16,
+    marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1F2937',
+    color: colors.text.primary, // White text
+  },
+  linkButtonContainer: {
+    alignItems: 'center',
   },
   linkButton: {
-    backgroundColor: '#0080FF',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 12,
+    backgroundColor: colors.primary, // #0080FF
+    width: 64,
+    height: 64,
+    borderRadius: 32, // Half of width/height for perfect circle
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+    marginBottom: 8,
   },
-  linkButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
+  linkButtonLabel: {
+    color: colors.text.secondary,
+    fontSize: 20,
+    fontWeight: '500',
+    textAlign: 'center',
   },
-  carousel: {
-    paddingLeft: 20,
-  },
-  carouselContent: {
-    paddingRight: 20,
+  childrenList: {
+    paddingHorizontal: 20,
   },
 });
 

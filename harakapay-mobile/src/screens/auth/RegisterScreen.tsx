@@ -13,6 +13,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
+import colors from '../../constants/colors';
 
 const { width, height } = Dimensions.get('window');
 
@@ -433,7 +434,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background, // Very dark blue
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -451,18 +452,18 @@ const styles = StyleSheet.create({
   logo: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#0080FF',
+    color: colors.primary, // Bright blue
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#1F2937',
+    color: colors.text.primary, // White
     marginBottom: 8,
   },
   description: {
     fontSize: 16,
-    color: '#6B7280',
+    color: colors.text.secondary, // Light gray-blue
     textAlign: 'center',
     lineHeight: 24,
   },
@@ -485,22 +486,22 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#374151',
+    color: colors.text.primary, // White
     marginBottom: 8,
   },
   input: {
     height: 52,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.blue.dark, // Medium dark blue border
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
-    backgroundColor: '#F9FAFB',
-    color: '#1F2937',
+    backgroundColor: colors.blue.darker, // Dark blue background
+    color: colors.text.primary, // White text
   },
   inputError: {
-    borderColor: '#EF4444',
-    backgroundColor: '#FEF2F2',
+    borderColor: colors.error,
+    backgroundColor: '#2A1A1A', // Dark red background
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -511,13 +512,13 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 52,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.blue.dark,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingRight: 50,
     fontSize: 16,
-    backgroundColor: '#F9FAFB',
-    color: '#1F2937',
+    backgroundColor: colors.blue.darker,
+    color: colors.text.primary,
   },
   eyeButton: {
     position: 'absolute',
@@ -529,7 +530,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 14,
-    color: '#EF4444',
+    color: colors.error,
     marginTop: 4,
   },
   termsContainer: {
@@ -537,24 +538,29 @@ const styles = StyleSheet.create({
   },
   termsText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: colors.text.secondary, // Light gray-blue
     textAlign: 'center',
     lineHeight: 20,
   },
   linkText: {
-    color: '#0080FF',
+    color: colors.blue.light, // Light blue
     fontWeight: '500',
   },
   signUpButton: {
     height: 52,
-    backgroundColor: '#0080FF',
+    backgroundColor: colors.primary, // Bright blue
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   signUpButtonDisabled: {
-    backgroundColor: '#9CA3AF',
+    backgroundColor: colors.blue.medium, // Medium blue when disabled
   },
   signUpButtonText: {
     fontSize: 16,
@@ -562,14 +568,16 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   authErrorContainer: {
-    backgroundColor: '#FEF2F2',
+    backgroundColor: '#2A1A1A', // Dark red background
     borderRadius: 8,
     padding: 12,
     marginTop: 16,
+    borderWidth: 1,
+    borderColor: colors.error,
   },
   authErrorText: {
     fontSize: 14,
-    color: '#EF4444',
+    color: colors.error,
     textAlign: 'center',
   },
   footer: {
@@ -581,11 +589,11 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 16,
-    color: '#6B7280',
+    color: colors.text.secondary, // Light gray-blue
   },
   signInText: {
     fontSize: 16,
-    color: '#0080FF',
+    color: colors.blue.light, // Light blue
     fontWeight: '600',
   },
 });

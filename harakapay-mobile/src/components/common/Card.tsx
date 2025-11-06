@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import colors from '../../constants/colors';
 
 const Card: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <View style={styles.card}>{children}</View>
@@ -7,13 +8,13 @@ const Card: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.cardBackground, // Light blue
     borderRadius: 10,
     padding: 16,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
     marginVertical: 8,
   },
 });

@@ -20,6 +20,7 @@ import {
   deleteNotification,
 } from '../../api/notificationApi';
 import { formatDistanceToNow } from 'date-fns';
+import colors from '../../constants/colors';
 
 const NotificationsScreen: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -300,7 +301,7 @@ const NotificationsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background, // Very dark blue
   },
   loadingContainer: {
     flex: 1,
@@ -311,14 +312,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: colors.border,
   },
   screenTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#111827',
+    color: colors.text.primary, // White text
   },
   listContainer: {
     paddingVertical: 8,
@@ -327,21 +328,21 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   notificationItem: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.cardBackground, // Light blue
     marginHorizontal: 16,
     marginVertical: 4,
     padding: 16,
     borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
   },
   unreadNotification: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: colors.cardBackground,
     borderLeftWidth: 4,
-    borderLeftColor: '#3B82F6',
+    borderLeftColor: colors.primary, // #0080FF
   },
   notificationHeader: {
     flexDirection: 'row',
@@ -374,16 +375,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: colors.text.inverse, // Dark text for light blue card
     marginBottom: 4,
   },
   unreadTitle: {
-    color: '#111827',
+    color: colors.text.inverse,
     fontWeight: '700',
   },
   message: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#4A5568', // Darker gray for light blue background
     lineHeight: 20,
     marginBottom: 8,
   },
@@ -419,13 +420,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#374151',
+    color: colors.text.primary, // White text
     marginTop: 16,
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: colors.text.secondary, // Light gray-blue
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -439,7 +440,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.cardBackground, // Light blue
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '90%',
@@ -457,7 +458,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#111827',
+    color: colors.text.inverse, // Dark text for light blue card
   },
   modalBody: {
     paddingHorizontal: 20,
@@ -478,13 +479,13 @@ const styles = StyleSheet.create({
   modalNotificationTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#111827',
+    color: colors.text.inverse, // Dark text for light blue card
     marginBottom: 16,
     textAlign: 'center',
   },
   modalNotificationMessage: {
     fontSize: 16,
-    color: '#374151',
+    color: '#4A5568', // Darker gray for light blue background
     lineHeight: 24,
     marginBottom: 24,
   },

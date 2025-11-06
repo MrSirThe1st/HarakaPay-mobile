@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  Image,
 } from 'react-native';
+import colors from '../../constants/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -18,108 +20,292 @@ interface ChildCardProps {
     school_name?: string;
   };
   onPress: () => void;
+  variant?: number; // Variant number for different shades (0-4)
 }
 
-export const ChildCard: React.FC<ChildCardProps> = ({ student, onPress }) => {
+// Color schemes for different card variants - more distinct shades
+const cardVariants = [
+  {
+    base: '#1E3A8A', // Medium blue
+    blob1: '#60A5FA', // Light blue
+    blob2: '#2C67A6', // Lighter blue
+  },
+  {
+    base: '#0F4C75', // Deep ocean blue
+    blob1: '#3282B8', // Bright cyan-blue
+    blob2: '#1B5E7A', // Teal-blue
+  },
+  {
+    base: '#1A237E', // Deep indigo
+    blob1: '#5C6BC0', // Periwinkle
+    blob2: '#3949AB', // Indigo
+  },
+  {
+    base: '#004D40', // Deep teal
+    blob1: '#26A69A', // Turquoise
+    blob2: '#00796B', // Teal
+  },
+  {
+    base: '#311B92', // Deep purple-blue
+    blob1: '#7E57C2', // Lavender
+    blob2: '#5E35B1', // Purple
+  },
+];
+
+// Helper function to generate DiceBear avatar URL
+const getAvatarUrl = (student: { id: string; first_name?: string | null; last_name?: string | null }): string => {
+  // Use student name as seed if available, otherwise use student ID
+  const seed = (student.first_name && student.last_name)
+    ? `${student.first_name} ${student.last_name}`
+    : student.id;
+  
+  // Encode the seed to handle special characters
+  const encodedSeed = encodeURIComponent(seed);
+  
+  return `https://api.dicebear.com/7.x/micah/png?seed=${encodedSeed}`;
+};
+
+// Helper function to format grade in Congolese format
+const formatCongoleseGrade = (gradeLevel: string): string => {
+  if (!gradeLevel) return '';
+  
+  // If already in Congolese format (contains superscript), return as is
+  if (gradeLevel.includes('ʳᵉ') || gradeLevel.includes('ᵉ')) {
+    return gradeLevel;
+  }
+  
+  // Map common grade values to Congolese format
+  const gradeMap: Record<string, string> = {
+    'maternelle-1': '1ʳᵉ Maternelle',
+    'maternelle-2': '2ᵉ Maternelle',
+    'maternelle-3': '3ᵉ Maternelle',
+    'primaire-1': '1ʳᵉ Primaire',
+    'primaire-2': '2ᵉ Primaire',
+    'primaire-3': '3ᵉ Primaire',
+    'primaire-4': '4ᵉ Primaire',
+    'primaire-5': '5ᵉ Primaire',
+    'primaire-6': '6ᵉ Primaire',
+    'base-7': '7ᵉ année de l\'Éducation de Base',
+    'base-8': '8ᵉ année de l\'Éducation de Base',
+    'humanites-1': '1ʳᵉ année des Humanités',
+    'humanites-2': '2ᵉ année des Humanités',
+    'humanites-3': '3ᵉ année des Humanités',
+    'humanites-4': '4ᵉ année des Humanités',
+    'licence-1': 'Licence 1 (L1)',
+    'licence-2': 'Licence 2 (L2)',
+    'licence-3': 'Licence 3 (L3)',
+    'master-1': 'Master 1 (M1)',
+    'master-2': 'Master 2 (M2)',
+  };
+  
+  // Check if it's a mapped value
+  if (gradeMap[gradeLevel.toLowerCase()]) {
+    return gradeMap[gradeLevel.toLowerCase()];
+  }
+  
+  // Try to parse numeric grades (legacy format)
+  const numericMatch = gradeLevel.match(/grade-?(\d+)/i);
+  if (numericMatch) {
+    const num = parseInt(numericMatch[1]);
+    if (num <= 6) return `${num}${num === 1 ? 'ʳᵉ' : 'ᵉ'} Primaire`;
+    if (num === 7) return '7ᵉ année de l\'Éducation de Base';
+    if (num === 8) return '8ᵉ année de l\'Éducation de Base';
+    if (num >= 9 && num <= 12) {
+      const humaniteNum = num - 8;
+      return `${humaniteNum}${humaniteNum === 1 ? 'ʳᵉ' : 'ᵉ'} année des Humanités`;
+    }
+  }
+  
+  // Return as is if no match
+  return gradeLevel;
+};
+
+export const ChildCard: React.FC<ChildCardProps> = ({ student, onPress, variant = 0 }) => {
+  const formattedGrade = student.grade_level ? formatCongoleseGrade(student.grade_level) : '';
+  const [imageError, setImageError] = useState(false);
+  const avatarUrl = getAvatarUrl(student);
+  
+  // Get color scheme for this variant (cycle through variants if index exceeds array length)
+  const colorScheme = cardVariants[variant % cardVariants.length];
+  
   return (
     <TouchableOpacity
       style={styles.card}
       onPress={onPress}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
     >
-      {/* Profile Photo Placeholder */}
-      <View style={styles.photoContainer}>
-        <View style={styles.photoPlaceholder}>
-          <Text style={styles.photoText}>
-            {(student.first_name || 'S').charAt(0)}{(student.last_name || 'T').charAt(0)}
-          </Text>
+      {/* Abstract Blue Background */}
+      <View style={styles.backgroundContainer}>
+        {/* Base solid background */}
+        <View style={[styles.baseBackground, { backgroundColor: colorScheme.base }]} />
+        {/* Solid color blob shapes */}
+        <View style={[styles.blob1, { backgroundColor: colorScheme.blob1 }]} />
+        <View style={[styles.blob2, { backgroundColor: colorScheme.blob2 }]} />
+      </View>
+      
+      <View style={styles.cardContent}>
+        {/* Top Section - Name and Avatar */}
+        <View style={styles.topSection}>
+          <View style={styles.nameContainer}>
+            <Text style={styles.studentName} numberOfLines={2} ellipsizeMode="tail">
+              {(student.first_name || 'Unknown') + ' ' + (student.last_name || 'Student')}
+            </Text>
+          </View>
+          <View style={styles.photoPlaceholder}>
+            {!imageError ? (
+              <Image
+                source={{ uri: avatarUrl }}
+                style={styles.avatarImage}
+                onError={() => setImageError(true)}
+                resizeMode="cover"
+              />
+            ) : (
+              <Text style={styles.photoText}>
+                {(student.first_name || 'S').charAt(0)}{(student.last_name || 'T').charAt(0)}
+              </Text>
+            )}
+          </View>
+        </View>
+
+        {/* Bottom Section - Details (like cardholder name and expiry) */}
+        <View style={styles.bottomSection}>
+          <View style={styles.bottomLeft}>
+            {student.school_name && (
+              <Text style={styles.schoolText} numberOfLines={1}>
+                {student.school_name}
+              </Text>
+            )}
+          </View>
+   
         </View>
       </View>
-
-      {/* Student Info */}
-      <View style={styles.infoContainer}>
-        <Text style={styles.studentName}>
-          {student.first_name || 'Unknown'} {student.last_name || 'Student'}
-        </Text>
-        
-        {student.grade_level && (
-          <Text style={styles.gradeText}>Grade {student.grade_level}</Text>
-        )}
-        
-        {student.school_name && (
-          <Text style={styles.schoolText} numberOfLines={2}>
-            {student.school_name}
-          </Text>
-        )}
-      </View>
-
-      {/* Card Accent */}
-      <View style={styles.accentBar} />
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    width: 280,
-    height: 160,
-    backgroundColor: 'white',
-    borderRadius: 16,
-    marginRight: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
-    position: 'relative',
+    width: '100%',
+    height: 200,
+    borderRadius: 32,
+    marginBottom: 16,
     overflow: 'hidden',
+    position: 'relative',
   },
-  photoContainer: {
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  photoPlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#0080FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  photoText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  infoContainer: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  studentName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 4,
-  },
-  gradeText: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 2,
-  },
-  schoolText: {
-    fontSize: 14,
-    color: '#6B7280',
-    lineHeight: 18,
-  },
-  accentBar: {
+  backgroundContainer: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: 4,
-    backgroundColor: '#0080FF',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    bottom: 0,
+    borderRadius: 46,
+    overflow: 'hidden',
+  },
+  baseBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    // backgroundColor will be set dynamically via variant
+  },
+  blob1: {
+    position: 'absolute',
+    top: -10,
+    right: -60,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    // backgroundColor will be set dynamically via variant
+  },
+  blob2: {
+    position: 'absolute',
+    bottom: -45,
+    left: -70,
+    width: 200,
+    height: 210,
+    borderRadius: 100,
+    // backgroundColor will be set dynamically via variant
+  },
+  cardContent: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'space-between',
+    zIndex: 1,
+    position: 'relative',
+  },
+  topSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 24,
+  },
+  nameContainer: {
+    flex: 1,
+    marginRight: 16,
+    justifyContent: 'flex-start',
+  },
+  photoPlaceholder: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 26,
+  },
+  photoText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 1,
+  },
+  studentName: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    lineHeight: 26,
+  },
+  bottomSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+  },
+  bottomLeft: {
+    flex: 1,
+    marginRight: 16,
+  },
+  bottomRight: {
+    alignItems: 'flex-end',
+  },
+  badgeContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  gradeText: {
+    fontSize: 11,
+    color: 'white',
+    fontWeight: '600',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  schoolText: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '500',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
 });

@@ -3,11 +3,12 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { ActivityIndicator, View, Text } from "react-native";
+import { ActivityIndicator, View, Text, StyleSheet } from "react-native";
 import AuthNavigator from "./src/navigation/AuthNavigator";
 import MainNavigator from "./src/navigation/MainNavigator";
 import { store, persistor } from "./src/store";
 import { useAuth } from "./src/hooks/useAuth";
+import colors from "./src/constants/colors";
 
 const RootNavigation = () => {
   const { user, session, initialized } = useAuth();
@@ -23,8 +24,8 @@ const RootNavigation = () => {
   if (!initialized) {
     console.log("⏳ Auth not initialized yet, showing loading...");
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -45,11 +46,9 @@ export default function App() {
       <Provider store={store}>
         <PersistGate
           loading={
-            <View
-              style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-            >
-              <ActivityIndicator size="large" />
-              <Text style={{ marginTop: 16, fontSize: 16, color: "#666" }}>
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={styles.loadingText}>
                 Loading app...
               </Text>
             </View>
@@ -62,3 +61,17 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.background, // Very dark blue
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: colors.text.secondary, // Light gray-blue
+  },
+});

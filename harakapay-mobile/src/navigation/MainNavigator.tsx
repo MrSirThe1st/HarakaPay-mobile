@@ -13,11 +13,22 @@ import PaymentPlanDetailsScreen from '../screens/parent/PaymentPlanDetailsScreen
 import PaymentsScreen from '../screens/parent/PaymentsScreen';
 import PaymentScheduleScreen from '../screens/parent/PaymentScheduleScreen';
 import PaymentStatusScreen from '../screens/parent/PaymentStatusScreen';
+import colors from '../constants/colors';
 
 const Stack = createStackNavigator();
 
 const MainNavigator = () => (
-  <Stack.Navigator>
+  <Stack.Navigator
+    screenOptions={{
+      headerStyle: {
+        backgroundColor: colors.background, // Very dark blue
+      },
+      headerTintColor: colors.text.primary, // White text
+      headerTitleStyle: {
+        fontWeight: '600',
+      },
+    }}
+  >
     <Stack.Screen name="Tabs" component={TabNavigator} options={{ headerShown: false }} />
     <Stack.Screen name="Profile" component={ProfileScreen} />
     <Stack.Screen name="Settings" component={SettingsScreen} />

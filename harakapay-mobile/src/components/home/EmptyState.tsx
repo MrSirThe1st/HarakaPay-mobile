@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import colors from '../../constants/colors';
 
 const { width, height } = Dimensions.get('window');
 
@@ -58,7 +59,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 32,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.background, // Very dark blue
   },
   illustrationContainer: {
     marginBottom: 40,
@@ -67,12 +68,12 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'white',
+    backgroundColor: colors.cardBackground, // Light blue
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 12,
     elevation: 4,
   },
@@ -86,29 +87,29 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: colors.text.primary, // White text
     marginBottom: 16,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 18,
-    color: '#4B5563',
+    color: colors.text.secondary, // Light gray-blue
     textAlign: 'center',
     lineHeight: 26,
     marginBottom: 16,
   },
   description: {
     fontSize: 16,
-    color: '#6B7280',
+    color: colors.text.secondary, // Light gray-blue
     textAlign: 'center',
     lineHeight: 24,
   },
   linkButton: {
-    backgroundColor: '#0080FF',
+    backgroundColor: colors.primary, // #0080FF
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 12,
-    shadowColor: '#0080FF',
+    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
   },
   helpText: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: colors.text.secondary, // Light gray-blue
     textAlign: 'center',
   },
 });
