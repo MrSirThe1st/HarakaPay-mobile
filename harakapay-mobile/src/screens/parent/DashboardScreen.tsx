@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   linkButton: {
-    backgroundColor: colors.primary, // #0080FF
+    backgroundColor: '#2C67A6', // #0080FF
     width: 64,
     height: 64,
     borderRadius: 32, // Half of width/height for perfect circle

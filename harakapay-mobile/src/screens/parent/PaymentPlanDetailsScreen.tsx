@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { PaymentScheduleItem } from '../../api/paymentApi';
+import colors from '../../constants/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -129,12 +130,7 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>{getPlanTitle(plan.schedule_type)}</Text>
-            <Text style={styles.headerSubtitle}>{category.name}</Text>
-          </View>
-        </View>
+
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Plan Summary */}
@@ -260,40 +256,14 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  backButton: {
-    padding: 8,
-    marginRight: 8,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 2,
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
     padding: 16,
   },
   summaryCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#1E3A8A',
     borderRadius: 12,
     padding: 20,
     marginBottom: 24,
@@ -323,16 +293,16 @@ const styles = StyleSheet.create({
   summaryTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1F2937',
+    color: 'white',
     marginBottom: 4,
   },
   summarySubtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#B0C4DE',
   },
   summaryAmounts: {
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: '#2C67A6',
     paddingTop: 16,
   },
   amountRow: {
@@ -343,17 +313,17 @@ const styles = StyleSheet.create({
   },
   totalRow: {
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: '#2C67A6',
     paddingTop: 12,
     marginTop: 8,
   },
   amountLabel: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#B0C4DE',
   },
   amountValue: {
     fontSize: 16,
-    color: '#1F2937',
+    color: 'white',
     fontWeight: '500',
   },
   discountValue: {
@@ -364,12 +334,12 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
+    color: 'white',
   },
   totalValue: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1F2937',
+    color: 'white',
   },
   timelineSection: {
     marginBottom: 24,
@@ -377,11 +347,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
+    color: 'white',
     marginBottom: 16,
   },
   installmentCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#1E3A8A',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -416,13 +386,13 @@ const styles = StyleSheet.create({
   installmentLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1F2937',
+    color: 'white',
     marginBottom: 2,
   },
   installmentAmount: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1F2937',
+    color: 'white',
   },
   installmentStatus: {
     alignItems: 'flex-end',
@@ -476,11 +446,11 @@ const styles = StyleSheet.create({
   },
   dueDateLabel: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#B0C4DE',
   },
   dueDateValue: {
     fontSize: 14,
-    color: '#1F2937',
+    color: 'white',
     fontWeight: '500',
   },
   overdueDate: {

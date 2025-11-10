@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { FeeCategoryItem, PaymentScheduleItem } from '../../api/paymentApi';
 import usePaymentData from '../../hooks/usePaymentData';
+import colors from '../../constants/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -123,18 +124,6 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Text style={styles.studentName}>
-            {student.first_name} {student.last_name}
-          </Text>
-          <Text style={styles.academicYear}>
-            Academic Year 2024-2025
-          </Text>
-        </View>
-      </View>
-
       <ScrollView 
         style={styles.content} 
         showsVerticalScrollIndicator={false}
@@ -220,7 +209,7 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
@@ -262,38 +251,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  backButton: {
-    padding: 8,
-    marginRight: 8,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  studentName: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  academicYear: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 2,
-  },
   content: {
     flex: 1,
     padding: 16,
   },
   summaryCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#1E3A8A',
     borderRadius: 12,
     padding: 24,
     alignItems: 'center',
@@ -306,18 +269,18 @@ const styles = StyleSheet.create({
   },
   summaryTitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: 'white',
     marginBottom: 8,
   },
   totalAmount: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#1F2937',
+    color: 'white',
     marginBottom: 4,
   },
   totalLabel: {
     fontSize: 14,
-    color: '#6B7280',
+    color: 'white',
   },
   categoriesSection: {
     marginBottom: 24,
@@ -325,15 +288,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
+    color: 'white',
     marginBottom: 16,
   },
   categoryCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#1E3A8A',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -347,7 +309,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#EBF4FF',
+    backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -358,7 +320,7 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1F2937',
+    color: 'white',
     marginBottom: 4,
   },
   categoryBadges: {
@@ -366,36 +328,36 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   mandatoryBadge: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: '#2C67A6',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
   },
   mandatoryText: {
     fontSize: 12,
-    color: '#D97706',
+    color: 'white',
     fontWeight: '500',
   },
   recurringBadge: {
-    backgroundColor: '#DBEAFE',
+    backgroundColor: '#2C67A6',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
   },
   recurringText: {
     fontSize: 12,
-    color: '#2563EB',
+    color: 'white',
     fontWeight: '500',
   },
   oneTimeBadge: {
-    backgroundColor: '#F3E8FF',
+    backgroundColor: '#2C67A6',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
   },
   oneTimeText: {
     fontSize: 12,
-    color: '#7C3AED',
+    color: 'white',
     fontWeight: '500',
   },
   categoryAmount: {
@@ -404,7 +366,7 @@ const styles = StyleSheet.create({
   categoryAmountText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
+    color: 'white',
     marginBottom: 4,
   },
   paymentPlansSection: {

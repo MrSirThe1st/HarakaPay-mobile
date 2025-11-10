@@ -22,11 +22,14 @@ const MainNavigator = () => (
     screenOptions={{
       headerStyle: {
         backgroundColor: colors.background, // Very dark blue
+        height: 80,
       },
       headerTintColor: colors.text.primary, // White text
       headerTitleStyle: {
         fontWeight: '600',
+        fontSize: 18,
       },
+      headerTitleAlign: 'center',
     }}
   >
     <Stack.Screen name="Tabs" component={TabNavigator} options={{ headerShown: false }} />
@@ -35,7 +38,14 @@ const MainNavigator = () => (
     <Stack.Screen name="ConnectChild" component={ConnectChildScreen} options={{ title: 'Connect Your Child' }} />
     <Stack.Screen name="LinkStudent" component={LinkStudentScreen} options={{ title: 'Link Your Child' }} />
     <Stack.Screen name="ChildDetails" component={ChildDetailsScreen} options={{ title: 'Child Details' }} />
-    <Stack.Screen name="FeeDetails" component={FeeDetailsScreen} options={{ title: 'Fee Details' }} />
+    <Stack.Screen
+      name="FeeDetails"
+      component={FeeDetailsScreen}
+      options={{
+        title: 'Fee Details',
+        headerTitleAlign: 'center',
+      }}
+    />
     <Stack.Screen name="PaymentPlans" component={PaymentPlansScreen} options={{ title: 'Payment Plans' }} />
     <Stack.Screen name="PaymentPlanDetails" component={PaymentPlanDetailsScreen} options={{ title: 'Payment Plan Details' }} />
     <Stack.Screen name="Payments" component={PaymentsScreen} options={{ title: 'Payments' }} />

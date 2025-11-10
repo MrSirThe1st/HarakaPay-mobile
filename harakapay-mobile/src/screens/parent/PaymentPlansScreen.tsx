@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { FeeCategoryItem } from '../../api/paymentApi';
 import { supabase } from '../../config/supabase';
 import { WEB_API_URL } from '../../config/env';
+import colors from '../../constants/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -264,14 +265,6 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Payment Plans</Text>
-          <Text style={styles.headerSubtitle}>{category.name}</Text>
-        </View>
-      </View>
-
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Category Summary */}
         <View style={styles.categorySummary}>
@@ -369,7 +362,7 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
@@ -411,38 +404,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  backButton: {
-    padding: 8,
-    marginRight: 8,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 2,
-  },
   content: {
     flex: 1,
     padding: 16,
   },
   categorySummary: {
-    backgroundColor: 'white',
+    backgroundColor: '#1E3A8A',
     borderRadius: 12,
     padding: 20,
     marginBottom: 24,
@@ -469,13 +436,13 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
+    color: 'white',
     marginBottom: 4,
   },
   categoryAmount: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#3B82F6',
+    color: 'white',
     marginBottom: 8,
   },
   categoryBadges: {
@@ -483,29 +450,29 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   mandatoryBadge: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: '#2C67A6',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
   },
   mandatoryText: {
     fontSize: 12,
-    color: '#D97706',
+    color: 'white',
     fontWeight: '500',
   },
   recurringBadge: {
-    backgroundColor: '#DBEAFE',
+    backgroundColor: '#2C67A6',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
   },
   recurringText: {
     fontSize: 12,
-    color: '#2563EB',
+    color: 'white',
     fontWeight: '500',
   },
   oneTimeBadge: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: '#2C67A6',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -514,7 +481,7 @@ const styles = StyleSheet.create({
   oneTimeText: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#F59E0B',
+    color: 'white',
   },
   plansSection: {
     marginBottom: 24,
@@ -522,11 +489,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
+    color: 'white',
     marginBottom: 16,
   },
   planCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#1E3A8A',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -556,12 +523,12 @@ const styles = StyleSheet.create({
   planTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1F2937',
+    color: 'white',
     marginBottom: 2,
   },
   planDescription: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#B0C4DE',
   },
   planDetails: {
     flexDirection: 'row',
@@ -575,16 +542,16 @@ const styles = StyleSheet.create({
   planAmount: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1F2937',
+    color: 'white',
     marginBottom: 2,
   },
   planSubAmount: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#B0C4DE',
   },
   planDueDate: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#B0C4DE',
     fontWeight: '500',
   },
   discountBadge: {

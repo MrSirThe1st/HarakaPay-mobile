@@ -203,10 +203,6 @@ const NotificationsScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.titleContainer}>
-        <Text style={styles.screenTitle}>Notifications</Text>
-      </View>
-
       <FlatList
         data={notifications}
         renderItem={renderNotificationItem}
@@ -328,7 +324,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   notificationItem: {
-    backgroundColor: colors.cardBackground, // Light blue
+    backgroundColor: '#1E3A8A',
     marginHorizontal: 16,
     marginVertical: 4,
     padding: 16,
@@ -340,7 +336,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   unreadNotification: {
-    backgroundColor: colors.cardBackground,
+    backgroundColor: '#1E3A8A',
     borderLeftWidth: 4,
     borderLeftColor: colors.primary, // #0080FF
   },
@@ -375,16 +371,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text.inverse, // Dark text for light blue card
+    color: 'white',
     marginBottom: 4,
   },
   unreadTitle: {
-    color: colors.text.inverse,
+    color: 'white',
     fontWeight: '700',
   },
   message: {
     fontSize: 14,
-    color: '#4A5568', // Darker gray for light blue background
+    color: '#B0C4DE',
     lineHeight: 20,
     marginBottom: 8,
   },
@@ -403,13 +399,13 @@ const styles = StyleSheet.create({
   },
   studentName: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#B0C4DE',
     marginLeft: 4,
     fontWeight: '500',
   },
   time: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: '#B0C4DE',
   },
   emptyState: {
     flex: 1,

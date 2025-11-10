@@ -3,6 +3,7 @@ import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { fetchStudentFeeCategories, FeeCategoryItem } from '../../api/paymentApi';
+import colors from '../../constants/colors';
 
 type PaymentScheduleRouteParams = {
   studentId?: string;
@@ -140,29 +141,31 @@ const formatDate = (dateString: string): string => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.background,
     paddingHorizontal: 16,
     paddingTop: 16,
   },
   title: {
     fontSize: 22,
     fontWeight: '700',
+    color: 'white',
     marginBottom: 16,
   },
   categoryName: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#111827',
+    color: 'white',
     marginBottom: 8,
   },
   categoryDesc: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#B0C4DE',
     marginBottom: 8,
   },
   amount: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#059669',
+    color: '#10B981',
     marginBottom: 24,
   },
   centered: {
@@ -173,13 +176,13 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 8,
-    color: '#6B7280',
+    color: '#B0C4DE',
   },
   errorText: {
     color: '#EF4444',
   },
   emptyText: {
-    color: '#6B7280',
+    color: '#B0C4DE',
   },
   optionsContainer: {
     flex: 1,
