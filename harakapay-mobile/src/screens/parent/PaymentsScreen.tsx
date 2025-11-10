@@ -13,6 +13,7 @@ import {
   Modal,
 } from 'react-native';
 import { supabase } from '../../config/supabase';
+import { colors } from '../../constants';
 
 interface PaymentScreenProps {
   navigation: any;
@@ -27,12 +28,13 @@ interface PaymentScreenProps {
       };
       feeAssignment?: any;
       paymentPlan?: any;
+      selectedInstallment?: any;
     };
   };
 }
 
 export default function PaymentScreen({ route, navigation }: PaymentScreenProps) {
-  const { student, paymentPlan } = route.params;
+  const { student, paymentPlan, selectedInstallment } = route.params;
   
   // State
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -49,6 +51,20 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
     loadFeeDetails();
     loadParentInfo();
   }, []);
+
+  // Pre-fill amount and installment info when selectedInstallment is passed
+  useEffect(() => {
+    if (selectedInstallment) {
+      console.log('Selected installment:', selectedInstallment);
+      setAmount(selectedInstallment.amount?.toString() || '');
+      setCurrentInstallment(selectedInstallment);
+      setPaymentType('installment');
+      // Set selected month based on installment number if available
+      if (selectedInstallment.installment_number) {
+        setSelectedMonth(selectedInstallment.installment_number);
+      }
+    }
+  }, [selectedInstallment]);
 
   const loadParentInfo = async () => {
     try {
@@ -404,7 +420,7 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#DC2626" />
+          <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.loadingText}>Loading payment details...</Text>
         </View>
       </SafeAreaView>
@@ -413,89 +429,29 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
       
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.backButtonText}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Make Payment</Text>
-        </View>
 
+       
         {/* Student Info Card */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Payment For</Text>
           <Text style={styles.studentName}>
             {student.first_name} {student.last_name}
           </Text>
-          <Text style={styles.studentDetails}>
-            Student ID: {student.student_id}
-          </Text>
+
           <Text style={styles.studentDetails}>
             {student.school_name}
           </Text>
         </View>
 
-        {/* Fee Summary Card */}
-        {feeDetails && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Fee Summary</Text>
-            
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Total Fees:</Text>
-              <Text style={styles.summaryValue}>
-                ${parseFloat(feeDetails.total_due).toFixed(2)}
-              </Text>
-            </View>
-
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Amount Paid:</Text>
-              <Text style={[styles.summaryValue, styles.paidAmount]}>
-                ${parseFloat(feeDetails.paid_amount).toFixed(2)}
-              </Text>
-            </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabelBold}>Balance Due:</Text>
-              <Text style={styles.balanceAmount}>
-                ${calculateBalance().toFixed(2)}
-              </Text>
-            </View>
-
-            {currentInstallment && (
-              <View style={styles.installmentInfo}>
-                <Text style={styles.installmentLabel}>
-                  Current Installment #{currentInstallment.installment_number}
-                </Text>
-                <Text style={styles.installmentAmount}>
-                  ${parseFloat(currentInstallment.amount).toFixed(2)}
-                </Text>
-                <Text style={styles.installmentDue}>
-                  Due: {new Date(currentInstallment.due_date).toLocaleDateString()}
-                </Text>
-              </View>
-            )}
-          </View>
-        )}
+        
 
         {/* Payment Form */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Payment Details</Text>
 
-          {/* Payment Type Indicator */}
-          <View style={styles.paymentTypeInfo}>
-            <Text style={styles.paymentTypeLabel}>
-              Payment Type: {paymentType === 'one_time' ? 'One-Time Payment' : 
-                           paymentType === 'monthly' ? 'Monthly Payment' : 'Installment Payment'}
-            </Text>
-          </View>
 
           {/* Month Selection for Monthly Payments */}
           {paymentType === 'monthly' && (
@@ -541,11 +497,6 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
               keyboardType="decimal-pad"
               editable={paymentType !== 'one_time'}
             />
-            <Text style={styles.inputHint}>
-              {paymentType === 'one_time' ? 'Full payment amount' :
-               paymentType === 'monthly' ? `Monthly amount: $${getMonthlyAmount()}` :
-               `Suggested: $${currentInstallment?.amount || '0.00'}`}
-            </Text>
           </View>
         </View>
 
@@ -553,7 +504,7 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
 
         {/* Payment Method Info */}
         <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>📱 Payment via M-Pesa</Text>
+          <Text style={styles.infoTitle}>Payment via M-Pesa</Text>
           <Text style={styles.infoText}>
             1. Click "Pay Now" below{'\n'}
             2. Check your phone for M-Pesa prompt{'\n'}
@@ -587,7 +538,7 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -600,191 +551,192 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#6B7280',
+    color: colors.text.secondary,
   },
   header: {
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: colors.cardBackground,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: colors.border,
   },
   backButton: {
     marginBottom: 8,
   },
   backButtonText: {
     fontSize: 16,
-    color: '#DC2626',
+    color: colors.primary,
     fontWeight: '600',
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#111827',
+    color: colors.text.primary,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#1E3A8A',
     margin: 16,
     padding: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: 16,
+
   },
   cardTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.text.caption,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 12,
+    letterSpacing: 1,
+    marginBottom: 16,
   },
   studentName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 4,
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.text.primary,
+    marginBottom: 8,
   },
   studentDetails: {
     fontSize: 14,
-    color: '#6B7280',
-    marginTop: 2,
+    color: colors.text.secondary,
+    marginTop: 4,
+    lineHeight: 20,
   },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   summaryLabel: {
     fontSize: 15,
-    color: '#6B7280',
+    color: colors.text.secondary,
+    fontWeight: '500',
   },
   summaryLabelBold: {
     fontSize: 16,
-    color: '#111827',
-    fontWeight: '600',
+    color: colors.text.primary,
+    fontWeight: '700',
   },
   summaryValue: {
-    fontSize: 15,
-    color: '#111827',
-    fontWeight: '500',
+    fontSize: 16,
+    color: colors.text.primary,
+    fontWeight: '600',
   },
   paidAmount: {
-    color: '#10B981',
+    color: colors.success,
+    fontWeight: '700',
   },
   balanceAmount: {
-    fontSize: 20,
-    color: '#DC2626',
-    fontWeight: 'bold',
+    fontSize: 24,
+    color: colors.error,
+    fontWeight: '700',
   },
   divider: {
     height: 1,
-    backgroundColor: '#E5E7EB',
-    marginVertical: 12,
+    backgroundColor: colors.divider,
+    marginVertical: 16,
   },
   installmentInfo: {
-    marginTop: 12,
-    padding: 12,
-    backgroundColor: '#FEF3C7',
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#F59E0B',
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: colors.blue.dark,
+    borderRadius: 12,
   },
   installmentLabel: {
     fontSize: 13,
-    color: '#92400E',
+    color: colors.text.caption,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   installmentAmount: {
-    fontSize: 18,
-    color: '#78350F',
-    fontWeight: 'bold',
+    fontSize: 20,
+    color: colors.text.primary,
+    fontWeight: '700',
+    marginBottom: 4,
   },
   installmentDue: {
-    fontSize: 12,
-    color: '#92400E',
+    fontSize: 13,
+    color: colors.text.secondary,
     marginTop: 2,
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   inputLabel: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
+    color: colors.text.primary,
+    marginBottom: 10,
+    letterSpacing: 0.3,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
-    padding: 14,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: 12,
+    padding: 16,
     fontSize: 16,
-    color: '#111827',
-    backgroundColor: '#fff',
+    color: colors.text.primary,
+    backgroundColor: colors.backgroundSecondary,
   },
   inputHint: {
-    fontSize: 13,
-    color: '#6B7280',
-    marginTop: 4,
+    fontSize: 12,
+    color: colors.text.caption,
+    marginTop: 6,
+    lineHeight: 18,
   },
   infoCard: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: colors.blue.dark,
     margin: 16,
     marginTop: 0,
-    padding: 16,
+    padding: 18,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: colors.border,
   },
   infoTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1E40AF',
-    marginBottom: 8,
+    fontWeight: '700',
+    color: colors.text.primary,
+    marginBottom: 10,
   },
   infoText: {
     fontSize: 14,
-    color: '#1E3A8A',
+    color: colors.text.secondary,
     lineHeight: 22,
   },
   payButton: {
-    backgroundColor: '#DC2626',
+    backgroundColor: colors.primary,
     margin: 16,
     marginTop: 8,
-    padding: 18,
-    borderRadius: 12,
+    padding: 20,
+    borderRadius: 14,
     alignItems: 'center',
-    shadowColor: '#DC2626',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    elevation: 8,
   },
   payButtonDisabled: {
-    backgroundColor: '#9CA3AF',
+    backgroundColor: colors.text.disabled,
     shadowOpacity: 0,
   },
   payButtonText: {
-    color: '#fff',
+    color: colors.text.primary,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   bottomPadding: {
-    height: 24,
+    height: 32,
   },
   paymentTypeInfo: {
-    backgroundColor: '#F3F4F6',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
+    backgroundColor: colors.blue.dark,
+    padding: 14,
+    borderRadius: 10,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   paymentTypeLabel: {
     fontSize: 14,
-    color: '#374151',
+    color: colors.text.primary,
     fontWeight: '600',
   },
   monthSelector: {
@@ -792,34 +744,40 @@ const styles = StyleSheet.create({
   },
   monthSelectorText: {
     fontSize: 16,
-    color: '#111827',
+    color: colors.text.primary,
+    fontWeight: '500',
   },
   placeholderText: {
-    color: '#9CA3AF',
+    color: colors.text.caption,
   },
   inputReadonly: {
-    backgroundColor: '#F9FAFB',
-    color: '#6B7280',
+    backgroundColor: colors.backgroundSecondary,
+    color: colors.text.secondary,
+    borderColor: colors.border,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'flex-end',
   },
   monthPicker: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: colors.cardBackground,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     maxHeight: '70%',
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: colors.border,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text.primary,
     textAlign: 'center',
-    padding: 20,
+    padding: 24,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: colors.divider,
   },
   monthList: {
     maxHeight: 300,
@@ -828,28 +786,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    padding: 18,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: colors.divider,
   },
   monthText: {
     fontSize: 16,
-    color: '#111827',
-    fontWeight: '500',
+    color: colors.text.primary,
+    fontWeight: '600',
   },
   monthAmount: {
     fontSize: 16,
-    color: '#DC2626',
-    fontWeight: 'bold',
+    color: colors.primary,
+    fontWeight: '700',
   },
   modalCloseButton: {
-    backgroundColor: '#F3F4F6',
-    padding: 16,
+    backgroundColor: colors.backgroundSecondary,
+    padding: 18,
     alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: colors.divider,
   },
   modalCloseText: {
     fontSize: 16,
-    color: '#6B7280',
+    color: colors.text.secondary,
     fontWeight: '600',
   },
 });

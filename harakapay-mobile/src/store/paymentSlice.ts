@@ -97,8 +97,18 @@ export const fetchStudentFeeData = createAsyncThunk(
       
       // Find the specific student's data
       const studentData = data.student_fees?.find((s: any) => s?.student?.id === studentId);
+      
+      // If no student data found, return empty data structure instead of throwing error
       if (!studentData) {
-        throw new Error('No fee data found for this student');
+        console.log('ℹ️ No fee data found for student:', studentId, '- returning empty data');
+        const emptyResult: StudentFeeData = {
+          studentId,
+          categories: [],
+          paymentPlans: [],
+          feeStructure: null,
+          lastUpdated: now,
+        };
+        return emptyResult;
       }
 
       // Transform the data

@@ -132,20 +132,35 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
       if (studentData?.fee_template?.id === feeStructure.id) {
         // Get payment plans assigned to this specific student
         // This shows only the payment plans that concern this student
-        const studentPaymentPlans = studentData.payment_schedules?.map((schedule: any) => ({
+        const allPaymentPlans = studentData.payment_schedules?.map((schedule: any) => ({
           id: schedule.id,
           type: schedule.schedule_type, // This comes from payment_plans.type column
           discount_percentage: schedule.discount_percentage || 0,
           currency: 'USD', // Default currency
           installments: schedule.installments || [],
+          fee_category_id: schedule.fee_category_id || null, // New: link to fee category
           is_active: true,
           created_at: new Date().toISOString()
         })) || [];
-        
-        console.log('Payment plans assigned to this student:', studentPaymentPlans);
-        console.log('First payment plan installments:', studentPaymentPlans[0]?.installments);
-        console.log('First installment structure:', studentPaymentPlans[0]?.installments?.[0]);
-        setPaymentPlans(studentPaymentPlans);
+
+        console.log('🔍 All payment plans:', allPaymentPlans.length);
+        console.log('🎯 Category ID:', category.id);
+        console.log('📦 Category:', category.name, category.category_type);
+
+        // Filter payment plans by fee_category_id
+        const categoryPaymentPlans = allPaymentPlans.filter((plan: any) => {
+          const matches = plan.fee_category_id === category.id;
+          console.log(`  Plan ${plan.type}: category_id=${plan.fee_category_id}, matches=${matches}`);
+          return matches;
+        });
+
+        console.log('✅ Filtered payment plans for category:', categoryPaymentPlans.length);
+
+        if (categoryPaymentPlans.length === 0) {
+          console.warn('⚠️ No payment plans found matching this category. Showing empty state.');
+        }
+
+        setPaymentPlans(categoryPaymentPlans);
       } else {
         throw new Error('No payment plans found for this fee structure');
       }
@@ -340,7 +355,8 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
           ) : (
             <View style={styles.emptyState}>
               <Ionicons name="calendar-outline" size={48} color="#9CA3AF" />
-              <Text style={styles.emptyStateText}>No payment plans available</Text>
+              <Text style={styles.emptyStateText}>No payment plans available for this fee</Text>
+              <Text style={styles.emptyStateSubtext}>Payment plans for this specific fee category haven't been set up yet.</Text>
             </View>
           )}
         </View>
@@ -595,5 +611,13 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     marginTop: 16,
     textAlign: 'center',
+    fontWeight: '600',
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginTop: 8,
+    textAlign: 'center',
+    paddingHorizontal: 32,
   },
 });

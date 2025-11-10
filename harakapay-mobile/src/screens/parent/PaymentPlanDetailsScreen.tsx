@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +14,8 @@ import { PaymentScheduleItem } from '../../api/paymentApi';
 import colors from '../../constants/colors';
 
 const { width } = Dimensions.get('window');
+const CARD_WIDTH = width * 0.7; // 70% of screen width - narrower cards
+const CARD_SPACING = 16;
 
 interface PaymentPlan {
   id: string;
@@ -49,6 +52,8 @@ interface PaymentPlanDetailsScreenProps {
 
 export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentPlanDetailsScreenProps) {
   const { plan, category, student } = route.params || {};
+  const flatListRef = useRef<FlatList>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // Safety check - if params are missing, go back
   if (!plan || !category || !student) {
@@ -105,12 +110,13 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
     return 0;
   };
 
-  const handleMakePayment = () => {
-    console.log('Make payment for plan:', plan.id);
-    // Navigate to PaymentsScreen with student and payment plan data
+  const handleMakePayment = (installment?: any) => {
+    console.log('Make payment for plan:', plan.id, 'installment:', installment);
+    // Navigate to PaymentsScreen with student, payment plan, and selected installment data
     navigation.navigate('Payments', {
       student: student,
       paymentPlan: plan,
+      selectedInstallment: installment || null, // Pass the selected installment
       feeAssignment: null // Will be loaded in PaymentsScreen
     });
   };
@@ -125,6 +131,118 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
     const diffTime = due.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays <= 7 && diffDays >= 0;
+  };
+
+  // Find the current installment index (closest to today, not overdue)
+  const getCurrentInstallmentIndex = () => {
+    if (!plan.installments || plan.installments.length === 0) return 0;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Find the first installment that is not overdue
+    let currentIndex = 0;
+    for (let i = 0; i < plan.installments.length; i++) {
+      const dueDate = new Date(plan.installments[i].due_date);
+      dueDate.setHours(0, 0, 0, 0);
+      
+      if (dueDate >= today) {
+        currentIndex = i;
+        break;
+      }
+      currentIndex = i; // Keep track of the last one if all are overdue
+    }
+    
+    return currentIndex;
+  };
+
+  // Scroll to current installment on mount - center it in the screen
+  useEffect(() => {
+    if (plan.installments && plan.installments.length > 0) {
+      const index = getCurrentInstallmentIndex();
+      setCurrentIndex(index);
+
+      // Delay scroll to ensure layout is complete
+      setTimeout(() => {
+        // Calculate the correct offset to center the card
+        const offset = index * (CARD_WIDTH + CARD_SPACING);
+        flatListRef.current?.scrollToOffset({
+          offset: offset,
+          animated: true,
+        });
+      }, 300);
+    }
+  }, [plan.installments]);
+
+  // Calculate snap offsets for perfect centering
+  const getSnapOffsets = () => {
+    if (!plan.installments) return [];
+    return plan.installments.map((_, index) => {
+      return index * (CARD_WIDTH + CARD_SPACING);
+    });
+  };
+
+  const renderInstallmentCard = ({ item, index }: { item: any; index: number }) => {
+    const isCurrent = index === currentIndex;
+
+    return (
+      <TouchableOpacity
+        style={[styles.carouselCard, isCurrent && styles.carouselCardActive]}
+        onPress={() => handleMakePayment(item)}
+        activeOpacity={0.8}
+      >
+        <View style={styles.carouselCardContent}>
+
+
+          {/* Month/Label - Most Prominent */}
+          <Text style={[styles.carouselInstallmentLabel, isCurrent && styles.carouselInstallmentLabelActive]}>
+            {item.name}
+          </Text>
+
+          {/* Amount - Second Most Prominent */}
+          <Text style={[styles.carouselInstallmentAmount, isCurrent && styles.carouselInstallmentAmountActive]}>
+            {formatCurrency(item.amount)}
+          </Text>
+
+          {/* Status Badge */}
+          <View style={styles.carouselStatusContainer}>
+            {isOverdue(item.due_date) ? (
+              <View style={styles.carouselOverdueBadge}>
+                <Ionicons name="warning" size={14} color="#FCA5A5" />
+                <Text style={styles.carouselOverdueText}>Overdue</Text>
+              </View>
+            ) : isUpcoming(item.due_date) ? (
+              <View style={styles.carouselUpcomingBadge}>
+                <Ionicons name="time" size={14} color="#FCD34D" />
+                <Text style={styles.carouselUpcomingText}>Due Soon</Text>
+              </View>
+            ) : (
+              <View style={styles.carouselPendingBadge}>
+                <Ionicons name="checkmark-circle" size={14} color="#6EE7B7" />
+                <Text style={styles.carouselPendingText}>Pending</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Due Date */}
+          <View style={styles.carouselDueDateContainer}>
+            <Ionicons name="calendar-outline" size={14} color={isCurrent ? '#93C5FD' : '#64748B'} style={styles.carouselCalendarIcon} />
+            <View>
+              <Text style={[styles.carouselDueDateLabel, isCurrent && styles.carouselDueDateLabelActive]}>
+                Due Date
+              </Text>
+              <Text style={[
+                styles.carouselDueDateValue,
+                isCurrent && styles.carouselDueDateValueActive,
+                isOverdue(item.due_date) ? styles.carouselOverdueDate : null
+              ]}>
+                {formatDate(item.due_date)}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
   };
 
   return (
@@ -167,73 +285,52 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
           </View>
         </View>
 
-        {/* Installment Timeline */}
+        {/* Installment Timeline - Horizontal Carousel */}
         <View style={styles.timelineSection}>
           <Text style={styles.sectionTitle}>Payment Schedule</Text>
           {plan.installments && plan.installments.length > 0 ? (
-            plan.installments.map((installment, index) => (
-            <View key={installment.installment_number} style={styles.installmentCard}>
-              <View style={styles.installmentHeader}>
-                <View style={styles.installmentNumber}>
-                  <Text style={styles.installmentNumberText}>
-                    {installment.installment_number}
-                  </Text>
-                </View>
-                <View style={styles.installmentInfo}>
-                  <Text style={styles.installmentLabel}>{installment.name}</Text>
-                  <Text style={styles.installmentAmount}>
-                    {formatCurrency(installment.amount)}
-                  </Text>
-                </View>
-                <View style={styles.installmentStatus}>
-                  {isOverdue(installment.due_date) ? (
-                    <View style={styles.overdueBadge}>
-                      <Ionicons name="warning" size={16} color="#EF4444" />
-                      <Text style={styles.overdueText}>Overdue</Text>
-                    </View>
-                  ) : isUpcoming(installment.due_date) ? (
-                    <View style={styles.upcomingBadge}>
-                      <Ionicons name="time" size={16} color="#F59E0B" />
-                      <Text style={styles.upcomingText}>Due Soon</Text>
-                    </View>
-                  ) : (
-                    <View style={styles.pendingBadge}>
-                      <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                      <Text style={styles.pendingText}>Pending</Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-              <View style={styles.installmentDetails}>
-                <Text style={styles.dueDateLabel}>Due Date:</Text>
-                <Text style={[
-                  styles.dueDateValue,
-                  isOverdue(installment.due_date) ? styles.overdueDate : null
-                ]}>
-                  {formatDate(installment.due_date)}
-                </Text>
-              </View>
+            <View style={styles.carouselContainer}>
+              <FlatList
+                ref={flatListRef}
+                data={plan.installments}
+                renderItem={renderInstallmentCard}
+                keyExtractor={(item) => item.installment_number.toString()}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                snapToOffsets={getSnapOffsets()}
+                decelerationRate="fast"
+                contentContainerStyle={styles.carouselContent}
+                onScrollToIndexFailed={(info) => {
+                  // Handle scroll failure gracefully
+                  const wait = new Promise(resolve => setTimeout(resolve, 500));
+                  wait.then(() => {
+                    flatListRef.current?.scrollToIndex({
+                      index: info.index,
+                      animated: true,
+                    });
+                  });
+                }}
+                onMomentumScrollEnd={(event) => {
+                  const scrollX = event.nativeEvent.contentOffset.x;
+                  const paddingLeft = (width - CARD_WIDTH) / 2;
+                  const adjustedScrollX = scrollX + paddingLeft;
+                  const index = Math.round(adjustedScrollX / (CARD_WIDTH + CARD_SPACING));
+                  const clampedIndex = Math.max(0, Math.min(index, (plan.installments?.length || 1) - 1));
+                  setCurrentIndex(clampedIndex);
+                }}
+                getItemLayout={(_, index) => ({
+                  length: CARD_WIDTH + CARD_SPACING,
+                  offset: (CARD_WIDTH + CARD_SPACING) * index,
+                  index,
+                })}
+              />
             </View>
-            ))
           ) : (
             <View style={styles.emptyState}>
-              <Ionicons name="calendar-outline" size={48} color="#9CA3AF" />
+              <Ionicons name="calendar-outline" size={48} color={colors.text.caption} />
               <Text style={styles.emptyStateText}>No installments available</Text>
             </View>
           )}
-        </View>
-
-        {/* Payment Actions */}
-        <View style={styles.actionsSection}>
-          <TouchableOpacity style={styles.payButton} onPress={handleMakePayment}>
-            <Ionicons name="card" size={20} color="white" />
-            <Text style={styles.payButtonText}>Make Payment</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.scheduleButton}>
-            <Ionicons name="calendar" size={20} color="#3B82F6" />
-            <Text style={styles.scheduleButtonText}>Schedule Payment</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Help Section */}
@@ -241,9 +338,9 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
           <View style={styles.helpCard}>
             <Ionicons name="information-circle" size={20} color="#6B7280" />
             <Text style={styles.helpText}>
-              {plan.schedule_type === 'upfront' 
-                ? 'Pay the full amount by the due date to receive your discount.'
-                : 'Make payments according to the schedule above. Late payments may incur additional fees.'
+              {plan.schedule_type === 'upfront'
+                ? 'Tap the payment card above to pay the full amount by the due date and receive your discount.'
+                : 'Tap any installment card above to make a payment. Make payments according to the schedule. Late payments may incur additional fees.'
               }
             </Text>
           </View>
@@ -350,112 +447,185 @@ const styles = StyleSheet.create({
     color: 'white',
     marginBottom: 16,
   },
-  installmentCard: {
+  carouselContainer: {
+    height: 280,
+    marginHorizontal: -16, // Offset padding to allow full-width cards
+  },
+  carouselContent: {
+    paddingLeft: (width - CARD_WIDTH) / 2, // Center first item
+    paddingRight: (width - CARD_WIDTH) / 2, // Center last item
+    paddingVertical: 12,
+  },
+  carouselCard: {
+    width: CARD_WIDTH,
+    marginRight: CARD_SPACING,
     backgroundColor: '#1E3A8A',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  installmentHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  installmentNumber: {
-    width: 32,
-    height: 32,
     borderRadius: 16,
-    backgroundColor: '#3B82F6',
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+    transform: [{ scale: 0.95 }],
+  },
+  carouselCardActive: {
+    backgroundColor: '#2563EB',
+    borderWidth: 3,
+    borderColor: '#60A5FA',
+    shadowColor: '#3B82F6',
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
+    transform: [{ scale: 1 }],
+  },
+  carouselCardContent: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
   },
-  installmentNumberText: {
-    fontSize: 14,
-    fontWeight: '600',
+  carouselBadgeContainer: {
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  carouselInstallmentNumber: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: 'rgba(59, 130, 246, 0.3)',
+    borderWidth: 1,
+    borderColor: 'rgba(59, 130, 246, 0.5)',
+  },
+  carouselInstallmentNumberActive: {
+    backgroundColor: '#60A5FA',
+    borderColor: '#93C5FD',
+  },
+  carouselInstallmentNumberText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#93C5FD',
+    letterSpacing: 0.5,
+  },
+  carouselInstallmentNumberTextActive: {
     color: 'white',
   },
-  installmentInfo: {
-    flex: 1,
+  carouselInstallmentLabel: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#E0E7FF',
+    marginBottom: 8,
+    letterSpacing: 0.3,
+    textAlign: 'center',
   },
-  installmentLabel: {
-    fontSize: 16,
-    fontWeight: '600',
+  carouselInstallmentLabelActive: {
+    fontSize: 22,
     color: 'white',
+  },
+  carouselInstallmentAmount: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: 'white',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  carouselInstallmentAmountActive: {
+    fontSize: 32,
+    color: '#FEF3C7',
+  },
+  carouselDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    marginVertical: 12,
+  },
+  carouselStatusContainer: {
+    marginBottom: 12,
+  },
+  carouselOverdueBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+  },
+  carouselOverdueText: {
+    fontSize: 11,
+    color: '#FCA5A5',
+    fontWeight: '700',
+    marginLeft: 4,
+    letterSpacing: 0.3,
+  },
+  carouselUpcomingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+  },
+  carouselUpcomingText: {
+    fontSize: 11,
+    color: '#FCD34D',
+    fontWeight: '700',
+    marginLeft: 4,
+    letterSpacing: 0.3,
+  },
+  carouselPendingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+  },
+  carouselPendingText: {
+    fontSize: 11,
+    color: '#6EE7B7',
+    fontWeight: '700',
+    marginLeft: 4,
+    letterSpacing: 0.3,
+  },
+  carouselDueDateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+  },
+  carouselCalendarIcon: {
+    marginRight: 8,
+  },
+  carouselDueDateLabel: {
+    fontSize: 11,
+    color: '#94A3B8',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
     marginBottom: 2,
   },
-  installmentAmount: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: 'white',
+  carouselDueDateLabelActive: {
+    color: '#93C5FD',
   },
-  installmentStatus: {
-    alignItems: 'flex-end',
-  },
-  overdueBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FEE2E2',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  overdueText: {
-    fontSize: 12,
-    color: '#EF4444',
-    fontWeight: '500',
-    marginLeft: 4,
-  },
-  upcomingBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  upcomingText: {
-    fontSize: 12,
-    color: '#F59E0B',
-    fontWeight: '500',
-    marginLeft: 4,
-  },
-  pendingBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ECFDF5',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  pendingText: {
-    fontSize: 12,
-    color: '#10B981',
-    fontWeight: '500',
-    marginLeft: 4,
-  },
-  installmentDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dueDateLabel: {
-    fontSize: 14,
-    color: '#B0C4DE',
-  },
-  dueDateValue: {
-    fontSize: 14,
-    color: 'white',
-    fontWeight: '500',
-  },
-  overdueDate: {
-    color: '#EF4444',
+  carouselDueDateValue: {
+    fontSize: 13,
+    color: '#E2E8F0',
     fontWeight: '600',
+  },
+  carouselDueDateValueActive: {
+    color: 'white',
+    fontSize: 14,
+  },
+  carouselOverdueDate: {
+    color: '#FCA5A5',
+    fontWeight: '700',
   },
   actionsSection: {
     marginBottom: 24,
@@ -514,7 +684,7 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
-    color: '#9CA3AF',
+    color: colors.text.caption,
     marginTop: 16,
     textAlign: 'center',
   },

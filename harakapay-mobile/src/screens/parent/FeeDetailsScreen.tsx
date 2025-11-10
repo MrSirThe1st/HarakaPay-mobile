@@ -107,7 +107,8 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
     );
   }
 
-  if (error && !hasCachedData) {
+  // Only show error screen for actual errors, not for missing data (which shows empty state)
+  if (error && !hasCachedData && !error.includes('No fee data found')) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
@@ -136,18 +137,20 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
           />
         }
       >
-        {/* Summary Card */}
-        <View style={styles.summaryCard}>
-          <Text style={styles.summaryTitle}>Fee Summary</Text>
-          <Text style={styles.totalAmount}>
-            {formatCurrency(getTotalAmount())}
-          </Text>
-          <Text style={styles.totalLabel}>Total Due</Text>
-        </View>
+        {/* Summary Card - Only show when there are categories */}
+        {categories.length > 0 && (
+          <View style={styles.summaryCard}>
+            <Text style={styles.summaryTitle}>Fee Summary</Text>
+            <Text style={styles.totalAmount}>
+              {formatCurrency(getTotalAmount())}
+            </Text>
+            <Text style={styles.totalLabel}>Total Due</Text>
+          </View>
+        )}
 
         {/* Fee Categories */}
         <View style={styles.categoriesSection}>
-          <Text style={styles.sectionTitle}>Fee Categories</Text>
+
           {categories.length > 0 ? (
             categories.map((category) => (
               <TouchableOpacity
@@ -194,8 +197,11 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
             ))
           ) : (
             <View style={styles.emptyState}>
-              <Ionicons name="receipt-outline" size={48} color="#9CA3AF" />
-              <Text style={styles.emptyStateText}>No fee categories available</Text>
+              <Ionicons name="receipt-outline" size={64} color="#9CA3AF" />
+              <Text style={styles.emptyStateTitle}>No Fee Data Available</Text>
+              <Text style={styles.emptyStateText}>
+                Fee information for this student has not been set up yet. Please check back later or contact your school.
+              </Text>
             </View>
           )}
         </View>
@@ -410,11 +416,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 48,
+    paddingHorizontal: 24,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
   },
   emptyStateText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#9CA3AF',
-    marginTop: 16,
     textAlign: 'center',
+    lineHeight: 20,
   },
 });
