@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { supabase } from '../../config/supabase';
+import { colors } from '../../constants';
 
 interface RouteParams {
   paymentId: string;
@@ -218,7 +219,7 @@ export default function PaymentStatusScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.background, 
   },
   centerContainer: {
     flex: 1,
@@ -242,16 +243,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   statusCard: {
-    backgroundColor: '#FFFFFF',
-    margin: 16,
+    margin: 8,
     padding: 32,
     borderRadius: 12,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   statusIcon: {
     fontSize: 64,
@@ -262,7 +257,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   detailsCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.cardBackground,
     marginHorizontal: 16,
     marginBottom: 16,
     padding: 20,
@@ -276,7 +271,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#111827',
+    color: 'white',
     marginBottom: 16,
   },
   detailRow: {
@@ -293,7 +288,7 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: 14,
-    color: '#111827',
+    color: 'white',
     fontWeight: '600',
     textAlign: 'right',
     flex: 1,
@@ -301,7 +296,7 @@ const styles = StyleSheet.create({
   },
   valueSmall: {
     fontSize: 12,
-    color: '#111827',
+    color: 'white',
     fontWeight: '600',
     textAlign: 'right',
     flex: 1,
@@ -313,8 +308,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     padding: 20,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#FCD34D',
+
     flexDirection: 'row',
     alignItems: 'center',
   },

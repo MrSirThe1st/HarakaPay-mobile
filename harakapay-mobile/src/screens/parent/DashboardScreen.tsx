@@ -122,7 +122,7 @@ const HomeScreen: React.FC<{ navigation?: any }> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background, // Very dark blue
+    backgroundColor: colors.background, 
   },
   loadingContainer: {
     flex: 1,

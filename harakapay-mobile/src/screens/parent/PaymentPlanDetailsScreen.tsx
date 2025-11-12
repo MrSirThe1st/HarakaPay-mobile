@@ -9,8 +9,11 @@ import {
   FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { PaymentScheduleItem } from '../../api/paymentApi';
+import { WEB_API_URL } from '../../config/env';
+import { supabase } from '../../config/supabase';
 import colors from '../../constants/colors';
 
 const { width } = Dimensions.get('window');
@@ -54,6 +57,10 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
   const { plan, category, student } = route.params || {};
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [paidInstallments, setPaidInstallments] = useState<Set<number>>(new Set());
+  const [paidAmount, setPaidAmount] = useState(0);
+  const [remainingBalance, setRemainingBalance] = useState(0);
+  const [isLoadingPayments, setIsLoadingPayments] = useState(false);
 
   // Safety check - if params are missing, go back
   if (!plan || !category || !student) {
@@ -96,12 +103,76 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
   };
 
   const getTotalAmount = () => {
+    // Calculate total for THIS category only (not the entire fee structure)
     if (plan.schedule_type === 'upfront') {
       return category.amount * (1 - (plan.discount_percentage || 0) / 100);
     } else {
       return plan.installments?.reduce((total, installment) => total + installment.amount, 0) || 0;
     }
   };
+
+  // Fetch paid installments
+  const fetchPaidInstallments = async () => {
+    if (!plan?.id || !student?.id) return;
+    
+    try {
+      setIsLoadingPayments(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        console.warn('No session token available');
+        return;
+      }
+
+      const response = await fetch(
+        `${WEB_API_URL}/api/parent/paid-installments?studentId=${student.id}&paymentPlanId=${plan.id}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        console.error('Failed to fetch paid installments:', response.status);
+        return;
+      }
+
+      const data = await response.json();
+      const paidSet = new Set<number>();
+      
+      if (data.paid_installments && Array.isArray(data.paid_installments)) {
+        data.paid_installments.forEach((paid: any) => {
+          if (paid.installment_number) {
+            paidSet.add(paid.installment_number);
+          }
+        });
+      }
+
+      setPaidInstallments(paidSet);
+      setPaidAmount(data.paid_amount || 0);
+      // Use remaining_balance from API, or calculate if not provided
+      const calculatedRemaining = (data.total_due || getTotalAmount()) - (data.paid_amount || 0);
+      setRemainingBalance(data.remaining_balance !== undefined ? data.remaining_balance : calculatedRemaining);
+    } catch (error) {
+      console.error('Error fetching paid installments:', error);
+    } finally {
+      setIsLoadingPayments(false);
+    }
+  };
+
+  // Fetch paid installments on mount and when screen comes into focus
+  useEffect(() => {
+    fetchPaidInstallments();
+  }, [plan?.id, student?.id]);
+
+  // Refresh when screen comes into focus (after payment)
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchPaidInstallments();
+    }, [plan?.id, student?.id])
+  );
 
   const getSavings = () => {
     if (plan.discount_percentage && plan.discount_percentage > 0) {
@@ -133,32 +204,38 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
     return diffDays <= 7 && diffDays >= 0;
   };
 
-  // Find the current installment index (closest to today, not overdue)
+  // Find the current installment index (closest to today, not overdue, not paid)
   const getCurrentInstallmentIndex = () => {
     if (!plan.installments || plan.installments.length === 0) return 0;
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    // Find the first installment that is not overdue
+    // Find the first unpaid installment that is not overdue
     let currentIndex = 0;
     for (let i = 0; i < plan.installments.length; i++) {
-      const dueDate = new Date(plan.installments[i].due_date);
+      const installment = plan.installments[i];
+      const isPaid = paidInstallments.has(installment.installment_number);
+      
+      if (isPaid) continue; // Skip paid installments
+      
+      const dueDate = new Date(installment.due_date);
       dueDate.setHours(0, 0, 0, 0);
       
       if (dueDate >= today) {
         currentIndex = i;
         break;
       }
-      currentIndex = i; // Keep track of the last one if all are overdue
+      currentIndex = i; // Keep track of the last unpaid one if all are overdue
     }
     
     return currentIndex;
   };
 
   // Scroll to current installment on mount - center it in the screen
+  // Wait for paid installments to load before scrolling
   useEffect(() => {
-    if (plan.installments && plan.installments.length > 0) {
+    if (plan.installments && plan.installments.length > 0 && !isLoadingPayments) {
       const index = getCurrentInstallmentIndex();
       setCurrentIndex(index);
 
@@ -172,7 +249,7 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
         });
       }, 300);
     }
-  }, [plan.installments]);
+  }, [plan.installments, paidInstallments, isLoadingPayments]);
 
   // Calculate snap offsets for perfect centering
   const getSnapOffsets = () => {
@@ -184,12 +261,19 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
 
   const renderInstallmentCard = ({ item, index }: { item: any; index: number }) => {
     const isCurrent = index === currentIndex;
+    const isPaid = paidInstallments.has(item.installment_number);
+    const isDisabled = isPaid;
 
     return (
       <TouchableOpacity
-        style={[styles.carouselCard, isCurrent && styles.carouselCardActive]}
-        onPress={() => handleMakePayment(item)}
-        activeOpacity={0.8}
+        style={[
+          styles.carouselCard, 
+          isCurrent && styles.carouselCardActive,
+          isDisabled && styles.carouselCardPaid
+        ]}
+        onPress={() => !isDisabled && handleMakePayment(item)}
+        activeOpacity={isDisabled ? 1 : 0.8}
+        disabled={isDisabled}
       >
         <View style={styles.carouselCardContent}>
 
@@ -206,7 +290,12 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
 
           {/* Status Badge */}
           <View style={styles.carouselStatusContainer}>
-            {isOverdue(item.due_date) ? (
+            {isPaid ? (
+              <View style={styles.carouselPaidBadge}>
+                <Ionicons name="checkmark-circle" size={14} color="#10B981" />
+                <Text style={styles.carouselPaidText}>Paid</Text>
+              </View>
+            ) : isOverdue(item.due_date) ? (
               <View style={styles.carouselOverdueBadge}>
                 <Ionicons name="warning" size={14} color="#FCA5A5" />
                 <Text style={styles.carouselOverdueText}>Overdue</Text>
@@ -282,6 +371,18 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
               <Text style={styles.totalLabel}>Total Amount:</Text>
               <Text style={styles.totalValue}>{formatCurrency(getTotalAmount())}</Text>
             </View>
+            {paidAmount > 0 && (
+              <>
+                <View style={styles.amountRow}>
+                  <Text style={styles.amountLabel}>Amount Paid:</Text>
+                  <Text style={styles.paidValue}>{formatCurrency(paidAmount)}</Text>
+                </View>
+                <View style={[styles.amountRow, styles.remainingRow]}>
+                  <Text style={styles.remainingLabel}>Remaining Balance:</Text>
+                  <Text style={styles.remainingValue}>{formatCurrency(remainingBalance)}</Text>
+                </View>
+              </>
+            )}
           </View>
         </View>
 
@@ -593,6 +694,49 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginLeft: 4,
     letterSpacing: 0.3,
+  },
+  carouselCardPaid: {
+    opacity: 0.6,
+    backgroundColor: '#1F2937',
+  },
+  carouselPaidBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.4)',
+  },
+  carouselPaidText: {
+    fontSize: 11,
+    color: '#10B981',
+    fontWeight: '700',
+    marginLeft: 4,
+    letterSpacing: 0.3,
+  },
+  paidValue: {
+    fontSize: 16,
+    color: '#10B981',
+    fontWeight: '600',
+  },
+  remainingRow: {
+    borderTopWidth: 1,
+    borderTopColor: '#2C67A6',
+    paddingTop: 12,
+    marginTop: 8,
+  },
+  remainingLabel: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FCD34D',
+  },
+  remainingValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FCD34D',
   },
   carouselDueDateContainer: {
     flexDirection: 'row',

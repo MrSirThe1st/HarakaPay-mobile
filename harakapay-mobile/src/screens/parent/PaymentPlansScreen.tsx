@@ -52,6 +52,7 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
   const [paymentPlans, setPaymentPlans] = useState<PaymentPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [usedPaymentPlanId, setUsedPaymentPlanId] = useState<string | null>(null);
 
   // Safety check for missing params
   if (!category || !student || !feeStructure) {
@@ -84,11 +85,42 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
   useEffect(() => {
     if (feeStructure?.id) {
       loadPaymentPlans();
+      loadUsedPaymentPlan();
     } else {
       setError('Fee structure information is missing');
       setLoading(false);
     }
   }, [feeStructure]);
+
+  // Load which payment plan has been used
+  const loadUsedPaymentPlan = async () => {
+    if (!student?.id || !category?.id) return;
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+
+      const response = await fetch(
+        `${WEB_API_URL}/api/parent/used-payment-plan?studentId=${student.id}&categoryId=${category.id}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.used_payment_plan_id) {
+          setUsedPaymentPlanId(data.used_payment_plan_id);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading used payment plan:', error);
+    }
+  };
 
   const loadPaymentPlans = async () => {
     try {
@@ -173,6 +205,13 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
   };
 
   const handlePlanPress = (plan: PaymentPlan) => {
+    // Check if this plan is disabled
+    const isDisabled = usedPaymentPlanId !== null && usedPaymentPlanId !== plan.id;
+    
+    if (isDisabled) {
+      return; // Don't navigate if disabled
+    }
+
     navigation.navigate('PaymentPlanDetails', {
       plan,
       category,
@@ -288,7 +327,14 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
           </View>
           <View style={styles.categoryDetails}>
                 <Text style={styles.categoryName}>{category.name || 'Unknown Category'}</Text>
-                <Text style={styles.categoryAmount}>{formatCurrency(category.amount || 0)}</Text>
+                <Text style={styles.categoryAmount}>
+                  {formatCurrency(category.remaining_balance !== undefined ? category.remaining_balance : category.amount || 0)}
+                </Text>
+                {category.remaining_balance !== undefined && category.remaining_balance < category.amount && (
+                  <Text style={styles.originalAmountText}>
+                    Original: {formatCurrency(category.amount || 0)}
+                  </Text>
+                )}
             <View style={styles.categoryBadges}>
               {category.is_mandatory === true ? (
                 <View style={styles.mandatoryBadge}>
@@ -313,45 +359,62 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
         <View style={styles.plansSection}>
           <Text style={styles.sectionTitle}>Available Payment Plans</Text>
           {paymentPlans.length > 0 ? (
-            paymentPlans.map((plan) => (
-              <TouchableOpacity
-                key={plan.id}
-                style={styles.planCard}
-                onPress={() => handlePlanPress(plan)}
-              >
-                <View style={styles.planHeader}>
-                  <View style={styles.planIconContainer}>
-                    <Ionicons 
-                      name={getPlanIcon(plan.type)} 
-                      size={24} 
-                      color={plan.type === 'upfront' ? '#10B981' : '#3B82F6'} 
-                    />
-                  </View>
-                  <View style={styles.planInfo}>
-                    <Text style={styles.planTitle}>{getPlanTitle(plan.type || 'unknown')}</Text>
-                    <Text style={styles.planDescription}>{getPlanDescription(plan)}</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-                </View>
-                
-                <View style={styles.planDetails}>
-                  <View style={styles.planAmountContainer}>
-                    <Text style={styles.planAmount}>{getPlanAmount(plan)}</Text>
-                    <Text style={styles.planSubAmount}>{getPlanSubAmount(plan)}</Text>
-                  </View>
-                  <Text style={styles.planDueDate}>{getDueDate(plan)}</Text>
-                </View>
+            paymentPlans.map((plan) => {
+              const isUsed = usedPaymentPlanId === plan.id;
+              const isDisabled = usedPaymentPlanId !== null && usedPaymentPlanId !== plan.id;
 
-                {plan.discount_percentage && plan.discount_percentage > 0 ? (
-                  <View style={styles.discountBadge}>
-                    <Ionicons name="gift" size={16} color="#10B981" />
-                    <Text style={styles.discountText}>
-                      {(plan.discount_percentage || 0)}% discount
-                    </Text>
+              return (
+                <TouchableOpacity
+                  key={plan.id}
+                  style={[
+                    styles.planCard,
+                    isDisabled && styles.planCardDisabled
+                  ]}
+                  onPress={() => handlePlanPress(plan)}
+                  disabled={isDisabled}
+                  activeOpacity={isDisabled ? 1 : 0.7}
+                >
+                  <View style={styles.planHeader}>
+                    <View style={styles.planIconContainer}>
+                      <Ionicons 
+                        name={getPlanIcon(plan.type)} 
+                        size={24} 
+                        color={plan.type === 'upfront' ? '#10B981' : '#3B82F6'} 
+                      />
+                    </View>
+                    <View style={styles.planInfo}>
+                      <Text style={styles.planTitle}>{getPlanTitle(plan.type || 'unknown')}</Text>
+                      <Text style={styles.planDescription}>{getPlanDescription(plan)}</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
                   </View>
-                ) : null}
-              </TouchableOpacity>
-            ))
+                  
+                  <View style={styles.planDetails}>
+                    <View style={styles.planAmountContainer}>
+                      <Text style={styles.planAmount}>{getPlanAmount(plan)}</Text>
+                      <Text style={styles.planSubAmount}>{getPlanSubAmount(plan)}</Text>
+                    </View>
+                    <Text style={styles.planDueDate}>{getDueDate(plan)}</Text>
+                  </View>
+
+                  {plan.discount_percentage && plan.discount_percentage > 0 ? (
+                    <View style={styles.discountBadge}>
+                      <Ionicons name="gift" size={16} color="#10B981" />
+                      <Text style={styles.discountText}>
+                        {(plan.discount_percentage || 0)}% discount
+                      </Text>
+                    </View>
+                  ) : null}
+
+                  {isUsed && (
+                    <View style={styles.usedBadge}>
+                      <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                      <Text style={styles.usedBadgeText}>Currently Using</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })
           ) : (
             <View style={styles.emptyState}>
               <Ionicons name="calendar-outline" size={48} color="#9CA3AF" />
@@ -461,6 +524,12 @@ const styles = StyleSheet.create({
     color: 'white',
     marginBottom: 8,
   },
+  originalAmountText: {
+    fontSize: 14,
+    color: '#B0C4DE',
+    textDecorationLine: 'line-through',
+    marginTop: 2,
+  },
   categoryBadges: {
     flexDirection: 'row',
     gap: 8,
@@ -518,6 +587,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+    position: 'relative',
   },
   planHeader: {
     flexDirection: 'row',
@@ -619,5 +689,50 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
     paddingHorizontal: 32,
+  },
+  planCardDisabled: {
+    opacity: 0.5,
+    backgroundColor: '#1F2937',
+  },
+  usedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginTop: 8,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+  },
+  usedBadgeText: {
+    fontSize: 12,
+    color: '#10B981',
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  disabledOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  disabledText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  disabledSubtext: {
+    fontSize: 12,
+    color: '#E5E7EB',
+    textAlign: 'center',
   },
 });

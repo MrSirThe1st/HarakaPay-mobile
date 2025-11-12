@@ -148,6 +148,17 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
           </View>
         )}
 
+        {/* Payment History Button */}
+        <TouchableOpacity
+          style={styles.historyButton}
+          onPress={() => navigation.navigate('PaymentHistory', { student })}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="time-outline" size={20} color="#3B82F6" />
+          <Text style={styles.historyButtonText}>View Payment History</Text>
+          <Ionicons name="chevron-forward" size={20} color="#3B82F6" />
+        </TouchableOpacity>
+
         {/* Fee Categories */}
         <View style={styles.categoriesSection}>
 
@@ -188,8 +199,13 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
                   </View>
                   <View style={styles.categoryAmount}>
                     <Text style={styles.categoryAmountText}>
-                      {formatCurrency(category.amount)}
+                      {formatCurrency(category.remaining_balance !== undefined ? category.remaining_balance : category.amount)}
                     </Text>
+                    {category.remaining_balance !== undefined && category.remaining_balance < category.amount && (
+                      <Text style={styles.originalAmountText}>
+                        {formatCurrency(category.amount)}
+                      </Text>
+                    )}
                     <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
                   </View>
                 </View>
@@ -375,6 +391,11 @@ const styles = StyleSheet.create({
     color: 'white',
     marginBottom: 4,
   },
+  originalAmountText: {
+    fontSize: 12,
+    color: '#B0C4DE',
+    textDecorationLine: 'line-through',
+  },
   paymentPlansSection: {
     marginBottom: 24,
   },
@@ -431,5 +452,23 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     textAlign: 'center',
     lineHeight: 20,
+  },
+  historyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  historyButtonText: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#3B82F6',
+    marginLeft: 12,
   },
 });

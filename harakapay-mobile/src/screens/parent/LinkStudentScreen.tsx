@@ -7,9 +7,10 @@ import {
   Alert,
   ActivityIndicator,
   StyleSheet,
-  SafeAreaView,
   Modal,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../store';
 import { useAuth } from '../../hooks/useAuth';
@@ -18,8 +19,10 @@ import {
   linkStudentAsync,
   clearError,
   clearSearchResults,
+  fetchLinkedStudentsAsync,
 } from '../../store/studentSlice';
 import { StudentMatch } from '../../api/studentApi';
+import colors from '../../constants/colors';
 
 interface LinkStudentScreenProps {
   navigation: any;
@@ -28,12 +31,21 @@ interface LinkStudentScreenProps {
 export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps) {
   const dispatch = useDispatch<AppDispatch>();
   const { user, profile } = useAuth();
-  const { searchResults, loadingSearch, linkingStudent, error } = useSelector(
+  const { searchResults, linkedStudents, loadingSearch, linkingStudent, error } = useSelector(
     (state: RootState) => state.student
   );
 
   const [selectedStudent, setSelectedStudent] = useState<StudentMatch | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
+
+  // Filter out already linked students
+  const linkedStudentIds = new Set(linkedStudents.map(s => s.id));
+  const availableStudents = searchResults.filter(student => !linkedStudentIds.has(student.id));
+
+  useEffect(() => {
+    // Fetch linked students first to filter them out
+    dispatch(fetchLinkedStudentsAsync());
+  }, [dispatch]);
 
   useEffect(() => {
     // Auto-search when component loads
@@ -115,46 +127,28 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
     navigation.navigate('ConnectChild');
   };
 
-  const getConfidenceColor = (confidence: string) => {
-    switch (confidence) {
-      case 'high':
-        return '#10B981';
-      case 'medium':
-        return '#F59E0B';
-      default:
-        return '#6B7280';
-    }
-  };
 
-  const getConfidenceLabel = (confidence: string) => {
-    switch (confidence) {
-      case 'high':
-        return 'Strong Match';
-      case 'medium':
-        return 'Possible Match';
-      default:
-        return 'Low Match';
-    }
-  };
-
-  const highConfidenceMatches = searchResults.filter(s => s.match_confidence === 'high');
-  const mediumConfidenceMatches = searchResults.filter(s => s.match_confidence === 'medium');
-  const lowConfidenceMatches = searchResults.filter(s => s.match_confidence === 'low');
+  const highConfidenceMatches = availableStudents.filter(s => s.match_confidence === 'high');
+  const mediumConfidenceMatches = availableStudents.filter(s => s.match_confidence === 'medium');
+  const lowConfidenceMatches = availableStudents.filter(s => s.match_confidence === 'low');
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Link Your Child</Text>
-          <Text style={styles.subtitle}>
-            We found potential matches based on your information
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
+
+
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Info Card */}
+        <View style={styles.infoCard}>
+          <Ionicons name="information-circle" size={24} color="#3B82F6" />
+          <Text style={styles.infoText}>
+            We found potential matches based on your information. Students already linked to your account are excluded.
           </Text>
         </View>
 
         {loadingSearch ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#0080FF" />
+            <ActivityIndicator size="large" color="#3B82F6" />
             <Text style={styles.loadingText}>Searching for your children...</Text>
           </View>
         ) : (
@@ -168,8 +162,6 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
                     key={student.id}
                     student={student}
                     onSelect={handleStudentSelect}
-                    confidenceColor={getConfidenceColor(student.match_confidence)}
-                    confidenceLabel={getConfidenceLabel(student.match_confidence)}
                   />
                 ))}
               </View>
@@ -184,8 +176,6 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
                     key={student.id}
                     student={student}
                     onSelect={handleStudentSelect}
-                    confidenceColor={getConfidenceColor(student.match_confidence)}
-                    confidenceLabel={getConfidenceLabel(student.match_confidence)}
                   />
                 ))}
               </View>
@@ -200,15 +190,13 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
                     key={student.id}
                     student={student}
                     onSelect={handleStudentSelect}
-                    confidenceColor={getConfidenceColor(student.match_confidence)}
-                    confidenceLabel={getConfidenceLabel(student.match_confidence)}
                   />
                 ))}
               </View>
             )}
 
             {/* No Matches */}
-            {searchResults.length === 0 && (
+            {availableStudents.length === 0 && (
               <View style={styles.noMatchesContainer}>
                 <Text style={styles.noMatchesIcon}>🔍</Text>
                 <Text style={styles.noMatchesTitle}>No Automatic Matches Found</Text>
@@ -250,14 +238,6 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
                   Student ID: {selectedStudent.student_id}
                 </Text>
                 
-                <View style={styles.matchReasonsContainer}>
-                  <Text style={styles.matchReasonsTitle}>Match Reasons:</Text>
-                  {selectedStudent.match_reasons.map((reason, index) => (
-                    <Text key={index} style={styles.matchReason}>
-                      • {reason}
-                    </Text>
-                  ))}
-                </View>
               </>
             )}
 
@@ -293,15 +273,11 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
 interface StudentMatchCardProps {
   student: StudentMatch;
   onSelect: (student: StudentMatch) => void;
-  confidenceColor: string;
-  confidenceLabel: string;
 }
 
 const StudentMatchCard: React.FC<StudentMatchCardProps> = ({
   student,
   onSelect,
-  confidenceColor,
-  confidenceLabel,
 }) => {
   return (
     <TouchableOpacity
@@ -309,28 +285,34 @@ const StudentMatchCard: React.FC<StudentMatchCardProps> = ({
       onPress={() => onSelect(student)}
       activeOpacity={0.8}
     >
-      <View style={styles.studentCardHeader}>
+      <View style={styles.studentCardContent}>
+        <View style={styles.studentIconContainer}>
+          <Ionicons name="person" size={32} color="#3B82F6" />
+        </View>
+        
         <View style={styles.studentInfo}>
           <Text style={styles.studentName}>
             {student.first_name} {student.last_name}
           </Text>
-          <Text style={styles.studentDetails}>
-            {student.school_name} - Grade {student.grade_level}
-          </Text>
-          <Text style={styles.studentId}>ID: {student.student_id}</Text>
+          <View style={styles.studentDetailsRow}>
+            <Ionicons name="school" size={16} color="#B0C4DE" />
+            <Text style={styles.studentDetails}>
+              {student.school_name}
+            </Text>
+          </View>
+          <View style={styles.studentDetailsRow}>
+            <Ionicons name="book" size={16} color="#B0C4DE" />
+            <Text style={styles.studentDetails}>
+              Grade {student.grade_level}
+            </Text>
+          </View>
+          <View style={styles.studentDetailsRow}>
+            <Ionicons name="card" size={16} color="#B0C4DE" />
+            <Text style={styles.studentId}>ID: {student.student_id}</Text>
+          </View>
         </View>
         
-        <View style={[styles.confidenceBadge, { backgroundColor: confidenceColor }]}>
-          <Text style={styles.confidenceText}>{confidenceLabel}</Text>
-        </View>
-      </View>
-
-      <View style={styles.matchReasons}>
-        {student.match_reasons.map((reason, index) => (
-          <Text key={index} style={styles.matchReason}>
-            ✓ {reason}
-          </Text>
-        ))}
+        <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
       </View>
     </TouchableOpacity>
   );
@@ -339,25 +321,45 @@ const StudentMatchCard: React.FC<StudentMatchCardProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
+    padding: 16,
   },
   header: {
-    padding: 20,
-    paddingBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#1E3A8A',
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 8,
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  subtitle: {
-    fontSize: 16,
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: 'white',
+  },
+  infoCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    gap: 12,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 14,
     color: '#6B7280',
-    lineHeight: 22,
+    lineHeight: 20,
   },
   loadingContainer: {
     flex: 1,
@@ -368,21 +370,19 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#6B7280',
+    color: '#B0C4DE',
   },
   section: {
     marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
+    color: 'white',
     marginBottom: 12,
-    paddingHorizontal: 20,
   },
   studentCard: {
-    backgroundColor: 'white',
-    marginHorizontal: 20,
+    backgroundColor: '#1E3A8A',
     marginBottom: 12,
     padding: 16,
     borderRadius: 12,
@@ -392,49 +392,41 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  studentCardHeader: {
+  studentCardContent: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
+    alignItems: 'center',
+  },
+  studentIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#2C67A6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
   },
   studentInfo: {
     flex: 1,
   },
   studentName: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 4,
+    fontWeight: '700',
+    color: 'white',
+    marginBottom: 8,
+  },
+  studentDetailsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+    gap: 8,
   },
   studentDetails: {
     fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 2,
+    color: '#B0C4DE',
   },
   studentId: {
-    fontSize: 12,
-    color: '#9CA3AF',
-  },
-  confidenceBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  confidenceText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  matchReasons: {
-    borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
-    paddingTop: 12,
-  },
-  matchReason: {
     fontSize: 14,
-    color: '#10B981',
-    marginBottom: 4,
+    color: '#B0C4DE',
   },
   noMatchesContainer: {
     alignItems: 'center',
@@ -448,19 +440,19 @@ const styles = StyleSheet.create({
   noMatchesTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1F2937',
+    color: 'white',
     marginBottom: 8,
     textAlign: 'center',
   },
   noMatchesSubtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#B0C4DE',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
   },
   manualSearchButton: {
-    backgroundColor: '#0080FF',
+    backgroundColor: '#3B82F6',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -478,7 +470,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: '#1E3A8A',
     borderRadius: 16,
     padding: 24,
     width: '100%',
@@ -487,32 +479,22 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: 'white',
     marginBottom: 16,
     textAlign: 'center',
   },
   modalStudentName: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
+    color: 'white',
     marginBottom: 8,
     textAlign: 'center',
   },
   modalStudentDetails: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#B0C4DE',
     marginBottom: 4,
     textAlign: 'center',
-  },
-  matchReasonsContainer: {
-    marginTop: 16,
-    marginBottom: 24,
-  },
-  matchReasonsTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 8,
   },
   modalButtons: {
     flexDirection: 'row',
@@ -523,17 +505,18 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: '#2C67A6',
     alignItems: 'center',
+    backgroundColor: 'transparent',
   },
   cancelButtonText: {
-    color: '#6B7280',
+    color: '#B0C4DE',
     fontSize: 16,
     fontWeight: '600',
   },
   confirmButton: {
     flex: 1,
-    backgroundColor: '#0080FF',
+    backgroundColor: '#3B82F6',
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',

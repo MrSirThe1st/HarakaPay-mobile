@@ -156,7 +156,7 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
         `)
         .eq('student_id', student.id)
         .eq('academic_year_id', academicYear.id)
-        .eq('status', 'active')
+        .in('status', ['active', 'fully_paid']) // Include active and fully paid (exclude cancelled)
         .single();
 
       if (assignment) {

@@ -11,6 +11,7 @@ export interface FeeCategoryItem {
   name: string;
   description?: string | null;
   amount: number;
+  remaining_balance?: number; // Remaining balance after payments
   is_mandatory?: boolean;
   supports_recurring?: boolean;
   supports_one_time?: boolean;
@@ -56,6 +57,7 @@ export const fetchStudentFeeCategories = async (studentId: string): Promise<FeeC
     name: String(c.name || ''),
     description: c.description ?? null,
     amount: Number(c.amount || 0),
+    remaining_balance: c.remaining_balance !== undefined ? Number(c.remaining_balance || 0) : Number(c.amount || 0),
     is_mandatory: Boolean(c.is_mandatory),
     supports_recurring: Boolean(c.supports_recurring),
     supports_one_time: Boolean(c.supports_one_time),
