@@ -1,6 +1,8 @@
 // Student slice for Redux
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { fetchLinkedStudents, searchStudents, linkStudent, LinkedStudent, StudentMatch } from '../api/studentApi';
+import { isSessionValid } from '../utils/tokenValidation';
+import { supabase } from '../config/supabase';
 
 interface StudentState {
   linkedStudents: LinkedStudent[];
@@ -26,17 +28,37 @@ export const fetchLinkedStudentsAsync = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       console.log('🚀 fetchLinkedStudentsAsync: Starting thunk');
-      
+
       // Get session from Redux state
       const state = getState() as any;
-      const session = state.auth.session;
-      
+      let session = state.auth.session;
+
       if (!session?.access_token) {
         console.log('❌ fetchLinkedStudentsAsync: No session in Redux state');
         return rejectWithValue('No authentication token available');
       }
-      
-      console.log('✅ fetchLinkedStudentsAsync: Using session from Redux');
+
+      // Validate session is not expired
+      if (!isSessionValid(session)) {
+        console.warn('⚠️ fetchLinkedStudentsAsync: Session expired, attempting refresh...');
+
+        try {
+          const { data, error } = await supabase.auth.refreshSession();
+
+          if (error || !data.session) {
+            console.error('❌ fetchLinkedStudentsAsync: Session refresh failed:', error);
+            return rejectWithValue('Session expired. Please log in again.');
+          }
+
+          console.log('✅ fetchLinkedStudentsAsync: Session refreshed successfully');
+          session = data.session;
+        } catch (refreshError) {
+          console.error('💥 fetchLinkedStudentsAsync: Refresh exception:', refreshError);
+          return rejectWithValue('Session expired. Please log in again.');
+        }
+      }
+
+      console.log('✅ fetchLinkedStudentsAsync: Using valid session from Redux');
       const students = await fetchLinkedStudents(session);
       console.log('✅ fetchLinkedStudentsAsync: Success, students:', students.length);
       return students;

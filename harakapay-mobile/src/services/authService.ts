@@ -1,11 +1,20 @@
 import { store } from "../store";
 import { signOut, signUp } from "../store/authSlice";
 import { supabase } from "../config/supabase";
+import { isSessionValid } from "../utils/tokenValidation";
 
 export class AuthService {
   static getToken(): string | null {
     const state = store.getState();
-    return state.auth.session?.access_token || null;
+    const session = state.auth.session;
+
+    // Validate token expiration before returning
+    if (session && !isSessionValid(session)) {
+      console.warn("⚠️ Token expired, returning null");
+      return null;
+    }
+
+    return session?.access_token || null;
   }
 
   static getUser() {
@@ -20,7 +29,14 @@ export class AuthService {
 
   static isAuthenticated(): boolean {
     const state = store.getState();
-    return !!(state.auth.user && state.auth.session && state.auth.profile);
+    const hasUserAndProfile = !!(state.auth.user && state.auth.session && state.auth.profile);
+
+    // Also check if session is still valid (not expired)
+    if (hasUserAndProfile && state.auth.session) {
+      return isSessionValid(state.auth.session);
+    }
+
+    return false;
   }
 
   static async logout() {

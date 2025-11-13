@@ -17,6 +17,7 @@ import {
 } from "../store/authSlice";
 import { supabase } from "../config/supabase";
 import type { User, Session } from "@supabase/supabase-js";
+import { isSessionValid, shouldRefreshSession, formatExpiryInfo } from "../utils/tokenValidation";
 
 export interface AuthState {
   user: User | null;
@@ -38,21 +39,38 @@ export const useAuth = () => {
   const dispatch = useDispatch<AppDispatch>();
   const authState = useSelector((state: RootState) => state.auth);
   const isProcessingAuthRef = useRef(false);
-  
+
     // Add this effect to set session on Supabase client whenever Redux session/user changes
     useEffect(() => {
-      // Whenever we have a session in Redux, set it on the Supabase client
+      // Whenever we have a session in Redux, validate and set it on the Supabase client
       if (authState.session && authState.user) {
+        // First validate the session is not expired
+        if (!isSessionValid(authState.session)) {
+          console.warn("⚠️ Session in Redux is expired, signing out");
+          dispatch(signOut());
+          return;
+        }
+
         console.log("🔧 Setting session on Supabase client");
+        console.log(`📅 Session ${formatExpiryInfo(authState.session.expires_at)}`);
+
         supabase.auth.setSession(authState.session)
-          .then(() => {
-            console.log("✅ Session set successfully on Supabase client");
+          .then(({ data, error }) => {
+            if (error) {
+              console.error("❌ Failed to set session on Supabase client:", error);
+              console.warn("⚠️ Invalid session detected, signing out");
+              dispatch(signOut());
+            } else {
+              console.log("✅ Session set successfully on Supabase client");
+            }
           })
           .catch((error) => {
-            console.error("❌ Failed to set session on Supabase client:", error);
+            console.error("❌ Exception setting session on Supabase client:", error);
+            console.warn("⚠️ Invalid session detected, signing out");
+            dispatch(signOut());
           });
       }
-    }, [authState.session, authState.user]);
+    }, [authState.session, authState.user, dispatch]);
 
   // Check if Redux persist is still rehydrating
   const isRehydrating = useSelector(
@@ -72,9 +90,57 @@ export const useAuth = () => {
 
       // Check if we already have auth data from Redux persist
       if (authState.user && authState.session) {
+        console.log("📋 Found persisted session, validating...");
+
+        // Validate that the persisted session is not expired
+        if (!isSessionValid(authState.session)) {
+          console.warn("⚠️ Persisted session is expired, attempting refresh...");
+
+          try {
+            // Attempt to refresh the session
+            const { data, error } = await supabase.auth.refreshSession();
+
+            if (error || !data.session) {
+              console.error("❌ Session refresh failed:", error);
+              console.log("🔄 Signing out and showing login screen");
+              dispatch(signOut());
+              dispatch(markAsInitialized());
+              return;
+            }
+
+            console.log("✅ Session refreshed successfully");
+            // Update Redux with refreshed session
+            const profile = await dispatch(fetchProfile(data.user.id)).unwrap();
+            dispatch(
+              updateInitialSession({
+                user: data.user,
+                session: data.session,
+                profile: profile || undefined,
+              })
+            );
+            dispatch(markAsInitialized());
+            return;
+          } catch (refreshError) {
+            console.error("💥 Exception during session refresh:", refreshError);
+            console.log("🔄 Signing out and showing login screen");
+            dispatch(signOut());
+            dispatch(markAsInitialized());
+            return;
+          }
+        }
+
+        // Session is valid, check if it should be refreshed soon
+        if (shouldRefreshSession(authState.session)) {
+          console.log("🔄 Session expires soon, proactively refreshing...");
+          dispatch(refreshSession()).catch((error) => {
+            console.warn("⚠️ Proactive refresh failed:", error);
+          });
+        }
+
         console.log(
-          "✅ Already have auth data from Redux persist, skipping initialization"
+          "✅ Already have valid auth data from Redux persist, skipping initialization"
         );
+        console.log(`📅 Session ${formatExpiryInfo(authState.session.expires_at)}`);
         dispatch(markAsInitialized());
         return;
       }

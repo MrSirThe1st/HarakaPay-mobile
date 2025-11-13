@@ -3,6 +3,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { supabase } from '../config/supabase';
 import { WEB_API_URL } from '../config/env';
 import type { Session } from '@supabase/supabase-js';
+import { isSessionValid } from '../utils/tokenValidation';
 
 export interface FeeCategoryItem {
   id: string;
@@ -77,6 +78,26 @@ export const fetchStudentFeeData = createAsyncThunk(
 
       if (!authSession?.access_token) {
         throw new Error('No authentication token available');
+      }
+
+      // Validate session is not expired
+      if (!isSessionValid(authSession)) {
+        console.warn('⚠️ fetchStudentFeeData: Session expired, attempting refresh...');
+
+        try {
+          const { data, error } = await supabase.auth.refreshSession();
+
+          if (error || !data.session) {
+            console.error('❌ fetchStudentFeeData: Session refresh failed:', error);
+            throw new Error('Session expired. Please log in again.');
+          }
+
+          console.log('✅ fetchStudentFeeData: Session refreshed successfully');
+          authSession = data.session;
+        } catch (refreshError) {
+          console.error('💥 fetchStudentFeeData: Refresh exception:', refreshError);
+          throw new Error('Session expired. Please log in again.');
+        }
       }
 
       // Fetch student fee details
