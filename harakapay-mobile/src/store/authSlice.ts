@@ -173,9 +173,9 @@ export const signUp = createAsyncThunk(
         return thunkAPI.rejectWithValue(error.message);
       }
 
-      if (data.user) {
+      if (data.user && data.session) {
         console.log("✅ User created successfully, creating parent profile...");
-        
+
         // Create parent profile using the manual API approach
         try {
           const profileResult = await createParentProfile({
@@ -190,16 +190,18 @@ export const signUp = createAsyncThunk(
             throw new Error(profileResult.error || 'Failed to create profile');
           }
 
-          console.log("✅ Signup completed successfully with profile");
+          console.log("✅ Signup completed successfully with profile and session");
           return {
             user: data.user,
+            session: data.session,
             profile: profileResult.profile,
           };
         } catch (profileError) {
           console.error("❌ Failed to create parent profile:", profileError);
-          // Return user without profile - they can complete it later
+          // Return user and session without profile - they can complete it later
           return {
             user: data.user,
+            session: data.session,
             profile: null,
           };
         }
@@ -341,9 +343,11 @@ const authSlice = createSlice({
       .addCase(signUp.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
+        state.session = action.payload.session;
         state.profile = action.payload.profile;
         state.error = null;
         state.success = true;
+        state.initialized = true;
       })
       .addCase(signUp.rejected, (state, action) => {
         state.loading = false;

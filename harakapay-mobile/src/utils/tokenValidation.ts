@@ -29,8 +29,10 @@ export function isSessionValid(session: Session | null): boolean {
 
   // Check if session has expires_at field
   if (!session.expires_at) {
-    console.warn("⚠️ Session missing expires_at field");
-    return false;
+    console.warn("⚠️ Session missing expires_at field, assuming valid for now");
+    // Don't reject sessions without expires_at - they might be newly created
+    // The Supabase client will handle their lifecycle
+    return true;
   }
 
   const expired = isTokenExpired(session.expires_at);

@@ -45,32 +45,45 @@ export const useAuth = () => {
       // Whenever we have a session in Redux, validate and set it on the Supabase client
       if (authState.session && authState.user) {
         // First validate the session is not expired
-        if (!isSessionValid(authState.session)) {
+        // Skip validation if loading (auth in progress - signup/signin)
+        if (!authState.loading && !isSessionValid(authState.session)) {
           console.warn("⚠️ Session in Redux is expired, signing out");
           dispatch(signOut());
           return;
         }
 
         console.log("🔧 Setting session on Supabase client");
-        console.log(`📅 Session ${formatExpiryInfo(authState.session.expires_at)}`);
+        if (authState.session.expires_at) {
+          console.log(`📅 Session ${formatExpiryInfo(authState.session.expires_at)}`);
+        }
 
         supabase.auth.setSession(authState.session)
           .then(({ data, error }) => {
             if (error) {
               console.error("❌ Failed to set session on Supabase client:", error);
-              console.warn("⚠️ Invalid session detected, signing out");
-              dispatch(signOut());
+              // Only sign out if not in the middle of auth flow
+              if (!authState.loading) {
+                console.warn("⚠️ Invalid session detected, signing out");
+                dispatch(signOut());
+              } else {
+                console.log("ℹ️ Session set failed but auth is loading, will retry");
+              }
             } else {
               console.log("✅ Session set successfully on Supabase client");
             }
           })
           .catch((error) => {
             console.error("❌ Exception setting session on Supabase client:", error);
-            console.warn("⚠️ Invalid session detected, signing out");
-            dispatch(signOut());
+            // Only sign out if not in the middle of auth flow
+            if (!authState.loading) {
+              console.warn("⚠️ Invalid session detected, signing out");
+              dispatch(signOut());
+            } else {
+              console.log("ℹ️ Session set exception but auth is loading, will retry");
+            }
           });
       }
-    }, [authState.session, authState.user, dispatch]);
+    }, [authState.session, authState.user, authState.loading, dispatch]);
 
   // Check if Redux persist is still rehydrating
   const isRehydrating = useSelector(
