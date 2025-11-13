@@ -12,6 +12,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
+import colors from '../../constants/colors';
 
 interface ForgotPasswordScreenProps {
   navigation: any; // Replace with proper navigation type
@@ -22,7 +23,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation 
   const [emailError, setEmailError] = useState('');
   const [resetSent, setResetSent] = useState(false);
 
-  const { resetPassword, loading } = useAuth();
+  const { forgotPassword, loading } = useAuth();
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -44,7 +45,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation 
     }
 
     try {
-      const result = await resetPassword(email);
+      const result = await forgotPassword(email);
       
       if (result.success) {
         setResetSent(true);
@@ -91,19 +92,11 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation 
         >
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={navigateToLogin}
-              disabled={loading}
-            >
-              <Text style={styles.backButtonText}>← Back</Text>
-            </TouchableOpacity>
+          
             
             <Text style={styles.logo}>HarakaPay</Text>
             <Text style={styles.subtitle}>Reset Password</Text>
-            <Text style={styles.description}>
-              Enter your email address and we'll send you instructions to reset your password
-            </Text>
+            
           </View>
 
           {/* Form */}
@@ -192,7 +185,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background, // Very dark blue
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -214,24 +207,24 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 16,
-    color: '#0080FF',
+    color: colors.primary,
     fontWeight: '500',
   },
   logo: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#0080FF',
+    color: colors.primary, // Bright blue
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#1F2937',
+    color: colors.text.primary, // White
     marginBottom: 8,
   },
   description: {
     fontSize: 16,
-    color: '#6B7280',
+    color: colors.text.secondary, // Light gray-blue
     textAlign: 'center',
     lineHeight: 24,
     paddingHorizontal: 20,
@@ -245,38 +238,43 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#374151',
+    color: colors.text.primary, // White
     marginBottom: 8,
   },
   input: {
     height: 52,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.blue.dark, // Medium dark blue border
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
-    backgroundColor: '#F9FAFB',
-    color: '#1F2937',
+    backgroundColor: colors.blue.darker, // Dark blue background
+    color: colors.text.primary, // White text
   },
   inputError: {
-    borderColor: '#EF4444',
-    backgroundColor: '#FEF2F2',
+    borderColor: colors.error,
+    backgroundColor: '#2A1A1A', // Dark red background
   },
   errorText: {
     fontSize: 14,
-    color: '#EF4444',
+    color: colors.error,
     marginTop: 4,
   },
   resetButton: {
     height: 52,
-    backgroundColor: '#0080FF',
+    backgroundColor: colors.primary, // Bright blue
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 32,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   resetButtonDisabled: {
-    backgroundColor: '#9CA3AF',
+    backgroundColor: colors.blue.medium, // Medium blue when disabled
   },
   resetButtonText: {
     fontSize: 16,
@@ -284,20 +282,22 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   instructionsContainer: {
-    backgroundColor: '#F0F9FF',
+    backgroundColor: colors.blue.darker, // Dark blue background
     borderRadius: 12,
     padding: 20,
     marginBottom: 32,
+    borderWidth: 1,
+    borderColor: colors.blue.dark,
   },
   instructionsTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#0080FF',
+    color: colors.blue.light, // Light blue
     marginBottom: 12,
   },
   instructionsText: {
     fontSize: 14,
-    color: '#374151',
+    color: colors.text.secondary, // Light gray-blue
     lineHeight: 20,
   },
   successContainer: {
@@ -311,23 +311,23 @@ const styles = StyleSheet.create({
   successTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1F2937',
+    color: colors.text.primary, // White
     marginBottom: 12,
   },
   successText: {
     fontSize: 16,
-    color: '#6B7280',
+    color: colors.text.secondary, // Light gray-blue
     textAlign: 'center',
     marginBottom: 16,
     lineHeight: 24,
   },
   emailText: {
     fontWeight: '600',
-    color: '#0080FF',
+    color: colors.primary, // Bright blue
   },
   successSubtext: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: colors.text.caption, // Sky blue
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -340,11 +340,11 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 16,
-    color: '#6B7280',
+    color: colors.text.secondary, // Light gray-blue
   },
   signInText: {
     fontSize: 16,
-    color: '#0080FF',
+    color: colors.blue.light, // Light blue
     fontWeight: '600',
   },
 });

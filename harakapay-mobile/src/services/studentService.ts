@@ -90,6 +90,43 @@ export const linkStudentsBatch = async (students: StudentToLink[]): Promise<Batc
 
     const token = await getTokenWithRetry();
 
+    // Wait for parent record to be created in the database
+    // This ensures the parent record exists before we try to link students
+    const waitForParentRecord = async (): Promise<void> => {
+      const maxAttempts = 15; // ~3s total at 200ms interval
+      const delayMs = 200;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          const response = await fetch(`${WEB_API_URL}/api/parent/linked-students`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          // If we get a 200, the parent record exists (even if no students are linked)
+          if (response.status === 200) {
+            const data = await response.json();
+            console.log('✅ Parent record confirmed, parent_id:', data.parent_id);
+            return;
+          }
+          
+          // If we get 404, the parent record doesn't exist yet, keep waiting
+          if (response.status === 404) {
+            console.log(`⏳ Waiting for parent record (attempt ${attempt}/${maxAttempts})...`);
+          }
+        } catch (error) {
+          // Continue retrying
+          console.log(`⏳ Waiting for parent record (attempt ${attempt}/${maxAttempts})...`);
+        }
+        await new Promise(res => setTimeout(res, delayMs));
+      }
+      console.log('⚠️ Parent record check timeout, proceeding anyway...');
+    };
+
+    await waitForParentRecord();
+
     // Use server-side batch endpoint to handle lookup and linking atomically
     const response = await fetch(`${WEB_API_URL}/api/parent/link-students-batch`, {
       method: 'POST',

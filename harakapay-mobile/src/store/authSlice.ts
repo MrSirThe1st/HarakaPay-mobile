@@ -232,7 +232,13 @@ export const forgotPassword = createAsyncThunk(
   "auth/forgotPassword",
   async ({ email }: { email: string }, thunkAPI) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      // Use deep link URL for mobile app
+      // This will be handled by the app when the user clicks the link in their email
+      const redirectUrl = 'harakapay://reset-password';
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl,
+      });
 
       if (error) {
         return thunkAPI.rejectWithValue(error.message);
@@ -241,6 +247,26 @@ export const forgotPassword = createAsyncThunk(
       return true;
     } catch (error) {
       return thunkAPI.rejectWithValue("An error occurred during password reset");
+    }
+  }
+);
+
+// Async thunk for updating password (after clicking reset link)
+export const updatePassword = createAsyncThunk(
+  "auth/updatePassword",
+  async ({ newPassword }: { newPassword: string }, thunkAPI) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) {
+        return thunkAPI.rejectWithValue(error.message);
+      }
+
+      return true;
+    } catch (error) {
+      return thunkAPI.rejectWithValue("An error occurred while updating password");
     }
   }
 );

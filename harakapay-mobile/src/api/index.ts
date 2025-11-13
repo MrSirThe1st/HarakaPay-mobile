@@ -5,7 +5,7 @@ export * from "./notificationApi";
 
 // Base API configuration
 export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL || "https://your-api-url.com";
+  process.env.EXPO_PUBLIC_API_URL || "https://harakapayment.com";
 
 // Common API headers
 export const getApiHeaders = () => {

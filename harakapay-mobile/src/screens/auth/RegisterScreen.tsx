@@ -419,12 +419,13 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.footer}>
+          {/* Quick registration temporarily disabled */}
+          {/* <View style={styles.footer}>
             <Text style={styles.footerText}>Vous avez un numéro d'étudiant ? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('QuickRegister')} disabled={loading}>
               <Text style={styles.signInText}>Inscription rapide</Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

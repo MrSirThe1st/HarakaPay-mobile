@@ -12,6 +12,7 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
 import colors from '../../constants/colors';
 
@@ -173,10 +174,13 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   style={styles.eyeButton}
                   onPress={() => setShowPassword(!showPassword)}
                   disabled={loading}
+                  activeOpacity={0.7}
                 >
-                  <Text style={styles.eyeButtonText}>
-                    {showPassword ? '👁️' : '👁️‍🗨️'}
-                  </Text>
+                  <Ionicons
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color={colors.text.secondary}
+                  />
                 </TouchableOpacity>
               </View>
               {passwordError ? (
@@ -310,10 +314,9 @@ const styles = StyleSheet.create({
   eyeButton: {
     position: 'absolute',
     right: 16,
-    padding: 4,
-  },
-  eyeButtonText: {
-    fontSize: 18,
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   errorText: {
     fontSize: 14,

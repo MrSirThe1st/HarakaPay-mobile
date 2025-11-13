@@ -7,6 +7,7 @@ import {
   signUp,
   signOut,
   forgotPassword,
+  updatePassword,
   refreshSession,
   fetchProfile,
   clearError,
@@ -253,6 +254,19 @@ export const useAuth = () => {
     [dispatch]
   );
 
+  const handleUpdatePassword = useCallback(
+    async (newPassword: string): Promise<AuthResponse> => {
+      try {
+        await dispatch(updatePassword({ newPassword })).unwrap();
+        return { success: true, error: null };
+      } catch (error) {
+        const errorMessage = error as string;
+        return { success: false, error: errorMessage };
+      }
+    },
+    [dispatch]
+  );
+
   const handleRefreshProfile = useCallback(async (): Promise<void> => {
     if (authState.user) {
       await dispatch(fetchProfile(authState.user.id));
@@ -273,6 +287,7 @@ export const useAuth = () => {
     signUp: handleSignUp,
     signOut: handleSignOut,
     forgotPassword: handleForgotPassword,
+    updatePassword: handleUpdatePassword,
     refreshProfile: handleRefreshProfile,
     clearError: handleClearError,
     clearSuccess: handleClearSuccess,

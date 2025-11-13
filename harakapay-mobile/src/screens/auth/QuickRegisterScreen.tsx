@@ -13,6 +13,7 @@ import {
   Dimensions,
   ActivityIndicator,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../config/supabase';
 import { lookupStudentByNumber, linkStudentsBatch } from '../../services/studentService';
@@ -20,6 +21,7 @@ import { StudentLookupResult, StudentToLink } from '../../types/student';
 import { useDispatch } from 'react-redux';
 import { addLinkedStudent } from '../../store/studentSlice';
 import { WEB_API_URL } from '../../config/env';
+import colors from '../../constants/colors';
 
 const { width, height } = Dimensions.get('window');
 
@@ -458,7 +460,7 @@ const QuickRegisterScreen: React.FC<QuickRegisterScreenProps> = ({ navigation })
         <TextInput
           style={styles.input}
           placeholder="Entrez le numéro d'étudiant"
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor={colors.text.caption}
           value={studentId}
           onChangeText={setStudentId}
           editable={!verifyingStudent}
@@ -551,7 +553,7 @@ const QuickRegisterScreen: React.FC<QuickRegisterScreenProps> = ({ navigation })
           <TextInput
             style={[styles.passwordInput, passwordError ? styles.inputError : null]}
             placeholder="Créez un mot de passe sécurisé"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.text.caption}
             value={password}
             onChangeText={(text) => {
               setPassword(text);
@@ -568,10 +570,13 @@ const QuickRegisterScreen: React.FC<QuickRegisterScreenProps> = ({ navigation })
             style={styles.eyeButton}
             onPress={() => setShowPassword(!showPassword)}
             disabled={loading}
+            activeOpacity={0.7}
           >
-            <Text style={styles.eyeButtonText}>
-              {showPassword ? '👁️' : '👁️‍🗨️'}
-            </Text>
+            <Ionicons
+              name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+              size={20}
+              color={colors.text.secondary}
+            />
           </TouchableOpacity>
         </View>
         {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
@@ -583,7 +588,7 @@ const QuickRegisterScreen: React.FC<QuickRegisterScreenProps> = ({ navigation })
           <TextInput
             style={[styles.passwordInput, confirmPasswordError ? styles.inputError : null]}
             placeholder="Confirmez votre mot de passe"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.text.caption}
             value={confirmPassword}
             onChangeText={(text) => {
               setConfirmPassword(text);
@@ -597,10 +602,13 @@ const QuickRegisterScreen: React.FC<QuickRegisterScreenProps> = ({ navigation })
             style={styles.eyeButton}
             onPress={() => setShowConfirmPassword(!showConfirmPassword)}
             disabled={loading}
+            activeOpacity={0.7}
           >
-            <Text style={styles.eyeButtonText}>
-              {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
-            </Text>
+            <Ionicons
+              name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+              size={20}
+              color={colors.text.secondary}
+            />
           </TouchableOpacity>
         </View>
         {confirmPasswordError ? <Text style={styles.errorText}>{confirmPasswordError}</Text> : null}
@@ -704,7 +712,7 @@ const QuickRegisterScreen: React.FC<QuickRegisterScreenProps> = ({ navigation })
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background, // Very dark blue
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -722,25 +730,25 @@ const styles = StyleSheet.create({
   logo: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#0080FF',
+    color: colors.primary, // Bright blue
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#1F2937',
+    color: colors.text.primary, // White
     marginBottom: 8,
   },
   description: {
     fontSize: 16,
-    color: '#6B7280',
+    color: colors.text.secondary, // Light gray-blue
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 8,
   },
   stepIndicator: {
     fontSize: 14,
-    color: '#0080FF',
+    color: colors.primary, // Bright blue
     fontWeight: '500',
   },
   form: {
@@ -752,7 +760,7 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1F2937',
+    color: colors.text.primary, // White
     marginBottom: 24,
     textAlign: 'center',
   },
@@ -762,22 +770,22 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#374151',
+    color: colors.text.primary, // White
     marginBottom: 8,
   },
   input: {
     height: 52,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.blue.dark, // Medium dark blue border
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
-    backgroundColor: '#F9FAFB',
-    color: '#1F2937',
+    backgroundColor: colors.blue.darker, // Dark blue background
+    color: colors.text.primary, // White text
   },
   inputError: {
-    borderColor: '#EF4444',
-    backgroundColor: '#FEF2F2',
+    borderColor: colors.error,
+    backgroundColor: '#2A1A1A', // Dark red background
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -788,60 +796,64 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 52,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.blue.dark, // Medium dark blue border
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingRight: 50,
     fontSize: 16,
-    backgroundColor: '#F9FAFB',
-    color: '#1F2937',
+    backgroundColor: colors.blue.darker, // Dark blue background
+    color: colors.text.primary, // White text
   },
   eyeButton: {
     position: 'absolute',
     right: 16,
-    padding: 4,
-  },
-  eyeButtonText: {
-    fontSize: 18,
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   errorText: {
     fontSize: 14,
-    color: '#EF4444',
+    color: colors.error,
     marginTop: 4,
   },
   schoolPicker: {
     maxHeight: 200,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.blue.dark,
     borderRadius: 12,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.blue.darker,
   },
   schoolOption: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: colors.blue.dark,
   },
   schoolOptionSelected: {
-    backgroundColor: '#EBF8FF',
+    backgroundColor: colors.blue.medium,
   },
   schoolOptionText: {
     fontSize: 16,
-    color: '#374151',
+    color: colors.text.primary,
   },
   schoolOptionTextSelected: {
-    color: '#0080FF',
+    color: colors.primary,
     fontWeight: '500',
   },
   verifyButton: {
     height: 52,
-    backgroundColor: '#0080FF',
+    backgroundColor: colors.primary, // Bright blue
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   verifyButtonDisabled: {
-    backgroundColor: '#9CA3AF',
+    backgroundColor: colors.blue.medium,
   },
   verifyButtonText: {
     fontSize: 16,
@@ -849,35 +861,40 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   studentFoundContainer: {
-    backgroundColor: '#F0FDF4',
+    backgroundColor: colors.blue.darker,
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#BBF7D0',
+    borderColor: colors.success,
   },
   studentFoundTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#166534',
+    color: colors.success,
     marginBottom: 8,
   },
   studentFoundText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#166534',
+    color: colors.text.primary,
     marginBottom: 4,
   },
   studentFoundSubtext: {
     fontSize: 14,
-    color: '#166534',
+    color: colors.text.secondary,
     marginBottom: 16,
   },
   addStudentButton: {
-    backgroundColor: '#16A34A',
+    backgroundColor: colors.success,
     borderRadius: 8,
     padding: 12,
     alignItems: 'center',
+    shadowColor: colors.success,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   addStudentButtonText: {
     fontSize: 16,
@@ -890,16 +907,18 @@ const styles = StyleSheet.create({
   addedStudentsTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: colors.text.primary,
     marginBottom: 12,
   },
   addedStudentItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.blue.darker,
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
+    borderWidth: 1,
+    borderColor: colors.blue.dark,
   },
   addedStudentInfo: {
     flex: 1,
@@ -907,15 +926,15 @@ const styles = StyleSheet.create({
   addedStudentName: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#1F2937',
+    color: colors.text.primary,
   },
   addedStudentDetails: {
     fontSize: 14,
-    color: '#6B7280',
+    color: colors.text.secondary,
     marginTop: 2,
   },
   removeStudentButton: {
-    backgroundColor: '#EF4444',
+    backgroundColor: colors.error,
     borderRadius: 16,
     width: 32,
     height: 32,
@@ -929,37 +948,44 @@ const styles = StyleSheet.create({
   },
   reviewSection: {
     marginBottom: 24,
+    backgroundColor: colors.blue.darker,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: colors.blue.dark,
   },
   reviewSectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
+    color: colors.text.primary,
     marginBottom: 12,
   },
   reviewText: {
     fontSize: 16,
-    color: '#374151',
+    color: colors.text.secondary,
     marginBottom: 4,
   },
   reviewStudentItem: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
+    borderWidth: 1,
+    borderColor: colors.blue.dark,
   },
   reviewStudentName: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#1F2937',
+    color: colors.text.primary,
   },
   reviewStudentDetails: {
     fontSize: 14,
-    color: '#6B7280',
+    color: colors.text.secondary,
     marginTop: 2,
   },
   reviewNote: {
     fontSize: 14,
-    color: '#6B7280',
+    color: colors.text.secondary,
     textAlign: 'center',
     fontStyle: 'italic',
     marginTop: 20,
@@ -973,27 +999,34 @@ const styles = StyleSheet.create({
   previousButton: {
     flex: 1,
     height: 52,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.blue.darker,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    borderWidth: 1,
+    borderColor: colors.blue.dark,
   },
   previousButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: colors.text.primary,
   },
   nextButton: {
     flex: 2,
     height: 52,
-    backgroundColor: '#0080FF',
+    backgroundColor: colors.primary, // Bright blue
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   nextButtonDisabled: {
-    backgroundColor: '#9CA3AF',
+    backgroundColor: colors.blue.medium,
   },
   nextButtonText: {
     fontSize: 16,
@@ -1003,13 +1036,18 @@ const styles = StyleSheet.create({
   submitButton: {
     flex: 2,
     height: 52,
-    backgroundColor: '#16A34A',
+    backgroundColor: colors.success,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: colors.success,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   submitButtonDisabled: {
-    backgroundColor: '#9CA3AF',
+    backgroundColor: colors.blue.medium,
   },
   submitButtonText: {
     fontSize: 16,
@@ -1017,14 +1055,16 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   authErrorContainer: {
-    backgroundColor: '#FEF2F2',
+    backgroundColor: '#2A1A1A', // Dark red background
     borderRadius: 8,
     padding: 12,
     marginTop: 16,
+    borderWidth: 1,
+    borderColor: colors.error,
   },
   authErrorText: {
     fontSize: 14,
-    color: '#EF4444',
+    color: colors.error,
     textAlign: 'center',
   },
   footer: {
@@ -1035,11 +1075,11 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 16,
-    color: '#6B7280',
+    color: colors.text.secondary,
   },
   signInText: {
     fontSize: 16,
-    color: '#0080FF',
+    color: colors.blue.light,
     fontWeight: '600',
   },
 });

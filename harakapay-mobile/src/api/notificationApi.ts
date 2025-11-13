@@ -2,7 +2,7 @@
 import { supabase } from '../config/supabase';
 import { Notification, NotificationResponse } from '../types/notification';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://harakapayment.com';
 
 /**
  * Fetch notifications for the authenticated user

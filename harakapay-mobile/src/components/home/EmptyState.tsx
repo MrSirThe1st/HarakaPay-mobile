@@ -17,13 +17,6 @@ interface EmptyStateProps {
 export const EmptyState: React.FC<EmptyStateProps> = ({ onLinkStudent }) => {
   return (
     <View style={styles.container}>
-      {/* Illustration Placeholder */}
-      <View style={styles.illustrationContainer}>
-        <View style={styles.iconContainer}>
-          <Text style={styles.iconText}>👨‍👩‍👧‍👦</Text>
-        </View>
-      </View>
-
       {/* Content */}
       <View style={styles.contentContainer}>
         <Text style={styles.title}>Connect Your Children</Text>
@@ -60,25 +53,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 32,
     backgroundColor: colors.background, // Very dark blue
-  },
-  illustrationContainer: {
-    marginBottom: 40,
-  },
-  iconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: colors.cardBackground, // Light blue
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  iconText: {
-    fontSize: 48,
   },
   contentContainer: {
     alignItems: 'center',
