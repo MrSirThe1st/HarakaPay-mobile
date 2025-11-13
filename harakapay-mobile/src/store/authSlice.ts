@@ -347,7 +347,8 @@ const authSlice = createSlice({
         state.profile = action.payload.profile;
         state.error = null;
         state.success = true;
-        state.initialized = true;
+        // DON'T set initialized = true here
+        // Let the signup screen mark as initialized after student linking completes
       })
       .addCase(signUp.rejected, (state, action) => {
         state.loading = false;

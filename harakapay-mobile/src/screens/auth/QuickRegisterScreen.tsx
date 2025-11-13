@@ -19,6 +19,7 @@ import { lookupStudentByNumber, linkStudentsBatch } from '../../services/student
 import { StudentLookupResult, StudentToLink } from '../../types/student';
 import { useDispatch } from 'react-redux';
 import { addLinkedStudent } from '../../store/studentSlice';
+import { markAsInitialized } from '../../store/authSlice';
 import { WEB_API_URL } from '../../config/env';
 
 const { width, height } = Dimensions.get('window');
@@ -390,10 +391,14 @@ const QuickRegisterScreen: React.FC<QuickRegisterScreenProps> = ({ navigation })
         console.log('⚠️ No students to add to Redux store');
       }
 
+      // Mark auth as initialized to allow navigation
+      console.log('✅ Marking auth as initialized');
+      dispatch(markAsInitialized());
+
       // Success! The auth state will automatically trigger navigation
       console.log('🎉 Registration completed successfully');
       console.log('📊 Final summary:', linkResult.summary);
-      
+
       Alert.alert(
         'Inscription réussie!',
         `Votre compte a été créé avec succès! ${linkResult.summary.successfully_linked} étudiant(s) ont été liés à votre compte.`,
@@ -405,7 +410,11 @@ const QuickRegisterScreen: React.FC<QuickRegisterScreenProps> = ({ navigation })
       console.error('❌ Error type:', typeof error);
       console.error('❌ Error message:', error instanceof Error ? error.message : String(error));
       console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
-      
+
+      // Mark as initialized even on error to prevent being stuck
+      console.log('✅ Marking auth as initialized (error case)');
+      dispatch(markAsInitialized());
+
       // Show detailed error to user
       const errorMessage = error instanceof Error ? error.message : 'Une erreur inconnue est survenue';
       Alert.alert(
