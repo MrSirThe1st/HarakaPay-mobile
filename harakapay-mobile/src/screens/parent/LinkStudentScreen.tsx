@@ -139,12 +139,7 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Info Card */}
-        <View style={styles.infoCard}>
-          <Ionicons name="information-circle" size={24} color="#3B82F6" />
-          <Text style={styles.infoText}>
-            We found potential matches based on your information. Students already linked to your account are excluded.
-          </Text>
-        </View>
+
 
         {loadingSearch ? (
           <View style={styles.loadingContainer}>

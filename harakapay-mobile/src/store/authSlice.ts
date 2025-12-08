@@ -29,8 +29,6 @@ export const fetchProfile = createAsyncThunk(
   "auth/fetchProfile",
   async (userId: string, thunkAPI) => {
     try {
-      console.log("🔍 Fetching profile for user:", userId);
-      
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -39,44 +37,17 @@ export const fetchProfile = createAsyncThunk(
         .maybeSingle();
 
       if (error) {
-        console.error("❌ Profile fetch error:", error);
+        console.error("Profile fetch error:", error.message);
         return thunkAPI.rejectWithValue(`Profile fetch failed: ${error.message}`);
       }
 
       if (!data) {
-        console.log("⚠️ No parent profile found for user:", userId);
-        
-        // Try to create a profile for existing users who don't have one
-        console.log("🔄 Attempting to create profile for existing user...");
-        
-        // Get user data from auth
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          return thunkAPI.rejectWithValue("No user session found");
-        }
-
-        // Create profile using the manual API approach
-        const profileResult = await createParentProfile({
-          user_id: userId,
-          first_name: user.user_metadata?.first_name || '',
-          last_name: user.user_metadata?.last_name || '',
-          email: user.email || '',
-          phone: user.user_metadata?.phone || '',
-        });
-
-        if (!profileResult.success) {
-          console.error("❌ Failed to create profile for existing user:", profileResult.error);
-          return thunkAPI.rejectWithValue(profileResult.error || "Failed to create profile");
-        }
-
-        console.log("✅ Profile created for existing user:", profileResult.profile?.id);
-        return profileResult.profile;
+        return thunkAPI.rejectWithValue("Parent profile not found");
       }
 
-      console.log("✅ Profile found:", data);
       return data;
     } catch (error) {
-      console.error("💥 Profile fetch exception:", error);
+      console.error("Profile fetch exception:", error);
       return thunkAPI.rejectWithValue(`Profile fetch failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -173,9 +144,7 @@ export const signUp = createAsyncThunk(
         return thunkAPI.rejectWithValue(error.message);
       }
 
-      if (data.user) {
-        console.log("✅ User created successfully, creating parent profile...");
-        
+      if (data.user && data.session) {
         // Create parent profile using the manual API approach
         try {
           const profileResult = await createParentProfile({
@@ -190,16 +159,17 @@ export const signUp = createAsyncThunk(
             throw new Error(profileResult.error || 'Failed to create profile');
           }
 
-          console.log("✅ Signup completed successfully with profile");
           return {
             user: data.user,
-            profile: profileResult.profile,
+            session: data.session,
+            profile: profileResult.profile as UserProfile,
           };
         } catch (profileError) {
-          console.error("❌ Failed to create parent profile:", profileError);
-          // Return user without profile - they can complete it later
+          console.error("Failed to create parent profile:", profileError);
+          // Return user and session without profile - they can complete it later
           return {
             user: data.user,
+            session: data.session,
             profile: null,
           };
         }
@@ -367,7 +337,8 @@ const authSlice = createSlice({
       .addCase(signUp.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        state.profile = action.payload.profile;
+        state.session = action.payload.session;
+        state.profile = action.payload.profile || null;
         state.error = null;
         state.success = true;
       })

@@ -6,5 +6,8 @@
 		{
 			"path": "../HarakaPay-web"
 		}
-	]
+	],
+	"settings": {
+		"claudeCode.useTerminal": false
+	}
 }

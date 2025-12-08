@@ -56,10 +56,13 @@ export const createParentProfile = async (
     console.log('🌐 API URL:', API_URL);
     console.log('🔗 Full endpoint:', `${API_URL}/api/parent/create-profile`);
 
-    // Call the web API endpoint
+    // Call the web API endpoint with timeout
     console.log('📤 Sending POST request to:', `${API_URL}/api/parent/create-profile`);
     console.log('📤 Request data:', profileData);
-    
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
     const response = await fetch(`${API_URL}/api/parent/create-profile`, {
       method: 'POST',
       headers: {
@@ -67,7 +70,10 @@ export const createParentProfile = async (
         'Authorization': `Bearer ${session.access_token}`,
       },
       body: JSON.stringify(profileData),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
     
     console.log('📥 Response status:', response.status);
     console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()));
@@ -95,9 +101,14 @@ export const createParentProfile = async (
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : 'No stack trace'
     });
+
+    const errorMessage = error instanceof Error && error.name === 'AbortError'
+      ? 'Request timeout - please check your internet connection'
+      : error instanceof Error ? error.message : 'Unknown error occurred';
+
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      error: errorMessage
     };
   } finally {
     // Clean up the ongoing request

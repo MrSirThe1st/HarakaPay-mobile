@@ -33,6 +33,12 @@ export const fetchLinkedStudents = async (session?: Session | null): Promise<Lin
       throw new Error('No authentication token available');
     }
 
+    console.log('🔍 fetchLinkedStudents: Session details:', {
+      hasAccessToken: !!authSession.access_token,
+      accessTokenLength: authSession.access_token?.length,
+      tokenPreview: authSession.access_token?.substring(0, 20) + '...',
+    });
+
     console.log('🔍 fetchLinkedStudents: Making request to:', `${WEB_API_URL}/api/parent/linked-students`);
     const response = await fetch(`${WEB_API_URL}/api/parent/linked-students`, {
       method: 'GET',

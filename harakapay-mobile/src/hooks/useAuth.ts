@@ -39,93 +39,48 @@ export const useAuth = () => {
   const dispatch = useDispatch<AppDispatch>();
   const authState = useSelector((state: RootState) => state.auth);
   const isProcessingAuthRef = useRef(false);
-  
-    // Add this effect to set session on Supabase client whenever Redux session/user changes
-    useEffect(() => {
-      // Whenever we have a session in Redux, set it on the Supabase client
-      if (authState.session && authState.user) {
-        console.log("🔧 Setting session on Supabase client");
-        supabase.auth.setSession(authState.session)
-          .then(() => {
-            console.log("✅ Session set successfully on Supabase client");
-          })
-          .catch((error) => {
-            console.error("❌ Failed to set session on Supabase client:", error);
-          });
-      }
-    }, [authState.session, authState.user]);
+
+  // Set session on Supabase client whenever Redux session/user changes
+  useEffect(() => {
+    if (authState.session && authState.user) {
+      supabase.auth.setSession(authState.session).catch((error) => {
+        console.error("❌ Failed to set session on Supabase client:", error);
+      });
+    }
+  }, [authState.session, authState.user]);
 
   // Check if Redux persist is still rehydrating
   const isRehydrating = useSelector(
     (state: RootState) => !state._persist?.rehydrated
   );
 
-  // Initialize auth on mount
+  // Initialize auth on mount - run only once after rehydration
   useEffect(() => {
-    // Wait for Redux persist to finish rehydrating
-    if (isRehydrating) {
-      console.log("⏳ Waiting for Redux persist rehydration...");
-      return;
-    }
+    if (isRehydrating || authState.initialized) return;
 
     const initializeAuth = async () => {
-      console.log("🚀 Initializing auth...");
-
-      // Check if we already have auth data from Redux persist
-      if (authState.user && authState.session) {
-        console.log(
-          "✅ Already have auth data from Redux persist, skipping initialization"
-        );
-        dispatch(markAsInitialized());
-        return;
-      }
-
       // Set a timeout to ensure we don't get stuck
       const timeoutId = setTimeout(() => {
-        console.log("⏰ Auth initialization timeout, marking as initialized");
         dispatch(markAsInitialized());
-      }, 5000); // 5 second timeout
+      }, 5000);
 
-      // Don't manually load stored auth - let Redux persist handle it
-      console.log("ℹ️ Letting Redux persist handle stored auth data");
-
-      // Set up auth state listener
+      // Set up Supabase auth state listener
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log(
-          "🔄 Auth state changed:",
-          event,
-          "Session exists:",
-          !!session,
-          "isProcessingAuth:",
-          isProcessingAuthRef.current
-        );
-
         // Prevent multiple simultaneous auth processing
-        if (isProcessingAuthRef.current) {
-          console.log("⏸️ Auth processing already in progress, skipping");
-          return;
-        }
-        
+        if (isProcessingAuthRef.current) return;
         isProcessingAuthRef.current = true;
-
-        // Clear timeout when we get any auth event
         clearTimeout(timeoutId);
 
         switch (event) {
           case "INITIAL_SESSION":
-            console.log("🔄 Initial session detected");
             if (session?.user) {
-              console.log("✅ Initial session has user, updating state");
-              isProcessingAuthRef.current = true;
-              // Fetch profile data and update Redux state
               try {
                 const profile = await dispatch(
                   fetchProfile(session.user.id)
                 ).unwrap();
 
-                // Update Redux state with the initial session
                 dispatch(
                   updateInitialSession({
                     user: session.user,
@@ -133,59 +88,21 @@ export const useAuth = () => {
                     profile: profile || undefined,
                   })
                 );
-
-                console.log("✅ Initial session state updated successfully");
               } catch (error) {
-                console.log(
-                  "⚠️ Failed to update initial session state:",
-                  error
-                );
-              } finally {
-                isProcessingAuthRef.current = false;
+                console.error("Failed to load profile:", error);
               }
             } else {
-              console.log("ℹ️ Initial session has no user");
-              // If no initial session, mark as initialized so we can show auth screen
               dispatch(markAsInitialized());
-              isProcessingAuthRef.current = false;
             }
-            break;
-          case "SIGNED_IN":
-            console.log("✅ User signed in");
-            if (session?.user) {
-              try {
-                const profile = await dispatch(
-                  fetchProfile(session.user.id)
-                ).unwrap();
-
-                dispatch(
-                  updateInitialSession({
-                    user: session.user,
-                    session: session,
-                    profile: profile || undefined,
-                  })
-                );
-              } catch (error) {
-                console.log("⚠️ Failed to fetch profile during sign in:", error);
-              } finally {
-                isProcessingAuthRef.current = false;
-              }
-            } else {
-              isProcessingAuthRef.current = false;
-            }
-            break;
-          case "SIGNED_OUT":
-            console.log("👋 User signed out");
             break;
           case "TOKEN_REFRESHED":
-            console.log("🔄 Token refreshed");
             if (session) {
               await dispatch(refreshSession());
             }
             break;
-          default:
-            console.log(`🔄 Auth event: ${event}`);
         }
+
+        isProcessingAuthRef.current = false;
       });
 
       return () => {
@@ -195,7 +112,7 @@ export const useAuth = () => {
     };
 
     initializeAuth();
-  }, [dispatch, isRehydrating, authState.user, authState.session]);
+  }, [dispatch, isRehydrating, authState.initialized]);
 
   const handleSignIn = useCallback(
     async (email: string, password: string): Promise<AuthResponse> => {

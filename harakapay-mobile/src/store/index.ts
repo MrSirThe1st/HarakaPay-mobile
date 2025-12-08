@@ -26,9 +26,8 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: "root",
   storage: AsyncStorage,
-  whitelist: ["auth", "payment"], // Persist auth and payment cache
-  blacklist: ["student"], // Don't persist student state (will be refetched)
-  debug: true, // Enable debug logging
+  whitelist: ["payment"], // Only persist payment cache
+  blacklist: ["auth", "student"], // Don't persist auth (Supabase handles it) or student state (will be refetched)
 };
 
 // Persisted reducer
@@ -47,43 +46,7 @@ export const store = configureStore({
 });
 
 // Persistor for the store
-export const persistor = persistStore(store, null, () => {
-  console.log("✅ Redux Persist rehydration completed");
-});
-
-// Track rehydration state
-let isRehydrating = true;
-store.subscribe(() => {
-  const state = store.getState();
-  if (state._persist?.rehydrated && isRehydrating) {
-    isRehydrating = false;
-    console.log("🔄 Redux Persist rehydration finished, auth state:", {
-      user: !!state.auth.user,
-      session: !!state.auth.session,
-      initialized: state.auth.initialized,
-    });
-  }
-});
-
-// Log store state changes in development
-if (__DEV__) {
-  store.subscribe(() => {
-    const state = store.getState();
-    console.log("🔄 Store state changed:", {
-      auth: {
-        user: !!state.auth.user,
-        session: !!state.auth.session,
-        initialized: state.auth.initialized,
-        loading: state.auth.loading,
-      },
-      student: {
-        linkedStudents: state.student.linkedStudents.length,
-        loadingStudents: state.student.loadingStudents,
-        loadingSearch: state.student.loadingSearch,
-      },
-    });
-  });
-}
+export const persistor = persistStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

@@ -15,13 +15,6 @@ const RootNavigation = () => {
   const { user, session, initialized } = useAuth();
   const navigationRef = useRef<any>(null);
 
-  console.log("🔍 RootNavigation - Auth state:", {
-    user: !!user,
-    session: !!session,
-    initialized,
-    isAuthenticated: !!(user && session),
-  });
-
   // Handle deep links for password reset
   useEffect(() => {
     // Handle initial URL (when app is opened via deep link)
@@ -57,8 +50,6 @@ const RootNavigation = () => {
   }, []);
 
   const handleDeepLink = (url: string) => {
-    console.log('🔗 Deep link received:', url);
-    
     // Parse the URL
     if (url.startsWith('harakapay://reset-password') || url.includes('reset-password')) {
       // Extract tokens from URL if present
@@ -91,7 +82,6 @@ const RootNavigation = () => {
 
   // Show loading while auth is initializing
   if (!initialized) {
-    console.log("⏳ Auth not initialized yet, showing loading...");
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -100,7 +90,6 @@ const RootNavigation = () => {
   }
 
   const isAuthenticated = !!user && !!session;
-  console.log("🎯 Navigation decision:", isAuthenticated ? "Main App" : "Auth");
 
   // Configure linking for deep links
   const linking = {

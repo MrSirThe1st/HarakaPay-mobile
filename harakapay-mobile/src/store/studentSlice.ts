@@ -23,21 +23,14 @@ const initialState: StudentState = {
 // Async thunks
 export const fetchLinkedStudentsAsync = createAsyncThunk(
   'student/fetchLinkedStudents',
-  async (_, { rejectWithValue, getState }) => {
+  async (_, { rejectWithValue }) => {
     try {
       console.log('🚀 fetchLinkedStudentsAsync: Starting thunk');
-      
-      // Get session from Redux state
-      const state = getState() as any;
-      const session = state.auth.session;
-      
-      if (!session?.access_token) {
-        console.log('❌ fetchLinkedStudentsAsync: No session in Redux state');
-        return rejectWithValue('No authentication token available');
-      }
-      
-      console.log('✅ fetchLinkedStudentsAsync: Using session from Redux');
-      const students = await fetchLinkedStudents(session);
+
+      // Don't use session from Redux - let the API function fetch it from Supabase
+      // This avoids issues with Redux Persist not properly serializing the Session object
+      console.log('🔍 fetchLinkedStudentsAsync: Fetching session from Supabase directly');
+      const students = await fetchLinkedStudents();
       console.log('✅ fetchLinkedStudentsAsync: Success, students:', students.length);
       return students;
     } catch (error) {
