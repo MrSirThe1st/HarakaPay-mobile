@@ -15,11 +15,10 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
+import { useStudents } from '../../contexts/StudentContext';
 import { supabase } from '../../config/supabase';
 import { lookupStudentByNumber, linkStudentsBatch } from '../../services/studentService';
 import { StudentLookupResult, StudentToLink } from '../../types/student';
-import { useDispatch } from 'react-redux';
-import { addLinkedStudent } from '../../store/studentSlice';
 import { WEB_API_URL } from '../../config/env';
 import colors from '../../constants/colors';
 
@@ -71,7 +70,7 @@ const QuickRegisterScreen: React.FC<QuickRegisterScreenProps> = ({ navigation })
   } | null>(null);
 
   const { signUp, signIn, loading: authLoading, error: authError, user, initialized } = useAuth();
-  const dispatch = useDispatch();
+  const { addLinkedStudent } = useStudents();
 
   // Note: Navigation is handled by RootNavigation based on auth state
   // No manual navigation needed here
@@ -370,10 +369,10 @@ const QuickRegisterScreen: React.FC<QuickRegisterScreenProps> = ({ navigation })
       console.log('📊 Link result linked_students length:', linkResult.linked_students?.length);
       
       if (linkResult.linked_students && linkResult.linked_students.length > 0) {
-        console.log('🔄 Adding students to Redux store...');
+        console.log('🔄 Adding students to context...');
         linkResult.linked_students.forEach((student, index) => {
-          console.log(`🔄 Adding student ${index + 1} to Redux:`, student);
-          dispatch(addLinkedStudent({
+          console.log(`🔄 Adding student ${index + 1}:`, student);
+          addLinkedStudent({
             id: student.id,
             student_id: student.student_id,
             first_name: student.first_name,
@@ -385,9 +384,9 @@ const QuickRegisterScreen: React.FC<QuickRegisterScreenProps> = ({ navigation })
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             school_name: addedStudents.find(s => s.school_id === student.school_id)?.school_name || 'Unknown School'
-          }));
+          });
         });
-        console.log('✅ Students added to Redux store');
+        console.log('✅ Students added to context');
       } else {
         console.log('⚠️ No students to add to Redux store');
       }

@@ -9,16 +9,15 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useSelector } from 'react-redux';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { RootState } from '../../store';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../hooks/useAuth';
 import { deleteAccount } from '../../api/authApi';
 import colors from '../../constants/colors';
 
 const ProfileScreen: React.FC = () => {
-  const { signOut } = useAuth();
-  const profile = useSelector((state: RootState) => state.auth.profile);
+  const navigation = useNavigation();
+  const { signOut, profile } = useAuth();
   const [deleting, setDeleting] = useState(false);
 
   const handleLogout = () => {
@@ -83,6 +82,10 @@ const ProfileScreen: React.FC = () => {
     );
   };
 
+  const handleNavigateToMessages = () => {
+    (navigation as any).navigate('Tabs', { screen: 'Messages' });
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container}>
@@ -100,6 +103,25 @@ const ProfileScreen: React.FC = () => {
             {profile?.phone && (
               <Text style={styles.profilePhone}>{profile.phone}</Text>
             )}
+          </View>
+
+          <View style={styles.infoNotice}>
+            <View style={styles.infoHeader}>
+              <Ionicons name="information-circle" size={20} color={colors.primary} />
+              <Text style={styles.infoTitle}>Need to Update Your Information?</Text>
+            </View>
+            <Text style={styles.infoText}>
+              To modify your phone number, email, or other personal details, please contact your school via the messaging feature.
+            </Text>
+            <TouchableOpacity
+              style={styles.messageLink}
+              onPress={handleNavigateToMessages}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="chatbubbles" size={18} color="#FFFFFF" />
+              <Text style={styles.messageLinkText}>Go to Messages</Text>
+              <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -188,6 +210,44 @@ const styles = StyleSheet.create({
   profilePhone: {
     fontSize: 14,
     color: colors.text.secondary,
+  },
+  infoNotice: {
+    backgroundColor: '#1E3A8A',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+  },
+  infoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  infoTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text.primary,
+    marginLeft: 8,
+  },
+  infoText: {
+    fontSize: 13,
+    color: colors.text.secondary,
+    lineHeight: 18,
+    marginBottom: 12,
+  },
+  messageLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    gap: 6,
+  },
+  messageLinkText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   menuItem: {
     flexDirection: 'row',

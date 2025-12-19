@@ -1,83 +1,149 @@
-// Custom hook for payment data with smart caching
-import { useEffect, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../store';
-import { 
-  fetchStudentFeeData, 
-  clearError, 
-  invalidateStudentCache,
-  type StudentFeeData 
-} from '../store/paymentSlice';
+// Custom hook for payment data with React Query
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../contexts/AuthContext';
+import { WEB_API_URL } from '../config/env';
+
+export interface FeeCategoryItem {
+  id: string;
+  name: string;
+  amount: number;
+  is_mandatory: boolean;
+  supports_recurring: boolean;
+  supports_one_time: boolean;
+}
+
+export interface PaymentPlan {
+  id: string;
+  type: 'monthly' | 'per-term' | 'upfront' | 'custom';
+  discount_percentage: number;
+  currency: string;
+  installments: Array<{
+    installment_number: number;
+    label: string;
+    amount: number;
+    due_date: string;
+  }>;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface StudentFeeData {
+  studentId: string;
+  categories: FeeCategoryItem[];
+  paymentPlans: PaymentPlan[];
+  feeStructure: any;
+  lastUpdated: number;
+}
+
+const fetchStudentFeeData = async (studentId: string, accessToken: string): Promise<StudentFeeData> => {
+  console.log('🔍 Fetching fresh fee data for student:', studentId);
+
+  if (!accessToken) {
+    throw new Error('No authentication token available');
+  }
+
+  const response = await fetch(`${WEB_API_URL}/api/parent/student-fees-detailed`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch student fee details: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  // Find the specific student's data
+  const studentData = data.student_fees?.find((s: any) => s?.student?.id === studentId);
+
+  // If no student data found, return empty data structure
+  if (!studentData) {
+    console.log('ℹ️ No fee data found for student:', studentId, '- returning empty data');
+    return {
+      studentId,
+      categories: [],
+      paymentPlans: [],
+      feeStructure: null,
+      lastUpdated: Date.now(),
+    };
+  }
+
+  // Transform the data
+  const categories: FeeCategoryItem[] = studentData.fee_categories || [];
+  const paymentPlans: PaymentPlan[] = studentData.payment_schedules?.map((schedule: any) => ({
+    id: schedule.id,
+    type: schedule.schedule_type,
+    discount_percentage: schedule.discount_percentage || 0,
+    currency: 'USD',
+    installments: schedule.installments || [],
+    is_active: true,
+    created_at: new Date().toISOString(),
+  })) || [];
+
+  return {
+    studentId,
+    categories,
+    paymentPlans,
+    feeStructure: studentData.fee_structure || null,
+    lastUpdated: Date.now(),
+  };
+};
 
 export const usePaymentData = (studentId: string) => {
-  const dispatch = useDispatch<AppDispatch>();
-  
-  const paymentState = useSelector((state: RootState) => state.payment);
-  const authSession = useSelector((state: RootState) => state.auth.session);
-  
-  const studentData = paymentState.studentFees[studentId];
-  const isLoading = paymentState.loading;
-  const error = paymentState.error;
+  const { session } = useAuth();
+  const queryClient = useQueryClient();
 
-  // Check if we have cached data that's still valid
-  const hasCachedData = !!studentData;
-  const cacheAge = studentData ? Date.now() - studentData.lastUpdated : Infinity;
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+    dataUpdatedAt,
+  } = useQuery({
+    queryKey: ['studentFeeData', studentId],
+    queryFn: () => fetchStudentFeeData(studentId, session?.access_token || ''),
+    enabled: !!session?.access_token && !!studentId,
+    staleTime: 5 * 60 * 1000, // 5 minutes - data considered fresh for 5 min
+    gcTime: 10 * 60 * 1000, // 10 minutes - cache kept for 10 min
+  });
+
+  const hasCachedData = !!data;
+  const cacheAge = dataUpdatedAt ? Date.now() - dataUpdatedAt : Infinity;
   const isCacheValid = cacheAge < 5 * 60 * 1000; // 5 minutes
 
-  // Load data function
-  const loadData = useCallback(async (forceRefresh = false) => {
-    if (!forceRefresh && hasCachedData && isCacheValid) {
-      console.log('📚 Using cached payment data for student:', studentId);
-      return;
-    }
-
-    console.log('🔄 Loading payment data for student:', studentId);
-    try {
-      await dispatch(fetchStudentFeeData({ studentId, session: authSession })).unwrap();
-    } catch (error) {
-      console.error('❌ Failed to load payment data:', error);
-    }
-  }, [dispatch, studentId, authSession, hasCachedData, isCacheValid]);
-
-  // Auto-load data on mount if not cached or cache is stale
-  useEffect(() => {
-    if (!hasCachedData || !isCacheValid) {
-      loadData();
-    }
-  }, [studentId, hasCachedData, isCacheValid, loadData]);
-
-  // Refresh function for manual refresh (pull-to-refresh, etc.)
-  const refreshData = useCallback(() => {
-    return loadData(true);
-  }, [loadData]);
-
-  // Clear error function
-  const clearErrorState = useCallback(() => {
-    dispatch(clearError());
-  }, [dispatch]);
-
   // Invalidate cache for this student (useful after payments)
-  const invalidateCache = useCallback(() => {
-    dispatch(invalidateStudentCache(studentId));
-  }, [dispatch, studentId]);
+  const invalidateCache = () => {
+    queryClient.invalidateQueries({ queryKey: ['studentFeeData', studentId] });
+  };
+
+  // Refresh data (force refetch)
+  const refreshData = async () => {
+    await refetch();
+  };
 
   return {
     // Data
-    categories: studentData?.categories || [],
-    paymentPlans: studentData?.paymentPlans || [],
-    feeStructure: studentData?.feeStructure || null,
-    
+    categories: data?.categories || [],
+    paymentPlans: data?.paymentPlans || [],
+    feeStructure: data?.feeStructure || null,
+
     // State
     isLoading,
-    error,
+    error: error ? (error as Error).message : null,
     hasCachedData,
     isCacheValid,
-    lastUpdated: studentData?.lastUpdated,
-    
+    lastUpdated: data?.lastUpdated,
+
     // Actions
-    loadData,
+    loadData: refreshData, // Alias for compatibility
     refreshData,
-    clearError: clearErrorState,
+    clearError: () => {
+      // React Query handles errors differently, but for compatibility
+      queryClient.setQueryData(['studentFeeData', studentId], (old: any) => old);
+    },
     invalidateCache,
   };
 };

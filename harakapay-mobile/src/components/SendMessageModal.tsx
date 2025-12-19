@@ -14,8 +14,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
-import { useSelector } from 'react-redux';
-import { RootState } from '../store';
+import { useStudents } from '../contexts/StudentContext';
 import { sendMessage } from '../api/messageApi';
 import colors from '../constants/colors';
 
@@ -35,7 +34,7 @@ const SendMessageModal: React.FC<SendMessageModalProps> = ({
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
 
-  const linkedStudents = useSelector((state: RootState) => state.student.linkedStudents);
+  const { linkedStudents } = useStudents();
 
   useEffect(() => {
     if (linkedStudents.length > 0 && !selectedStudentId) {

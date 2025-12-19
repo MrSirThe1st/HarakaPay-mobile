@@ -11,10 +11,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../../store';
 import { useAuth } from '../../hooks/useAuth';
-import { fetchLinkedStudentsAsync } from '../../store/studentSlice';
+import { useStudents } from '../../contexts/StudentContext';
 import { ChildCard } from '../../components/home/ChildCard';
 import { EmptyState } from '../../components/home/EmptyState';
 import { LinkedStudent } from '../../api/studentApi';
@@ -23,20 +21,19 @@ import colors from '../../constants/colors';
 const { width } = Dimensions.get('window');
 
 const HomeScreen: React.FC<{ navigation?: any }> = ({ navigation }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { user, profile, loading: authLoading } = useAuth();
-  const { linkedStudents, loadingStudents, error } = useSelector(
-    (state: RootState) => state.student
-  );
+  const { profile, loading: authLoading } = useAuth();
+  const { linkedStudents, loadingStudents, error, fetchLinkedStudentsAsync } = useStudents();
 
   useEffect(() => {
     // Fetch linked students when component mounts
     console.log('🔍 DashboardScreen useEffect - profile:', !!profile, 'authLoading:', authLoading);
     if (profile && !authLoading) {
-      console.log('🚀 Dispatching fetchLinkedStudentsAsync');
-      dispatch(fetchLinkedStudentsAsync());
+      console.log('🚀 Fetching linked students');
+      fetchLinkedStudentsAsync().catch(err => {
+        console.error('Failed to fetch students:', err);
+      });
     }
-  }, [dispatch, profile, authLoading]);
+  }, [profile, authLoading]);
 
   useEffect(() => {
     if (error) {

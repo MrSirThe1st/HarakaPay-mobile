@@ -1,15 +1,24 @@
 import React, { useEffect, useRef } from "react";
-import { Provider } from "react-redux";
-import { PersistGate } from "redux-persist/integration/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ActivityIndicator, View, Text, StyleSheet, Linking } from "react-native";
 import AuthNavigator from "./src/navigation/AuthNavigator";
 import MainNavigator from "./src/navigation/MainNavigator";
-import { store, persistor } from "./src/store";
-import { useAuth } from "./src/hooks/useAuth";
+import { AuthProvider, useAuth } from "./src/contexts/AuthContext";
+import { StudentProvider } from "./src/contexts/StudentContext";
 import { supabase } from "./src/config/supabase";
 import colors from "./src/constants/colors";
+
+// Create React Query client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
 const RootNavigation = () => {
   const { user, session, initialized } = useAuth();
@@ -118,21 +127,13 @@ const RootNavigation = () => {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <Provider store={store}>
-        <PersistGate
-          loading={
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={colors.primary} />
-              <Text style={styles.loadingText}>
-                Loading app...
-              </Text>
-            </View>
-          }
-          persistor={persistor}
-        >
-          <RootNavigation />
-        </PersistGate>
-      </Provider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <StudentProvider>
+            <RootNavigation />
+          </StudentProvider>
+        </AuthProvider>
+      </QueryClientProvider>
     </SafeAreaProvider>
   );
 }

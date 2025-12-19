@@ -10,7 +10,6 @@ export type RootStackParamList = {
   } | undefined;
   Tabs: undefined;
   Profile: undefined;
-  Settings: undefined;
   ConnectChild: undefined;
   ChildDetails: {
     childId: string;

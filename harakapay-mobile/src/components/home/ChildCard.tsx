@@ -176,7 +176,13 @@ export const ChildCard: React.FC<ChildCardProps> = ({ student, onPress, variant 
               </Text>
             )}
           </View>
-   
+          {formattedGrade && (
+            <View style={styles.bottomRight}>
+              <View style={styles.badgeContainer}>
+                <Text style={styles.gradeText}>{formattedGrade}</Text>
+              </View>
+            </View>
+          )}
         </View>
       </View>
     </TouchableOpacity>

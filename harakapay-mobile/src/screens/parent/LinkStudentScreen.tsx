@@ -11,16 +11,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../../store';
 import { useAuth } from '../../hooks/useAuth';
-import {
-  searchStudentsAsync,
-  linkStudentAsync,
-  clearError,
-  clearSearchResults,
-  fetchLinkedStudentsAsync,
-} from '../../store/studentSlice';
+import { useStudents } from '../../contexts/StudentContext';
 import { StudentMatch } from '../../api/studentApi';
 import colors from '../../constants/colors';
 
@@ -29,11 +21,19 @@ interface LinkStudentScreenProps {
 }
 
 export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps) {
-  const dispatch = useDispatch<AppDispatch>();
-  const { user, profile } = useAuth();
-  const { searchResults, linkedStudents, loadingSearch, linkingStudent, error } = useSelector(
-    (state: RootState) => state.student
-  );
+  const { profile } = useAuth();
+  const {
+    searchResults,
+    linkedStudents,
+    loadingSearch,
+    linkingStudent,
+    error,
+    searchStudentsAsync,
+    linkStudentAsync,
+    clearError,
+    clearSearchResults,
+    fetchLinkedStudentsAsync,
+  } = useStudents();
 
   const [selectedStudent, setSelectedStudent] = useState<StudentMatch | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -44,15 +44,15 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
 
   useEffect(() => {
     // Fetch linked students first to filter them out
-    dispatch(fetchLinkedStudentsAsync());
-  }, [dispatch]);
+    fetchLinkedStudentsAsync().catch(err => console.error('Failed to fetch students:', err));
+  }, []);
 
   useEffect(() => {
     // Auto-search when component loads
-    console.log('🔍 LinkStudentScreen useEffect - user:', user, 'profile:', profile);
-    if (profile && user) {
+    console.log('🔍 LinkStudentScreen useEffect - profile:', profile);
+    if (profile) {
       const parentName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
-      const parentEmail = profile.email || user.email || '';
+      const parentEmail = profile.email || '';
       const parentPhone = profile.phone || '';
 
       console.log('🔍 LinkStudentScreen - parentName:', parentName, 'parentEmail:', parentEmail, 'parentPhone:', parentPhone);
@@ -67,14 +67,12 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
         return;
       }
 
-      console.log('🚀 LinkStudentScreen - Dispatching searchStudentsAsync');
-      dispatch(searchStudentsAsync({
-        parentName,
-        parentEmail,
-        parentPhone,
-      }));
+      console.log('🚀 LinkStudentScreen - Searching for students');
+      searchStudentsAsync(parentName, parentEmail, parentPhone).catch(err => {
+        console.error('Failed to search students:', err);
+      });
     } else {
-      console.log('❌ LinkStudentScreen - No profile or user available');
+      console.log('❌ LinkStudentScreen - No profile available');
       Alert.alert(
         'Profile Not Found',
         'Unable to load your profile. Please try again.',
@@ -83,16 +81,16 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
     }
 
     return () => {
-      dispatch(clearSearchResults());
+      clearSearchResults();
     };
-  }, [dispatch, profile, user]);
+  }, [profile]);
 
   useEffect(() => {
     if (error) {
       Alert.alert('Error', error);
-      dispatch(clearError());
+      clearError();
     }
-  }, [error, dispatch]);
+  }, [error]);
 
   const handleStudentSelect = (student: StudentMatch) => {
     setSelectedStudent(student);
@@ -103,8 +101,8 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
     if (!selectedStudent) return;
 
     try {
-      await dispatch(linkStudentAsync(selectedStudent.id)).unwrap();
-      
+      await linkStudentAsync(selectedStudent.id);
+
       Alert.alert(
         'Success!',
         `${selectedStudent.first_name} ${selectedStudent.last_name} has been linked to your account.`,

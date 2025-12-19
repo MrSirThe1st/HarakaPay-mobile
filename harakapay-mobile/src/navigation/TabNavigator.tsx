@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import HomeScreen from '../screens/parent/DashboardScreen';
 import NotificationsScreen from '../screens/parent/NotificationsScreen';
+import MessagesTab from '../components/MessagesTab';
 import ProfileScreen from '../screens/parent/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
@@ -25,6 +26,9 @@ const TabNavigator = () => {
               break;
             case 'Notifications':
               iconName = 'notifications';
+              break;
+            case 'Messages':
+              iconName = 'chatbubbles';
               break;
             case 'Profile':
               iconName = 'person';
@@ -58,6 +62,7 @@ const TabNavigator = () => {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Notifications" component={NotificationsScreen} />
+      <Tab.Screen name="Messages" component={MessagesTab} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
