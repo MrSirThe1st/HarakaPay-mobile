@@ -160,13 +160,6 @@ export default function PaymentHistoryScreen({ navigation, route }: PaymentHisto
   if (loading && payments.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="white" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Payment History</Text>
-          <View style={styles.backButton} />
-        </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} style={{ transform: [{ scale: 2 }] }} />
         </View>
@@ -176,15 +169,6 @@ export default function PaymentHistoryScreen({ navigation, route }: PaymentHisto
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="white" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Payment History</Text>
-        <View style={styles.backButton} />
-      </View>
-
       <ScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}
@@ -300,25 +284,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#1E3A8A',
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: 'white',
-  },
   content: {
     flex: 1,
     padding: 16,
@@ -334,7 +299,7 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
   summaryCard: {
-    backgroundColor: '#1E3A8A',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     padding: 20,
     marginBottom: 16,
@@ -351,7 +316,8 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 14,
-    color: '#B0C4DE',
+    color: 'white',
+    fontWeight:"bold",
     marginBottom: 4,
   },
   summaryValue: {

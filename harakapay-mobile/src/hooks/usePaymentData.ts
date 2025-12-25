@@ -7,6 +7,7 @@ export interface FeeCategoryItem {
   id: string;
   name: string;
   amount: number;
+  remaining_balance?: number;
   is_mandatory: boolean;
   supports_recurring: boolean;
   supports_one_time: boolean;

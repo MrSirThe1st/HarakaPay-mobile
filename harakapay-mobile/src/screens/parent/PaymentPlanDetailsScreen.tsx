@@ -315,7 +315,7 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
 
           {/* Due Date */}
           <View style={styles.carouselDueDateContainer}>
-            <Ionicons name="calendar-outline" size={14} color={isCurrent ? '#93C5FD' : '#64748B'} style={styles.carouselCalendarIcon} />
+            <Ionicons name="calendar-outline" size={14} color={isCurrent ? '#E0E7FF' : colors.text.secondary} style={styles.carouselCalendarIcon} />
             <View>
               <Text style={[styles.carouselDueDateLabel, isCurrent && styles.carouselDueDateLabelActive]}>
                 Due Date
@@ -461,20 +461,20 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   summaryCard: {
-    backgroundColor: '#1E3A8A',
-    borderRadius: 12,
-    padding: 20,
+    backgroundColor: colors.primary,
+    borderRadius: 16,
+    padding: 24,
     marginBottom: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   summaryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   summaryIconContainer: {
     width: 64,
@@ -489,53 +489,53 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   summaryTitle: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 22,
+    fontWeight: '700',
     color: 'white',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   summarySubtitle: {
     fontSize: 16,
-    color: '#B0C4DE',
+    color: 'rgba(255, 255, 255, 0.85)',
   },
   summaryAmounts: {
     borderTopWidth: 1,
-    borderTopColor: '#2C67A6',
-    paddingTop: 16,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+    paddingTop: 20,
   },
   amountRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   totalRow: {
     borderTopWidth: 1,
-    borderTopColor: '#2C67A6',
-    paddingTop: 12,
-    marginTop: 8,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+    paddingTop: 16,
+    marginTop: 12,
   },
   amountLabel: {
     fontSize: 16,
-    color: '#B0C4DE',
+    color: 'rgba(255, 255, 255, 0.85)',
   },
   amountValue: {
-    fontSize: 16,
+    fontSize: 17,
     color: 'white',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   discountValue: {
-    fontSize: 16,
+    fontSize: 17,
     color: '#10B981',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   totalLabel: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: 'white',
   },
   totalValue: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
     color: 'white',
   },
@@ -545,11 +545,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: 'white',
+    color: colors.text.primary,
     marginBottom: 16,
   },
   carouselContainer: {
-    height: 280,
+    height: 300,
     marginHorizontal: -16, // Offset padding to allow full-width cards
   },
   carouselContent: {
@@ -560,21 +560,23 @@ const styles = StyleSheet.create({
   carouselCard: {
     width: CARD_WIDTH,
     marginRight: CARD_SPACING,
-    backgroundColor: '#1E3A8A',
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    padding: 20,
+    padding: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
-    shadowRadius: 4,
+    shadowRadius: 8,
     elevation: 3,
     transform: [{ scale: 0.95 }],
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   carouselCardActive: {
-    backgroundColor: '#2563EB',
+    backgroundColor: colors.primary,
     borderWidth: 3,
-    borderColor: '#60A5FA',
-    shadowColor: '#3B82F6',
+    borderColor: colors.blue.light,
+    shadowColor: colors.primary,
     shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 8,
@@ -613,7 +615,7 @@ const styles = StyleSheet.create({
   carouselInstallmentLabel: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#E0E7FF',
+    color: colors.text.primary,
     marginBottom: 8,
     letterSpacing: 0.3,
     textAlign: 'center',
@@ -625,13 +627,13 @@ const styles = StyleSheet.create({
   carouselInstallmentAmount: {
     fontSize: 28,
     fontWeight: '800',
-    color: 'white',
+    color: colors.primary,
     marginBottom: 16,
     textAlign: 'center',
   },
   carouselInstallmentAmountActive: {
     fontSize: 32,
-    color: '#FEF3C7',
+    color: 'white',
   },
   carouselDivider: {
     height: 1,
@@ -696,8 +698,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   carouselCardPaid: {
-    opacity: 0.6,
-    backgroundColor: '#1F2937',
+    opacity: 0.7,
+    backgroundColor: '#F9FAFB',
   },
   carouselPaidBadge: {
     flexDirection: 'row',
@@ -718,23 +720,23 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   paidValue: {
-    fontSize: 16,
+    fontSize: 17,
     color: '#10B981',
     fontWeight: '600',
   },
   remainingRow: {
     borderTopWidth: 1,
-    borderTopColor: '#2C67A6',
-    paddingTop: 12,
-    marginTop: 8,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+    paddingTop: 16,
+    marginTop: 12,
   },
   remainingLabel: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FCD34D',
   },
   remainingValue: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
     color: '#FCD34D',
   },
@@ -749,18 +751,18 @@ const styles = StyleSheet.create({
   },
   carouselDueDateLabel: {
     fontSize: 11,
-    color: '#94A3B8',
+    color: colors.text.secondary,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 2,
   },
   carouselDueDateLabelActive: {
-    color: '#93C5FD',
+    color: '#E0E7FF',
   },
   carouselDueDateValue: {
     fontSize: 13,
-    color: '#E2E8F0',
+    color: colors.text.primary,
     fontWeight: '600',
   },
   carouselDueDateValueActive: {

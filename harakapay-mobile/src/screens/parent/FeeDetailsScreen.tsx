@@ -106,7 +106,6 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
     );
   }
 
-  // Only show error screen for actual errors, not for missing data (which shows empty state)
   if (error && !hasCachedData && !error.includes('No fee data found')) {
     return (
       <SafeAreaView style={styles.container}>
@@ -136,6 +135,17 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
           />
         }
       >
+         {/* Payment History Button */}
+        <TouchableOpacity
+          style={styles.historyButton}
+          onPress={() => navigation.navigate('PaymentHistory', { student })}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="time-outline" size={24} color="#FFFFFF" />
+          <Text style={styles.historyButtonText}>Payment History</Text>
+          <Ionicons name="chevron-forward" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+
         {/* Summary Card - Only show when there are categories */}
         {categories.length > 0 && (
           <View style={styles.summaryCard}>
@@ -143,20 +153,10 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
             <Text style={styles.totalAmount}>
               {formatCurrency(getTotalAmount())}
             </Text>
-            <Text style={styles.totalLabel}>Total Due</Text>
           </View>
         )}
 
-        {/* Payment History Button */}
-        <TouchableOpacity
-          style={styles.historyButton}
-          onPress={() => navigation.navigate('PaymentHistory', { student })}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="time-outline" size={20} color="#3B82F6" />
-          <Text style={styles.historyButtonText}>View Payment History</Text>
-          <Ionicons name="chevron-forward" size={20} color="#3B82F6" />
-        </TouchableOpacity>
+      
 
         {/* Fee Categories */}
         <View style={styles.categoriesSection}>
@@ -198,13 +198,13 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
                   </View>
                   <View style={styles.categoryAmount}>
                     <Text style={styles.categoryAmountText}>
-                      {formatCurrency(category.remaining_balance !== undefined ? category.remaining_balance : category.amount)}
+                      {formatCurrency(category.amount)}
                     </Text>
-                    {category.remaining_balance !== undefined && category.remaining_balance < category.amount && (
-                      <Text style={styles.originalAmountText}>
-                        {formatCurrency(category.amount)}
+                    {/* {category.remaining_balance !== undefined && category.remaining_balance < category.amount && (
+                      <Text style={styles.remainingAmountText}>
+                        Remaining: {formatCurrency(category.remaining_balance)}
                       </Text>
-                    )}
+                    )} */}
                     <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
                   </View>
                 </View>
@@ -277,26 +277,20 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   summaryCard: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    padding: 24,
+    padding: 18,
     alignItems: 'center',
     marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+
   },
   summaryTitle: {
     fontSize: 16,
-    color: 'white',
+    color: colors.primary,
     marginBottom: 8,
   },
   totalAmount: {
     fontSize: 32,
     fontWeight: '700',
-    color: 'white',
+    color: colors.primary,
     marginBottom: 4,
   },
   totalLabel: {
@@ -390,10 +384,9 @@ const styles = StyleSheet.create({
     color: 'white',
     marginBottom: 4,
   },
-  originalAmountText: {
+  remainingAmountText: {
     fontSize: 12,
     color: '#B0C4DE',
-    textDecorationLine: 'line-through',
   },
   paymentPlansSection: {
     marginBottom: 24,
@@ -456,18 +449,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.primary,
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    padding: 18,
+    marginBottom: 20,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   historyButtonText: {
     flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#3B82F6',
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#FFFFFF',
     marginLeft: 12,
   },
 });

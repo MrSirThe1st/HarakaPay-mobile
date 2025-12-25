@@ -291,6 +291,21 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
     }
   };
 
+  const getPlanExplanation = (plan: PaymentPlan) => {
+    switch (plan.type) {
+      case 'upfront':
+        return 'Pay the full amount in one transaction. This plan offers the best value with an upfront discount and eliminates the need for multiple payments.';
+      case 'monthly':
+        return 'Spread your payments over multiple months with fixed monthly installments. This makes budgeting easier with predictable payment amounts.';
+      case 'per-term':
+        return 'Pay per academic term with installments aligned to the school calendar. Payments are due at the start of each term.';
+      case 'custom':
+        return 'Flexible payment schedule designed to fit your needs. Make payments according to a customized installment plan.';
+      default:
+        return 'A flexible payment option to help you manage your fees.';
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -321,39 +336,7 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Category Summary */}
-        <View style={styles.categorySummary}>
-          <View style={styles.categoryIconContainer}>
-            <Ionicons name="receipt" size={32} color="#3B82F6" />
-          </View>
-          <View style={styles.categoryDetails}>
-                <Text style={styles.categoryName}>{category.name || 'Unknown Category'}</Text>
-                <Text style={styles.categoryAmount}>
-                  {formatCurrency(category.remaining_balance !== undefined ? category.remaining_balance : category.amount || 0)}
-                </Text>
-                {category.remaining_balance !== undefined && category.remaining_balance < category.amount && (
-                  <Text style={styles.originalAmountText}>
-                    Original: {formatCurrency(category.amount || 0)}
-                  </Text>
-                )}
-            <View style={styles.categoryBadges}>
-              {category.is_mandatory === true ? (
-                <View style={styles.mandatoryBadge}>
-                  <Text style={styles.mandatoryText}>Mandatory</Text>
-                </View>
-              ) : null}
-              {category.supports_recurring === true ? (
-                <View style={styles.recurringBadge}>
-                  <Text style={styles.recurringText}>Recurring</Text>
-                </View>
-              ) : null}
-              {category.supports_one_time === true ? (
-                <View style={styles.oneTimeBadge}>
-                  <Text style={styles.oneTimeText}>One-time</Text>
-                </View>
-              ) : null}
-            </View>
-          </View>
-        </View>
+        
 
         {/* Payment Plans */}
         <View style={styles.plansSection}>
@@ -376,10 +359,10 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
                 >
                   <View style={styles.planHeader}>
                     <View style={styles.planIconContainer}>
-                      <Ionicons 
-                        name={getPlanIcon(plan.type)} 
-                        size={24} 
-                        color={plan.type === 'upfront' ? '#10B981' : '#3B82F6'} 
+                      <Ionicons
+                        name={getPlanIcon(plan.type)}
+                        size={26}
+                        color={plan.type === 'upfront' ? '#10B981' : '#3B82F6'}
                       />
                     </View>
                     <View style={styles.planInfo}>
@@ -412,6 +395,13 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
                       <Text style={styles.usedBadgeText}>Currently Using</Text>
                     </View>
                   )}
+
+                  {/* Separator and Explanation */}
+                  <View style={styles.separator} />
+                  <View style={styles.explanationSection}>
+                    <Ionicons name="information-circle-outline" size={18} color={colors.primary} />
+                    <Text style={styles.explanationText}>{getPlanExplanation(plan)}</Text>
+                  </View>
                 </TouchableOpacity>
               );
             })
@@ -487,19 +477,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  categorySummary: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
+
   categoryIconContainer: {
     width: 64,
     height: 64,
@@ -524,10 +502,9 @@ const styles = StyleSheet.create({
     color: 'white',
     marginBottom: 8,
   },
-  originalAmountText: {
+  remainingAmountText: {
     fontSize: 14,
     color: '#B0C4DE',
-    textDecorationLine: 'line-through',
     marginTop: 2,
   },
   categoryBadges: {
@@ -574,80 +551,84 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: 'white',
+    color: colors.text.primary,
     marginBottom: 16,
   },
   planCard: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowRadius: 8,
+    elevation: 3,
     position: 'relative',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   planHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   planIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F3F4F6',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.blue.pale,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 14,
   },
   planInfo: {
     flex: 1,
   },
   planTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: 'white',
-    marginBottom: 2,
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.text.primary,
+    marginBottom: 4,
   },
   planDescription: {
     fontSize: 14,
-    color: '#B0C4DE',
+    color: colors.text.secondary,
   },
   planDetails: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
+    marginTop: 8,
   },
   planAmountContainer: {
     flex: 1,
   },
   planAmount: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
-    color: 'white',
-    marginBottom: 2,
+    color: colors.primary,
+    marginBottom: 4,
   },
   planSubAmount: {
     fontSize: 14,
-    color: '#B0C4DE',
+    color: colors.text.secondary,
   },
   planDueDate: {
-    fontSize: 14,
-    color: '#B0C4DE',
+    fontSize: 13,
+    color: colors.text.secondary,
     fontWeight: '500',
   },
   discountBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ECFDF5',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
     alignSelf: 'flex-start',
+    marginTop: 8,
   },
   discountText: {
     fontSize: 12,
@@ -691,8 +672,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   planCardDisabled: {
-    opacity: 0.5,
-    backgroundColor: '#1F2937',
+    opacity: 0.6,
+    backgroundColor: '#F9FAFB',
   },
   usedBadge: {
     flexDirection: 'row',
@@ -701,7 +682,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
-    marginTop: 8,
+    marginTop: 12,
     alignSelf: 'flex-start',
     borderWidth: 1,
     borderColor: 'rgba(16, 185, 129, 0.3)',
@@ -734,5 +715,24 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#E5E7EB',
     textAlign: 'center',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginVertical: 16,
+  },
+  explanationSection: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: colors.blue.pale,
+    padding: 12,
+    borderRadius: 8,
+    gap: 10,
+  },
+  explanationText: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.text.secondary,
+    lineHeight: 18,
   },
 });

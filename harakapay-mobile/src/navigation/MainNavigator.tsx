@@ -50,7 +50,7 @@ const MainNavigator = () => (
     <Stack.Screen name="Payments" component={PaymentsScreen} options={{ title: 'Payments' }} />
     <Stack.Screen name="PaymentSchedule" component={PaymentScheduleScreen} options={{ title: 'Payment Options' }} />
     <Stack.Screen name="PaymentStatus" component={PaymentStatusScreen} options={{ title: 'Payment Status' }} />
-    <Stack.Screen name="PaymentHistory" component={PaymentHistoryScreen} options={{ title: 'Payment History', headerShown: false }} />
+    <Stack.Screen name="PaymentHistory" component={PaymentHistoryScreen} options={{ title: 'Payment History' }} />
   </Stack.Navigator>
 );
 
