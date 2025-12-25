@@ -1,0 +1,12 @@
+{
+  "greeting": "Bonjour, {{name}} !",
+  "subtitle": "Gérez les activités scolaires de vos enfants",
+  "addChild": "Ajouter un enfant",
+  "myChildren": "Mes enfants",
+  "emptyState": {
+    "title": "Connectez vos enfants",
+    "description": "Cliquez sur le bouton ci-dessous et nous trouverons automatiquement vos enfants.",
+    "linkButton": "Lier votre premier enfant",
+    "helpText": "Besoin d'aide ? Contactez votre école pour obtenir de l'assistance."
+  }
+}

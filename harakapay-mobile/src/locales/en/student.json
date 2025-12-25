@@ -1,0 +1,67 @@
+{
+  "link": {
+    "title": "Link Your Child",
+    "description": "Enter your child's information to link them to your account",
+    "searchTitle": "Search for Student",
+    "searchDescription": "Enter your child's name and phone number",
+    "firstNamePlaceholder": "Student's First Name",
+    "lastNamePlaceholder": "Student's Last Name",
+    "phonePlaceholder": "+243 XXX XXX XXX",
+    "searchButton": "Search",
+    "searching": "Searching...",
+    "noResults": "No Students Found",
+    "noResultsDescription": "No students match your search criteria. Please check the information and try again.",
+    "selectStudents": "Select students to link",
+    "linkButton": "Link {{count}} student",
+    "linkButton_plural": "Link {{count}} students",
+    "linking": "Linking...",
+    "strongMatches": "Strong Matches",
+    "possibleMatches": "Possible Matches",
+    "otherMatches": "Other Matches",
+    "noAutoMatches": "No Automatic Matches Found",
+    "noAutoMatchesDescription": "We couldn't find any students that match your information automatically.",
+    "searchManually": "Search Manually",
+    "confirmLink": "Confirm Link",
+    "grade": "Grade",
+    "studentId": "ID",
+    "linkStudentButton": "Link Student",
+    "profileIncomplete": {
+      "title": "Profile Incomplete",
+      "message": "Your profile is missing required information (name or phone). Please update your profile first."
+    },
+    "profileNotFound": {
+      "title": "Profile Not Found",
+      "message": "Unable to load your profile. Please try again."
+    },
+    "success": {
+      "title": "Success!",
+      "message": "{{studentName}} has been linked to your account."
+    },
+    "errors": {
+      "title": "Error",
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "phoneRequired": "Phone number is required",
+      "phoneInvalid": "Number must contain exactly 9 digits",
+      "searchFailed": "Search failed",
+      "linkFailed": "Failed to link student. Please try again.",
+      "noStudentsSelected": "No students selected"
+    }
+  },
+  "details": {
+    "title": "Student Details",
+    "studentInfo": "Student Information",
+    "name": "Name",
+    "class": "Class",
+    "school": "School",
+    "studentNumber": "Student Number",
+    "fees": "Fees",
+    "payments": "Payments",
+    "viewFees": "View Fees",
+    "viewPayments": "View Payments"
+  },
+  "card": {
+    "unknownFirstName": "Unknown",
+    "unknownLastName": "Student"
+  }
+}

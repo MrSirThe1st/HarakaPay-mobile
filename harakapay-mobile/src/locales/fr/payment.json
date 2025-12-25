@@ -1,0 +1,255 @@
+{
+  "plans": {
+    "title": "Plans de paiement",
+    "selectPlan": "Sélectionner un plan",
+    "availablePlans": "Plans de paiement disponibles",
+    "upfront": {
+      "title": "Paiement intégral",
+      "description": "Payez le montant total en une seule transaction. Ce plan offre la meilleure valeur avec une réduction immédiate et élimine la nécessité de plusieurs paiements.",
+      "shortDescription": "Tout payer en une fois",
+      "shortDescriptionWithDiscount": "Tout payer en une fois et obtenir {{percent}}% de réduction"
+    },
+    "monthly": {
+      "title": "Plan mensuel",
+      "description": "Répartissez vos paiements sur plusieurs mois avec des versements mensuels fixes. Cela facilite la budgétisation avec des montants de paiement prévisibles.",
+      "shortDescription": "Payer sur {{count}} mois"
+    },
+    "termly": {
+      "title": "Plan trimestriel",
+      "description": "Payez par trimestre scolaire avec des versements importants mais moins fréquents. Idéal pour aligner les paiements sur les cycles scolaires.",
+      "shortDescription": "Payer sur {{count}} trimestres"
+    },
+    "custom": {
+      "title": "Plan de versements",
+      "description": "Calendrier de paiement flexible conçu pour répondre à vos besoins. Effectuez des paiements selon un plan de versements personnalisé.",
+      "shortDescription": "Payer sur {{count}} versements"
+    },
+    "default": {
+      "title": "Plan de paiement",
+      "description": "Une option de paiement flexible pour vous aider à gérer vos frais."
+    },
+    "discount": "{{percent}}% de réduction",
+    "installments": "{{count}} versement",
+    "installments_plural": "{{count}} versements",
+    "totalAmount": "Montant total",
+    "discountedAmount": "Montant avec réduction",
+    "amountPerInstallment": "Montant par versement",
+    "noPlansAvailable": "Aucun plan de paiement disponible",
+    "missingInformation": "Informations manquantes",
+    "periods": {
+      "monthly": "Mensuel",
+      "perTerm": "par trimestre",
+      "perInstallment": "par versement",
+      "perPayment": "par paiement"
+    },
+    "dueBy": "Dû avant le",
+    "firstDue": "Premier versement le",
+    "currentlyUsing": "Actuellement utilisé",
+    "emptyState": {
+      "title": "Aucun plan de paiement disponible pour ces frais",
+      "description": "Les plans de paiement pour cette catégorie de frais n'ont pas encore été configurés."
+    },
+    "helpText": "Sélectionnez un plan de paiement pour voir les calendriers de versements détaillés et effectuer des paiements.",
+    "errors": {
+      "missingInfo": "Informations manquantes",
+      "missingInfoDescription": "Les données requises sont manquantes. Veuillez revenir en arrière et réessayer.",
+      "invalidCategory": "Données de catégorie invalides",
+      "invalidCategoryDescription": "Le montant de la catégorie est manquant. Veuillez revenir en arrière et réessayer.",
+      "loadFailed": "Impossible de charger les plans de paiement",
+      "retryButton": "Réessayer"
+    }
+  },
+  "details": {
+    "title": "Détails du plan de paiement",
+    "paymentSchedule": "Calendrier de paiement",
+    "installment": "Versement {{number}}",
+    "installments": "{{count}} versement",
+    "installments_plural": "{{count}} versements",
+    "payEverythingAtOnce": "Tout payer en une fois",
+    "fullPayment": "Paiement intégral",
+    "monthlyInstallment": "Mensuel {{number}}",
+    "termlyInstallment": "Trimestre {{number}}",
+    "dueDate": "Date d'échéance",
+    "amount": "Montant",
+    "status": "Statut",
+    "payNow": "Payer maintenant",
+    "totalDue": "Total dû",
+    "totalPaid": "Total payé",
+    "remaining": "Restant",
+    "originalAmount": "Montant original :",
+    "discount": "Réduction ({{percent}}%) :",
+    "totalAmount": "Montant total :",
+    "amountPaid": "Montant payé :",
+    "remainingBalance": "Solde restant :",
+    "statusBadges": {
+      "paid": "Payé",
+      "overdue": "En retard",
+      "dueSoon": "Bientôt dû",
+      "pending": "En attente"
+    },
+    "emptyState": {
+      "noInstallments": "Aucun versement disponible"
+    },
+    "helpText": {
+      "upfront": "Appuyez sur la carte de paiement ci-dessus pour payer le montant total avant la date d'échéance et recevoir votre réduction.",
+      "installments": "Appuyez sur n'importe quelle carte de versement ci-dessus pour effectuer un paiement. Effectuez les paiements selon le calendrier."
+    }
+  },
+  "history": {
+    "title": "Historique des paiements",
+    "totalPayments": "Total des paiements",
+    "totalAmountPaid": "Montant total payé",
+    "allTransactions": "Toutes les transactions",
+    "noHistory": "Aucun historique de paiement",
+    "noHistoryDescription": "Vous n'avez pas encore effectué de paiements. Les paiements apparaîtront ici une fois que vous aurez terminé une transaction.",
+    "paymentMethod": "Méthode",
+    "paymentDate": "Date",
+    "transactionId": "ID de transaction",
+    "method": {
+      "mobileMoney": "M-Pesa",
+      "airtelMoney": "Airtel Money",
+      "orangeMoney": "Orange Money",
+      "unknown": "Inconnu"
+    }
+  },
+  "status": {
+    "pending": "En attente",
+    "completed": "Terminé",
+    "failed": "Échoué",
+    "processing": "En cours",
+    "cancelled": "Annulé"
+  },
+  "makePayment": {
+    "title": "Effectuer un paiement",
+    "selectMethod": "Sélectionner une méthode de paiement",
+    "enterPhone": "Entrez votre numéro de téléphone",
+    "phonePlaceholder": "+243 XXX XXX XXX",
+    "amount": "Montant",
+    "payButton": "Payer {{amount}}",
+    "processing": "Traitement...",
+    "success": {
+      "title": "Paiement réussi",
+      "message": "Votre paiement a été traité avec succès"
+    },
+    "failure": {
+      "title": "Échec du paiement",
+      "message": "Impossible de traiter le paiement. Veuillez réessayer."
+    }
+  },
+  "fees": {
+    "title": "Frais",
+    "totalFees": "Frais totaux",
+    "totalPaid": "Total payé",
+    "balance": "Solde",
+    "remaining": "Restant",
+    "category": "Catégorie",
+    "amount": "Montant",
+    "dueDate": "Date d'échéance",
+    "viewPlans": "Voir les plans de paiement",
+    "makePayment": "Effectuer un paiement",
+    "noFees": "Aucun frais",
+    "noFeesDescription": "Aucun frais n'est actuellement dû pour cet étudiant.",
+    "tuition": "Scolarité",
+    "mandatory": "Obligatoire",
+    "paymentHistory": "Historique des paiements",
+    "feeSummary": "Résumé des frais",
+    "categories": {
+      "tuition": "Scolarité",
+      "transport": "Transport",
+      "books": "Livres",
+      "uniform": "Uniforme",
+      "meals": "Repas",
+      "food": "Nourriture",
+      "registration": "Inscription",
+      "activities": "Activités",
+      "sports": "Sports",
+      "library": "Bibliothèque",
+      "laboratory": "Laboratoire",
+      "technology": "Technologie",
+      "exam": "Examen",
+      "excursion": "Excursion"
+    },
+    "badges": {
+      "mandatory": "Obligatoire",
+      "recurring": "Récurrent",
+      "oneTime": "Unique"
+    },
+    "emptyState": {
+      "title": "Aucune donnée de frais disponible",
+      "description": "Les informations sur les frais pour cet étudiant n'ont pas encore été configurées. Veuillez vérifier plus tard ou contacter votre école."
+    },
+    "errorState": {
+      "title": "Impossible de charger les frais",
+      "retryButton": "Réessayer"
+    }
+  },
+  "makePaymentScreen": {
+    "title": "Effectuer un paiement",
+    "paymentFor": "Paiement pour",
+    "paymentDetails": "Détails du paiement",
+    "selectPaymentType": "Sélectionnez le type de paiement",
+    "fullPayment": "Paiement complet",
+    "monthlyPayment": "Paiement mensuel",
+    "phoneNumber": "Numéro de téléphone M-Pesa",
+    "phonePlaceholder": "0XXXXXXXXX",
+    "phoneHint": "Entrez le numéro M-Pesa à débiter",
+    "amountLabel": "Montant (USD)",
+    "amountPlaceholder": "0.00",
+    "selectMonth": "Sélectionner le mois",
+    "monthSelector": "Mois {{number}} - ${{amount}}",
+    "tapToSelectMonth": "Appuyez pour sélectionner le mois",
+    "selectMonthModalTitle": "Sélectionner le mois de paiement",
+    "payButton": "Payer ${{amount}} maintenant",
+    "paying": "Paiement en cours...",
+    "totalAmount": "Montant total",
+    "monthlyAmount": "Montant mensuel",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "paymentMethod": {
+      "title": "Paiement via M-Pesa",
+      "instructions": "1. Cliquez sur \"Payer maintenant\" ci-dessous\n2. Vérifiez votre téléphone pour l'invite M-Pesa\n3. Entrez votre code PIN M-Pesa\n4. La confirmation du paiement sera instantanée"
+    },
+    "months": {
+      "september": "Septembre",
+      "october": "Octobre",
+      "november": "Novembre",
+      "december": "Décembre",
+      "january": "Janvier",
+      "february": "Février",
+      "march": "Mars",
+      "april": "Avril",
+      "may": "Mai",
+      "june": "Juin"
+    }
+  },
+  "errors": {
+    "title": "Erreur",
+    "noAcademicYear": "Aucune année académique active trouvée",
+    "loadFailed": "Échec du chargement des détails de paiement",
+    "invalidPhone": "Numéro de téléphone invalide",
+    "invalidPhoneMessage": "Veuillez entrer un numéro M-Pesa valide (ex : 0XXXXXXXXX)",
+    "invalidAmount": "Montant invalide",
+    "invalidAmountMessage": "Veuillez entrer un montant de paiement valide",
+    "selectMonth": "Sélectionner le mois",
+    "selectMonthMessage": "Veuillez sélectionner un mois pour le paiement",
+    "missingInfo": "Informations de paiement manquantes. Veuillez réessayer.",
+    "loginRequired": "Veuillez vous reconnecter",
+    "paymentFailed": "Échec du paiement",
+    "paymentError": "Erreur de paiement"
+  },
+  "success": {
+    "paymentInitiated": "✅ Paiement initié",
+    "paymentInitiatedMessage": "Veuillez vérifier votre téléphone ({{phone}}) et entrer votre code PIN M-Pesa pour finaliser le paiement.\n\nID de transaction : {{transactionId}}",
+    "checkStatus": "Vérifier le statut"
+  },
+  "confirmPayment": {
+    "title": "Confirmer le paiement",
+    "message": "Payer ${{amount}} pour {{studentName}} ?\n\nVous recevrez une invite M-Pesa sur {{phone}}",
+    "cancel": "Annuler",
+    "confirm": "Confirmer"
+  },
+  "notices": {
+    "title": "Avis",
+    "noPlan": "Aucun plan de paiement assigné pour cet étudiant"
+  }
+}

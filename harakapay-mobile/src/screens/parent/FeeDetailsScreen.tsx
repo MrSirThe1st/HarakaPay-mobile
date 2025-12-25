@@ -15,6 +15,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { FeeCategoryItem, PaymentScheduleItem } from '../../api/paymentApi';
 import usePaymentData from '../../hooks/usePaymentData';
 import colors from '../../constants/colors';
+import { useI18n } from '../../hooks/useI18n';
+import { formatCurrency } from '../../utils/formatters';
 
 const { width } = Dimensions.get('window');
 
@@ -41,7 +43,8 @@ interface ChildDetailsScreenProps {
 
 export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScreenProps) {
   const { student } = route.params;
-  
+  const { t, currentLanguage } = useI18n('payment');
+
   // Use the new payment data hook with smart caching
   const {
     categories,
@@ -85,11 +88,25 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
     return 'receipt';
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+  const translateCategoryName = (categoryName: string) => {
+    // Normalize the category name to create a key
+    const normalizedName = categoryName.toLowerCase().trim();
+
+    // Try to find a translation key that matches
+    const categoryKeys = [
+      'tuition', 'transport', 'books', 'uniform', 'meals', 'food',
+      'registration', 'activities', 'sports', 'library', 'laboratory',
+      'technology', 'exam', 'excursion'
+    ];
+
+    for (const key of categoryKeys) {
+      if (normalizedName.includes(key)) {
+        return t(`fees.categories.${key}`);
+      }
+    }
+
+    // If no translation found, return the original name
+    return categoryName;
   };
 
   const getTotalAmount = () => {
@@ -111,10 +128,10 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={48} color="#EF4444" />
-          <Text style={styles.errorTitle}>Unable to Load Fees</Text>
+          <Text style={styles.errorTitle}>{t('fees.errorState.title')}</Text>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={refreshData}>
-            <Text style={styles.retryButtonText}>Try Again</Text>
+            <Text style={styles.retryButtonText}>{t('fees.errorState.retryButton')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -122,7 +139,7 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView 
         style={styles.content} 
         showsVerticalScrollIndicator={false}
@@ -142,16 +159,16 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
           activeOpacity={0.8}
         >
           <Ionicons name="time-outline" size={24} color="#FFFFFF" />
-          <Text style={styles.historyButtonText}>Payment History</Text>
+          <Text style={styles.historyButtonText}>{t('fees.paymentHistory')}</Text>
           <Ionicons name="chevron-forward" size={24} color="#FFFFFF" />
         </TouchableOpacity>
 
         {/* Summary Card - Only show when there are categories */}
         {categories.length > 0 && (
           <View style={styles.summaryCard}>
-            <Text style={styles.summaryTitle}>Fee Summary</Text>
+            <Text style={styles.summaryTitle}>{t('fees.feeSummary')}</Text>
             <Text style={styles.totalAmount}>
-              {formatCurrency(getTotalAmount())}
+              {formatCurrency(getTotalAmount(), currentLanguage)}
             </Text>
           </View>
         )}
@@ -177,28 +194,28 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
                     />
                   </View>
                   <View style={styles.categoryInfo}>
-                    <Text style={styles.categoryName}>{category.name}</Text>
+                    <Text style={styles.categoryName}>{translateCategoryName(category.name)}</Text>
                     <View style={styles.categoryBadges}>
                       {category.is_mandatory === true && (
                         <View style={styles.mandatoryBadge}>
-                          <Text style={styles.mandatoryText}>Mandatory</Text>
+                          <Text style={styles.mandatoryText}>{t('fees.badges.mandatory')}</Text>
                         </View>
                       )}
                       {category.supports_recurring === true && (
                         <View style={styles.recurringBadge}>
-                          <Text style={styles.recurringText}>Recurring</Text>
+                          <Text style={styles.recurringText}>{t('fees.badges.recurring')}</Text>
                         </View>
                       )}
                       {category.supports_one_time === true && (
                         <View style={styles.oneTimeBadge}>
-                          <Text style={styles.oneTimeText}>One-time</Text>
+                          <Text style={styles.oneTimeText}>{t('fees.badges.oneTime')}</Text>
                         </View>
                       )}
                     </View>
                   </View>
                   <View style={styles.categoryAmount}>
                     <Text style={styles.categoryAmountText}>
-                      {formatCurrency(category.amount)}
+                      {formatCurrency(category.amount, currentLanguage)}
                     </Text>
                     {/* {category.remaining_balance !== undefined && category.remaining_balance < category.amount && (
                       <Text style={styles.remainingAmountText}>
@@ -213,17 +230,15 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
           ) : (
             <View style={styles.emptyState}>
               <Ionicons name="receipt-outline" size={64} color="#9CA3AF" />
-              <Text style={styles.emptyStateTitle}>No Fee Data Available</Text>
+              <Text style={styles.emptyStateTitle}>{t('fees.emptyState.title')}</Text>
               <Text style={styles.emptyStateText}>
-                Fee information for this student has not been set up yet. Please check back later or contact your school.
+                {t('fees.emptyState.description')}
               </Text>
             </View>
           )}
-        </View>
-
-       
+        </View>    
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

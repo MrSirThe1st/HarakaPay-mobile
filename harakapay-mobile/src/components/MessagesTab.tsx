@@ -14,12 +14,15 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
+import { fr, enUS } from 'date-fns/locale';
 import { fetchMessages } from '../api/messageApi';
 import type { ParentSchoolMessage } from '../types/message';
+import { useI18n } from '../hooks/useI18n';
 import colors from '../constants/colors';
 import SendMessageModal from './SendMessageModal';
 
 const MessagesTab: React.FC = () => {
+  const { t, currentLanguage } = useI18n('messages');
   const [messages, setMessages] = useState<ParentSchoolMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -46,7 +49,7 @@ const MessagesTab: React.FC = () => {
       setHasMore(result.pagination ? currentPage < result.pagination.pages : false);
     } catch (error) {
       console.error('Error loading messages:', error);
-      Alert.alert('Error', 'Failed to load messages');
+      Alert.alert(t('errors.title'), t('errors.loadFailed'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -76,9 +79,10 @@ const MessagesTab: React.FC = () => {
 
   const getRelativeTime = (dateString: string) => {
     try {
-      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+      const locale = currentLanguage === 'fr' ? fr : enUS;
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale });
     } catch {
-      return 'Recently';
+      return t('time.recently');
     }
   };
 
@@ -117,7 +121,7 @@ const MessagesTab: React.FC = () => {
             )}
             <View style={styles.statusRow}>
               <Text style={[styles.statusText, item.status === 'read' && styles.readStatus]}>
-                {item.status === 'read' ? '✓ Read by school' : 'Sent'}
+                {item.status === 'read' ? t('status.read') : t('status.sent')}
               </Text>
               <Text style={styles.time}> · {getRelativeTime(item.created_at)}</Text>
             </View>
@@ -130,13 +134,13 @@ const MessagesTab: React.FC = () => {
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
       <Ionicons name="chatbubbles-outline" size={64} color="#D1D5DB" />
-      <Text style={styles.emptyTitle}>No Messages</Text>
+      <Text style={styles.emptyTitle}>{t('empty.title')}</Text>
       <Text style={styles.emptyText}>
-        Send a message to your school to get started.
+        {t('empty.description')}
       </Text>
       <TouchableOpacity style={styles.emptyButton} onPress={() => setSendModalVisible(true)}>
         <Ionicons name="send" size={20} color="#FFFFFF" />
-        <Text style={styles.emptyButtonText}>Send Message</Text>
+        <Text style={styles.emptyButtonText}>{t('empty.button')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -152,7 +156,7 @@ const MessagesTab: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Messages</Text>
+        <Text style={styles.headerTitle}>{t('title')}</Text>
         <TouchableOpacity onPress={() => setSendModalVisible(true)} style={styles.newMessageButton}>
           <Ionicons name="create-outline" size={24} color={colors.primary} />
         </TouchableOpacity>
@@ -194,7 +198,7 @@ const MessagesTab: React.FC = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Message</Text>
+              <Text style={styles.modalTitle}>{t('modal.title')}</Text>
               <TouchableOpacity
                 onPress={() => setModalVisible(false)}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -221,16 +225,16 @@ const MessagesTab: React.FC = () => {
                       <View style={styles.modalStudentBadge}>
                         <Ionicons name="person" size={16} color="#6B7280" />
                         <Text style={styles.modalStudentName}>
-                          Regarding: {selectedMessage.student.first_name} {selectedMessage.student.last_name}
+                          {t('modal.regarding')} {selectedMessage.student.first_name} {selectedMessage.student.last_name}
                         </Text>
                       </View>
                     )}
                     <Text style={styles.modalTime}>
-                      Sent {getRelativeTime(selectedMessage.created_at)}
+                      {t('modal.sent')} {getRelativeTime(selectedMessage.created_at)}
                     </Text>
                     {selectedMessage.status === 'read' && selectedMessage.read_at && (
                       <Text style={styles.modalReadStatus}>
-                        Read by school {getRelativeTime(selectedMessage.read_at)}
+                        {t('modal.readBySchool')} {getRelativeTime(selectedMessage.read_at)}
                       </Text>
                     )}
                   </View>

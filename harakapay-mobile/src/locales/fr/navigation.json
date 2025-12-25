@@ -1,0 +1,27 @@
+{
+  "tabs": {
+    "home": "Accueil",
+    "notifications": "Notifications",
+    "profile": "Profil"
+  },
+  "screens": {
+    "login": "Connexion",
+    "register": "Inscription",
+    "forgotPassword": "Mot de passe oublié",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "dashboard": "Tableau de bord",
+    "profile": "Profil",
+    "settings": "Paramètres",
+    "connectChild": "Connecter votre enfant",
+    "linkStudent": "Lier votre enfant",
+    "childDetails": "Détails de l'enfant",
+    "feeDetails": "Détails des frais",
+    "paymentPlans": "Plans de paiement",
+    "paymentPlanDetails": "Détails du plan de paiement",
+    "payments": "Paiements",
+    "paymentSchedule": "Options de paiement",
+    "paymentStatus": "Statut du paiement",
+    "paymentHistory": "Historique des paiements",
+    "notifications": "Notifications"
+  }
+}

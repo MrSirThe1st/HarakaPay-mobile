@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
+import { useI18n } from '../../hooks/useI18n';
 import colors from '../../constants/colors';
 
 const { width, height } = Dimensions.get('window');
@@ -38,6 +39,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const [pinError, setPinError] = useState('');
 
   const { signUp, loading, error: authError, user, initialized } = useAuth();
+  const { t } = useI18n('auth');
 
   // Navigate to main app if user is already logged in
   useEffect(() => {
@@ -46,11 +48,11 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
   const validateFirstName = (name: string): boolean => {
     if (!name.trim()) {
-      setFirstNameError('Le prénom est obligatoire');
+      setFirstNameError(t('register.errors.firstNameRequired'));
       return false;
     }
     if (name.trim().length < 2) {
-      setFirstNameError('Le prénom doit contenir au moins 2 caractères');
+      setFirstNameError(t('register.errors.firstNameTooShort'));
       return false;
     }
     setFirstNameError('');
@@ -59,11 +61,11 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
   const validateLastName = (name: string): boolean => {
     if (!name.trim()) {
-      setLastNameError('Le nom de famille est obligatoire');
+      setLastNameError(t('register.errors.lastNameRequired'));
       return false;
     }
     if (name.trim().length < 2) {
-      setLastNameError('Le nom de famille doit contenir au moins 2 caractères');
+      setLastNameError(t('register.errors.lastNameTooShort'));
       return false;
     }
     setLastNameError('');
@@ -71,14 +73,14 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   };
 
   const validateEmail = (email: string): boolean => {
-    // Email is optional
+    // Email is now required
     if (!email.trim()) {
-      setEmailError('');
-      return true;
+      setEmailError(t('register.errors.emailRequired'));
+      return false;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setEmailError('Veuillez entrer une adresse email valide');
+      setEmailError(t('register.errors.emailInvalid'));
       return false;
     }
     setEmailError('');
@@ -106,7 +108,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
   const validatePhone = (phoneValue: string): boolean => {
     if (!phoneValue || phoneValue.trim() === '+243 ' || phoneValue.trim() === '') {
-      setPhoneError('Le numéro de téléphone est obligatoire');
+      setPhoneError(t('register.errors.phoneRequired'));
       return false;
     }
 
@@ -114,7 +116,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
     const localNumber = digitsOnly.startsWith('243') ? digitsOnly.slice(3) : digitsOnly;
 
     if (localNumber.length !== 9) {
-      setPhoneError('Le numéro doit contenir exactement 9 chiffres');
+      setPhoneError(t('register.errors.phoneInvalid'));
       return false;
     }
 
@@ -124,15 +126,15 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
   const validatePin = (pinValue: string): boolean => {
     if (!pinValue) {
-      setPinError('Le code PIN est obligatoire');
+      setPinError(t('register.errors.pinRequired'));
       return false;
     }
     if (pinValue.length !== 6) {
-      setPinError('Le code PIN doit contenir exactement 6 chiffres');
+      setPinError(t('register.errors.pinLength'));
       return false;
     }
     if (!/^\d{6}$/.test(pinValue)) {
-      setPinError('Le code PIN doit contenir uniquement des chiffres');
+      setPinError(t('register.errors.pinDigitsOnly'));
       return false;
     }
     setPinError('');
@@ -157,11 +159,8 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
       const localNumber = digitsOnly.startsWith('243') ? digitsOnly.slice(3) : digitsOnly;
       const formattedPhone = `+243${localNumber}`;
 
-      // Use provided email or generate from phone number
-      const emailToUse = email.trim() || `243${localNumber}@harakapay.app`;
-
       const result = await signUp({
-        email: emailToUse.toLowerCase(),
+        email: email.toLowerCase().trim(),
         password: pin,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
@@ -170,11 +169,11 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
       if (result.success) {
         Alert.alert(
-          'Inscription réussie',
-          'Votre compte a été créé avec succès ! Vous êtes maintenant connecté.',  
+          t('register.success.title'),
+          t('register.success.message'),
           [
             {
-              text: 'OK',
+              text: t('common.ok'),
               // Don't navigate - the app will automatically redirect to main app
               // because the user is now authenticated
             },
@@ -182,16 +181,16 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
         );
       } else {
         Alert.alert(
-          'Échec de l\'inscription',
-          result.error || 'Impossible de créer le compte. Veuillez réessayer.',
-          [{ text: 'OK' }]
+          t('register.failure.title'),
+          result.error || t('register.failure.message'),
+          [{ text: t('common.ok') }]
         );
       }
     } catch (error) {
       Alert.alert(
-        'Erreur',
-        'Une erreur inattendue s\'est produite. Veuillez réessayer.',
-        [{ text: 'OK' }]
+        t('common.error'),
+        t('register.failure.message'),
+        [{ text: t('common.ok') }]
       );
     }
   };
@@ -213,7 +212,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.subtitle}>Créer un compte</Text>
+            <Text style={styles.subtitle}>{t('register.title')}</Text>
           </View>
 
           {/* Form */}
@@ -225,7 +224,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                   styles.input,
                   firstNameError ? styles.inputError : null,
                 ]}
-                placeholder="Prénom"
+                placeholder={t('register.firstNamePlaceholder')}
                 placeholderTextColor="#9CA3AF"
                 value={firstName}
                 onChangeText={(text) => {
@@ -248,7 +247,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                   styles.input,
                   lastNameError ? styles.inputError : null,
                 ]}
-                placeholder="Nom de famille"
+                placeholder={t('register.lastNamePlaceholder')}
                 placeholderTextColor="#9CA3AF"
                 value={lastName}
                 onChangeText={(text) => {
@@ -271,7 +270,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                   styles.phoneInput,
                   phoneError ? styles.inputError : null,
                 ]}
-                placeholder="+243 XXX XXX XXX"
+                placeholder={t('register.phonePlaceholder')}
                 placeholderTextColor="#9CA3AF"
                 value={phone}
                 onChangeText={(text) => {
@@ -295,7 +294,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                   styles.input,
                   emailError ? styles.inputError : null,
                 ]}
-                placeholder="Adresse email (Optionnel)"
+                placeholder={t('register.emailPlaceholder')}
                 placeholderTextColor="#9CA3AF"
                 value={email}
                 onChangeText={(text) => {
@@ -315,14 +314,14 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
             {/* PIN Input */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Code PIN (6 chiffres)</Text>
+              <Text style={styles.label}>{t('register.pinLabel')}</Text>
               <View style={styles.passwordContainer}>
                 <TextInput
                   style={[
                     styles.pinInput,
                     pinError ? styles.inputError : null,
                   ]}
-                  placeholder="••••••"
+                  placeholder={t('register.pinPlaceholder')}
                   placeholderTextColor="#9CA3AF"
                   value={pin}
                   onChangeText={(text) => {
@@ -352,15 +351,16 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
               {pinError ? (
                 <Text style={styles.errorText}>{pinError}</Text>
               ) : null}
-              <Text style={styles.pinCounter}>{pin.length}/6</Text>
+              <Text style={styles.pinCounter}>{t('register.pinCounter', { current: pin.length, max: 6 })}</Text>
             </View>
 
             {/* Terms and Conditions */}
             <View style={styles.termsContainer}>
               <Text style={styles.termsText}>
-                En créant un compte, vous acceptez nos{' '}
-                <Text style={styles.linkText}>Conditions d'utilisation</Text> et notre{' '}
-                <Text style={styles.linkText}>Politique de confidentialité</Text>
+                {t('register.termsText')}
+                <Text style={styles.linkText}>{t('register.termsLink')}</Text>
+                {t('register.termsAnd')}
+                <Text style={styles.linkText}>{t('register.privacyLink')}</Text>
               </Text>
             </View>
 
@@ -374,7 +374,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
               disabled={loading}
             >
               <Text style={styles.signUpButtonText}>
-                {loading ? 'Création du compte...' : 'Créer le compte'}
+                {loading ? t('register.creatingAccount') : t('register.signUpButton')}
               </Text>
             </TouchableOpacity>
 
@@ -388,9 +388,9 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
           {/* Footer */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Vous avez déjà un compte ? </Text>
+            <Text style={styles.footerText}>{t('register.hasAccount')}</Text>
             <TouchableOpacity onPress={navigateToLogin} disabled={loading}>
-              <Text style={styles.signInText}>Se connecter</Text>
+              <Text style={styles.signInText}>{t('register.signInLink')}</Text>
             </TouchableOpacity>
           </View>
 

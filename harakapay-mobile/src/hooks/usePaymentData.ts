@@ -2,6 +2,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../contexts/AuthContext';
 import { WEB_API_URL } from '../config/env';
+import { supabase } from '../config/supabase';
 
 export interface FeeCategoryItem {
   id: string;
@@ -39,17 +40,57 @@ export interface StudentFeeData {
 const fetchStudentFeeData = async (studentId: string, accessToken: string): Promise<StudentFeeData> => {
   console.log('🔍 Fetching fresh fee data for student:', studentId);
 
-  if (!accessToken) {
-    throw new Error('No authentication token available');
+  // Get fresh session (with automatic refresh if needed)
+  let token = accessToken;
+
+  if (!token) {
+    console.log('No token provided, getting session...');
+    const { data: { session }, error } = await supabase.auth.getSession();
+
+    if (error || !session?.access_token) {
+      console.log('No valid session, attempting to refresh...');
+      const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+
+      if (refreshError || !refreshedSession?.access_token) {
+        console.error('Failed to refresh session:', refreshError);
+        throw new Error('No authentication token available - please log in again');
+      }
+
+      token = refreshedSession.access_token;
+    } else {
+      token = session.access_token;
+    }
   }
 
-  const response = await fetch(`${WEB_API_URL}/api/parent/student-fees-detailed`, {
+  let response = await fetch(`${WEB_API_URL}/api/parent/student-fees-detailed`, {
     method: 'GET',
     headers: {
-      'Authorization': `Bearer ${accessToken}`,
+      'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
   });
+
+  // If 401, try refreshing session and retry once
+  if (response.status === 401) {
+    console.log('Got 401, refreshing session and retrying...');
+    const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+
+    if (refreshError || !refreshedSession?.access_token) {
+      console.error('Failed to refresh session:', refreshError);
+      throw new Error('Session expired - please log in again');
+    }
+
+    token = refreshedSession.access_token;
+
+    // Retry the request with new token
+    response = await fetch(`${WEB_API_URL}/api/parent/student-fees-detailed`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+  }
 
   if (!response.ok) {
     throw new Error(`Failed to fetch student fee details: ${response.status}`);

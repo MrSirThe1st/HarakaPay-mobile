@@ -1,0 +1,45 @@
+{
+  "title": "Profile",
+  "personalInfo": "Personal Information",
+  "firstName": "First Name",
+  "lastName": "Last Name",
+  "email": "Email",
+  "phone": "Phone",
+  "edit": "Edit Profile",
+  "save": "Save Changes",
+  "cancel": "Cancel",
+  "language": {
+    "title": "Language",
+    "description": "Select your preferred language",
+    "french": "Français",
+    "english": "English"
+  },
+  "settings": {
+    "title": "Settings",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "security": "Security",
+    "about": "About"
+  },
+  "logout": "Logout",
+  "logoutConfirm": {
+    "title": "Logout",
+    "message": "Are you sure you want to logout?",
+    "confirm": "Logout",
+    "cancel": "Cancel"
+  },
+  "deleteAccount": "Delete Account",
+  "deleteAccountConfirm": {
+    "title": "Delete Account",
+    "message": "Are you sure you want to delete your account? This action is irreversible.",
+    "confirm": "Delete",
+    "cancel": "Cancel"
+  },
+  "errors": {
+    "updateFailed": "Failed to update profile",
+    "loadFailed": "Failed to load profile"
+  },
+  "success": {
+    "updated": "Profile updated successfully"
+  }
+}

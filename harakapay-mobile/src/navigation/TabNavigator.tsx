@@ -3,6 +3,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import HomeScreen from '../screens/parent/DashboardScreen';
 import NotificationsScreen from '../screens/parent/NotificationsScreen';
 import MessagesTab from '../components/MessagesTab';
@@ -13,6 +14,7 @@ const Tab = createBottomTabNavigator();
 
 const TabNavigator = () => {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation('navigation');
 
   return (
     <Tab.Navigator
@@ -65,10 +67,10 @@ const TabNavigator = () => {
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Notifications" component={NotificationsScreen} />
-      <Tab.Screen name="Messages" component={MessagesTab} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ title: t('tabs.home') }} />
+      <Tab.Screen name="Notifications" component={NotificationsScreen} options={{ title: t('tabs.notifications') }} />
+      <Tab.Screen name="Messages" component={MessagesTab} options={{ title: 'Messages' }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: t('tabs.profile') }} />
     </Tab.Navigator>
   );
 };

@@ -1,0 +1,45 @@
+{
+  "title": "Profil",
+  "personalInfo": "Informations personnelles",
+  "firstName": "Prénom",
+  "lastName": "Nom",
+  "email": "Email",
+  "phone": "Téléphone",
+  "edit": "Modifier le profil",
+  "save": "Enregistrer les modifications",
+  "cancel": "Annuler",
+  "language": {
+    "title": "Langue",
+    "description": "Sélectionnez votre langue préférée",
+    "french": "Français",
+    "english": "English"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "notifications": "Notifications",
+    "privacy": "Confidentialité",
+    "security": "Sécurité",
+    "about": "À propos"
+  },
+  "logout": "Se déconnecter",
+  "logoutConfirm": {
+    "title": "Se déconnecter",
+    "message": "Êtes-vous sûr de vouloir vous déconnecter ?",
+    "confirm": "Se déconnecter",
+    "cancel": "Annuler"
+  },
+  "deleteAccount": "Supprimer le compte",
+  "deleteAccountConfirm": {
+    "title": "Supprimer le compte",
+    "message": "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
+    "confirm": "Supprimer",
+    "cancel": "Annuler"
+  },
+  "errors": {
+    "updateFailed": "Échec de la mise à jour du profil",
+    "loadFailed": "Échec du chargement du profil"
+  },
+  "success": {
+    "updated": "Profil mis à jour avec succès"
+  }
+}

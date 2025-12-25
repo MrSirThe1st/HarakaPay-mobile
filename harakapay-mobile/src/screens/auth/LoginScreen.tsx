@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
+import { useI18n } from '../../hooks/useI18n';
 import colors from '../../constants/colors';
 
 const { width, height } = Dimensions.get('window');
@@ -23,56 +24,45 @@ interface LoginScreenProps {
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
-  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [pin, setPin] = useState('');
   const [showPin, setShowPin] = useState(false);
-  const [phoneError, setPhoneError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [pinError, setPinError] = useState('');
 
   const { signIn, loading, error: authError, user, initialized } = useAuth();
+  const { t } = useI18n('auth');
 
   // Navigate to main app if user is already logged in
   useEffect(() => {
     // When user is authenticated, root navigation will switch to main app automatically
   }, [initialized, user]);
 
-  const formatPhoneNumber = (input: string): string => {
-    const digitsOnly = input.replace(/\D/g, '');
-    if (digitsOnly.length === 0) return '+243 ';
-    const localNumber = digitsOnly.startsWith('243') ? digitsOnly.slice(3) : digitsOnly;
-    let formatted = '+243 ';
-    if (localNumber.length > 0) formatted += localNumber.slice(0, 3);
-    if (localNumber.length > 3) formatted += ' ' + localNumber.slice(3, 6);
-    if (localNumber.length > 6) formatted += ' ' + localNumber.slice(6, 9);
-    return formatted;
-  };
-
-  const validatePhone = (phoneValue: string): boolean => {
-    if (!phoneValue || phoneValue.trim() === '+243 ' || phoneValue.trim() === '') {
-      setPhoneError('Le numéro de téléphone est obligatoire');
+  const validateEmail = (emailValue: string): boolean => {
+    if (!emailValue || emailValue.trim() === '') {
+      setEmailError(t('login.errors.emailRequired'));
       return false;
     }
-    const digitsOnly = phoneValue.replace(/\D/g, '');
-    const localNumber = digitsOnly.startsWith('243') ? digitsOnly.slice(3) : digitsOnly;
-    if (localNumber.length !== 9) {
-      setPhoneError('Le numéro doit contenir exactement 9 chiffres');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailValue)) {
+      setEmailError(t('login.errors.emailInvalid'));
       return false;
     }
-    setPhoneError('');
+    setEmailError('');
     return true;
   };
 
   const validatePin = (pinValue: string): boolean => {
     if (!pinValue) {
-      setPinError('Le code PIN est obligatoire');
+      setPinError(t('login.errors.pinRequired'));
       return false;
     }
     if (pinValue.length !== 6) {
-      setPinError('Le code PIN doit contenir 6 chiffres');
+      setPinError(t('login.errors.pinLength'));
       return false;
     }
     if (!/^\d{6}$/.test(pinValue)) {
-      setPinError('Le code PIN doit contenir uniquement des chiffres');
+      setPinError(t('login.errors.pinDigitsOnly'));
       return false;
     }
     setPinError('');
@@ -81,36 +71,31 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
   const handleLogin = async () => {
     // Validate inputs
-    const isPhoneValid = validatePhone(phone);
+    const isEmailValid = validateEmail(email);
     const isPinValid = validatePin(pin);
 
-    if (!isPhoneValid || !isPinValid) {
+    if (!isEmailValid || !isPinValid) {
       return;
     }
 
     try {
-      // Generate email from phone for authentication
-      const digitsOnly = phone.replace(/\D/g, '');
-      const localNumber = digitsOnly.startsWith('243') ? digitsOnly.slice(3) : digitsOnly;
-      const generatedEmail = `243${localNumber}@harakapay.app`;
-
-      const result = await signIn(generatedEmail, pin);
+      const result = await signIn(email.toLowerCase().trim(), pin);
       
       if (result.success) {
         // Navigation will be handled by useEffect when user state changes
         console.log('Login successful');
       } else {
         Alert.alert(
-          'Login Failed',
-          result.error || 'Unable to sign in. Please check your credentials and try again.',
-          [{ text: 'OK' }]
+          t('login.errors.loginFailed'),
+          result.error || t('login.errors.invalidCredentials'),
+          [{ text: t('common.ok') }]
         );
       }
     } catch (error) {
       Alert.alert(
-        'Error',
-        'An unexpected error occurred. Please try again.',
-        [{ text: 'OK' }]
+        t('common.error'),
+        t('login.errors.unexpectedError'),
+        [{ text: t('common.ok') }]
       );
     }
   };
@@ -141,41 +126,42 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
           {/* Form */}
           <View style={styles.form}>
-            {/* Phone Input */}
+            {/* Email Input */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Numéro de téléphone</Text>
+              <Text style={styles.label}>{t('login.emailLabel')}</Text>
               <TextInput
                 style={[
-                  styles.phoneInput,
-                  phoneError ? styles.inputError : null,
+                  styles.input,
+                  emailError ? styles.inputError : null,
                 ]}
-                placeholder="+243 XXX XXX XXX"
+                placeholder={t('login.emailPlaceholder')}
                 placeholderTextColor="#9CA3AF"
-                value={phone}
+                value={email}
                 onChangeText={(text) => {
-                  const formatted = formatPhoneNumber(text);
-                  setPhone(formatted);
-                  if (phoneError) setPhoneError('');
+                  setEmail(text);
+                  if (emailError) setEmailError('');
                 }}
-                onBlur={() => validatePhone(phone)}
-                keyboardType="phone-pad"
+                onBlur={() => validateEmail(email)}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
                 editable={!loading}
               />
-              {phoneError ? (
-                <Text style={styles.errorText}>{phoneError}</Text>
+              {emailError ? (
+                <Text style={styles.errorText}>{emailError}</Text>
               ) : null}
             </View>
 
             {/* PIN Input */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Code PIN (6 chiffres)</Text>
+              <Text style={styles.label}>{t('login.pinLabel')}</Text>
               <View style={styles.passwordContainer}>
                 <TextInput
                   style={[
                     styles.pinInput,
                     pinError ? styles.inputError : null,
                   ]}
-                  placeholder="••••••"
+                  placeholder={t('login.pinPlaceholder')}
                   placeholderTextColor="#9CA3AF"
                   value={pin}
                   onChangeText={(text) => {
@@ -205,7 +191,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               {pinError ? (
                 <Text style={styles.errorText}>{pinError}</Text>
               ) : null}
-              <Text style={styles.pinCounter}>{pin.length}/6</Text>
+              <Text style={styles.pinCounter}>{t('login.pinCounter', { current: pin.length, max: 6 })}</Text>
             </View>
 
             {/* Forgot Password Link */}
@@ -214,7 +200,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               onPress={navigateToForgotPassword}
               disabled={loading}
             >
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              <Text style={styles.forgotPasswordText}>{t('login.forgotPassword')}</Text>
             </TouchableOpacity>
 
             {/* Sign In Button */}
@@ -227,7 +213,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               disabled={loading}
             >
               <Text style={styles.signInButtonText}>
-                {loading ? 'Signing In...' : 'Sign In'}
+                {loading ? t('login.signingIn') : t('login.signInButton')}
               </Text>
             </TouchableOpacity>
 
@@ -241,9 +227,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
           {/* Footer */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
+            <Text style={styles.footerText}>{t('login.noAccount')}</Text>
             <TouchableOpacity onPress={navigateToRegister} disabled={loading}>
-              <Text style={styles.signUpText}>Sign Up</Text>
+              <Text style={styles.signUpText}>{t('login.signUpLink')}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

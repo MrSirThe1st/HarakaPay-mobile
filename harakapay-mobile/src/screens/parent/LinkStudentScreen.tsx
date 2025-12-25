@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
 import { useStudents } from '../../contexts/StudentContext';
 import { StudentMatch } from '../../api/studentApi';
+import { useI18n } from '../../hooks/useI18n';
 import colors from '../../constants/colors';
 
 interface LinkStudentScreenProps {
@@ -21,6 +22,7 @@ interface LinkStudentScreenProps {
 }
 
 export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps) {
+  const { t } = useI18n('student');
   const { profile } = useAuth();
   const {
     searchResults,
@@ -60,9 +62,9 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
       if (!parentName || !parentPhone) {
         console.log('❌ LinkStudentScreen - Missing required fields:', { parentName, parentPhone });
         Alert.alert(
-          'Profile Incomplete',
-          'Your profile is missing required information (name or phone). Please update your profile first.',
-          [{ text: 'OK', onPress: () => navigation.goBack() }]
+          t('link.profileIncomplete.title'),
+          t('link.profileIncomplete.message'),
+          [{ text: t('common:buttons.ok'), onPress: () => navigation.goBack() }]
         );
         return;
       }
@@ -74,9 +76,9 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
     } else {
       console.log('❌ LinkStudentScreen - No profile available');
       Alert.alert(
-        'Profile Not Found',
-        'Unable to load your profile. Please try again.',
-        [{ text: 'OK', onPress: () => navigation.goBack() }]
+        t('link.profileNotFound.title'),
+        t('link.profileNotFound.message'),
+        [{ text: t('common:buttons.ok'), onPress: () => navigation.goBack() }]
       );
     }
 
@@ -87,7 +89,7 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
 
   useEffect(() => {
     if (error) {
-      Alert.alert('Error', error);
+      Alert.alert(t('link.errors.title'), error);
       clearError();
     }
   }, [error]);
@@ -104,11 +106,11 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
       await linkStudentAsync(selectedStudent.id);
 
       Alert.alert(
-        'Success!',
-        `${selectedStudent.first_name} ${selectedStudent.last_name} has been linked to your account.`,
+        t('link.success.title'),
+        t('link.success.message', { studentName: `${selectedStudent.first_name} ${selectedStudent.last_name}` }),
         [
           {
-            text: 'OK',
+            text: t('common:buttons.ok'),
             onPress: () => {
               setShowConfirmation(false);
               navigation.goBack();
@@ -117,7 +119,7 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
         ]
       );
     } catch (error) {
-      Alert.alert('Error', 'Failed to link student. Please try again.');
+      Alert.alert(t('link.errors.title'), t('link.errors.linkFailed'));
     }
   };
 
@@ -148,12 +150,13 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
             {/* High Confidence Matches */}
             {highConfidenceMatches.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Strong Matches</Text>
+                <Text style={styles.sectionTitle}>{t('link.strongMatches')}</Text>
                 {highConfidenceMatches.map((student) => (
                   <StudentMatchCard
                     key={student.id}
                     student={student}
                     onSelect={handleStudentSelect}
+                    t={t}
                   />
                 ))}
               </View>
@@ -162,12 +165,13 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
             {/* Medium Confidence Matches */}
             {mediumConfidenceMatches.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Possible Matches</Text>
+                <Text style={styles.sectionTitle}>{t('link.possibleMatches')}</Text>
                 {mediumConfidenceMatches.map((student) => (
                   <StudentMatchCard
                     key={student.id}
                     student={student}
                     onSelect={handleStudentSelect}
+                    t={t}
                   />
                 ))}
               </View>
@@ -176,12 +180,13 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
             {/* Low Confidence Matches */}
             {lowConfidenceMatches.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Other Matches</Text>
+                <Text style={styles.sectionTitle}>{t('link.otherMatches')}</Text>
                 {lowConfidenceMatches.map((student) => (
                   <StudentMatchCard
                     key={student.id}
                     student={student}
                     onSelect={handleStudentSelect}
+                    t={t}
                   />
                 ))}
               </View>
@@ -191,16 +196,16 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
             {availableStudents.length === 0 && (
               <View style={styles.noMatchesContainer}>
                 <Text style={styles.noMatchesIcon}>🔍</Text>
-                <Text style={styles.noMatchesTitle}>No Automatic Matches Found</Text>
+                <Text style={styles.noMatchesTitle}>{t('link.noAutoMatches')}</Text>
                 <Text style={styles.noMatchesSubtitle}>
-                  We couldn't find any students that match your information automatically.
+                  {t('link.noAutoMatchesDescription')}
                 </Text>
                 <TouchableOpacity
                   style={styles.manualSearchButton}
                   onPress={handleManualSearch}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.manualSearchButtonText}>Search Manually</Text>
+                  <Text style={styles.manualSearchButtonText}>{t('link.searchManually')}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -217,19 +222,19 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Confirm Link</Text>
+            <Text style={styles.modalTitle}>{t('link.confirmLink')}</Text>
             {selectedStudent && (
               <>
                 <Text style={styles.modalStudentName}>
                   {selectedStudent.first_name} {selectedStudent.last_name}
                 </Text>
                 <Text style={styles.modalStudentDetails}>
-                  {selectedStudent.school_name} - Grade {selectedStudent.grade_level}
+                  {selectedStudent.school_name} - {t('link.grade')} {selectedStudent.grade_level}
                 </Text>
                 <Text style={styles.modalStudentDetails}>
-                  Student ID: {selectedStudent.student_id}
+                  {t('link.studentId')}: {selectedStudent.student_id}
                 </Text>
-                
+
               </>
             )}
 
@@ -239,9 +244,9 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
                 onPress={() => setShowConfirmation(false)}
                 activeOpacity={0.8}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={styles.cancelButtonText}>{t('common:buttons.cancel')}</Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity
                 style={[styles.confirmButton, linkingStudent && styles.disabledButton]}
                 onPress={handleConfirmLink}
@@ -251,7 +256,7 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
                 {linkingStudent ? (
                   <ActivityIndicator color="white" />
                 ) : (
-                  <Text style={styles.confirmButtonText}>Link Student</Text>
+                  <Text style={styles.confirmButtonText}>{t('link.linkStudentButton')}</Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -265,11 +270,13 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
 interface StudentMatchCardProps {
   student: StudentMatch;
   onSelect: (student: StudentMatch) => void;
+  t: any;
 }
 
 const StudentMatchCard: React.FC<StudentMatchCardProps> = ({
   student,
   onSelect,
+  t,
 }) => {
   return (
     <TouchableOpacity
@@ -281,7 +288,7 @@ const StudentMatchCard: React.FC<StudentMatchCardProps> = ({
         <View style={styles.studentIconContainer}>
           <Ionicons name="person" size={32} color="#3B82F6" />
         </View>
-        
+
         <View style={styles.studentInfo}>
           <Text style={styles.studentName}>
             {student.first_name} {student.last_name}
@@ -295,15 +302,15 @@ const StudentMatchCard: React.FC<StudentMatchCardProps> = ({
           <View style={styles.studentDetailsRow}>
             <Ionicons name="book" size={16} color="#B0C4DE" />
             <Text style={styles.studentDetails}>
-              Grade {student.grade_level}
+              {t('link.grade')} {student.grade_level}
             </Text>
           </View>
           <View style={styles.studentDetailsRow}>
             <Ionicons name="card" size={16} color="#B0C4DE" />
-            <Text style={styles.studentId}>ID: {student.student_id}</Text>
+            <Text style={styles.studentId}>{t('link.studentId')}: {student.student_id}</Text>
           </View>
         </View>
-        
+
         <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
       </View>
     </TouchableOpacity>

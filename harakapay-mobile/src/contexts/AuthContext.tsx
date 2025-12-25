@@ -128,8 +128,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     );
 
+    // Proactive token refresh - check every 10 minutes
+    const refreshInterval = setInterval(async () => {
+      try {
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+
+        if (currentSession && !error) {
+          // Check if token expires in less than 30 minutes
+          const expiresAt = currentSession.expires_at;
+          if (expiresAt) {
+            const expiryTime = expiresAt * 1000; // Convert to milliseconds
+            const timeUntilExpiry = expiryTime - Date.now();
+            const thirtyMinutes = 30 * 60 * 1000;
+
+            if (timeUntilExpiry < thirtyMinutes) {
+              console.log('Token expiring soon, refreshing proactively...');
+              await supabase.auth.refreshSession();
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Background refresh error:', err);
+      }
+    }, 10 * 60 * 1000); // Check every 10 minutes
+
     return () => {
       subscription.unsubscribe();
+      clearInterval(refreshInterval);
     };
   }, []);
 

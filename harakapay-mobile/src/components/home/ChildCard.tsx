@@ -7,6 +7,7 @@ import {
   Dimensions,
   Image,
 } from 'react-native';
+import { useI18n } from '../../hooks/useI18n';
 import colors from '../../constants/colors';
 
 const { width } = Dimensions.get('window');
@@ -121,13 +122,17 @@ const formatCongoleseGrade = (gradeLevel: string): string => {
 };
 
 export const ChildCard: React.FC<ChildCardProps> = ({ student, onPress, variant = 0 }) => {
+  const { t } = useI18n('student');
   const formattedGrade = student.grade_level ? formatCongoleseGrade(student.grade_level) : '';
   const [imageError, setImageError] = useState(false);
   const avatarUrl = getAvatarUrl(student);
-  
+
   // Get color scheme for this variant (cycle through variants if index exceeds array length)
   const colorScheme = cardVariants[variant % cardVariants.length];
-  
+
+  const firstName = student.first_name || t('card.unknownFirstName');
+  const lastName = student.last_name || t('card.unknownLastName');
+
   return (
     <TouchableOpacity
       style={styles.card}
@@ -142,13 +147,13 @@ export const ChildCard: React.FC<ChildCardProps> = ({ student, onPress, variant 
         <View style={[styles.blob1, { backgroundColor: colorScheme.blob1 }]} />
         <View style={[styles.blob2, { backgroundColor: colorScheme.blob2 }]} />
       </View>
-      
+
       <View style={styles.cardContent}>
         {/* Top Section - Name and Avatar */}
         <View style={styles.topSection}>
           <View style={styles.nameContainer}>
             <Text style={styles.studentName} numberOfLines={2} ellipsizeMode="tail">
-              {(student.first_name || 'Unknown') + ' ' + (student.last_name || 'Student')}
+              {firstName} {lastName}
             </Text>
           </View>
           <View style={styles.photoPlaceholder}>
@@ -161,7 +166,7 @@ export const ChildCard: React.FC<ChildCardProps> = ({ student, onPress, variant 
               />
             ) : (
               <Text style={styles.photoText}>
-                {(student.first_name || 'S').charAt(0)}{(student.last_name || 'T').charAt(0)}
+                {firstName.charAt(0)}{lastName.charAt(0)}
               </Text>
             )}
           </View>

@@ -1,0 +1,46 @@
+{
+  "title": "Notifications",
+  "markAllRead": "Tout marquer comme lu",
+  "deleteAll": "Tout supprimer",
+  "filter": {
+    "all": "Toutes",
+    "unread": "Non lues",
+    "read": "Lues"
+  },
+  "empty": {
+    "title": "Aucune notification",
+    "description": "Vous n'avez pas encore de notifications."
+  },
+  "types": {
+    "payment": "Paiement",
+    "fee": "Frais",
+    "announcement": "Annonce",
+    "message": "Message",
+    "reminder": "Rappel",
+    "alert": "Alerte"
+  },
+  "actions": {
+    "markRead": "Marquer comme lu",
+    "delete": "Supprimer",
+    "view": "Voir"
+  },
+  "modal": {
+    "title": "Notification",
+    "deleteButton": "Supprimer la notification"
+  },
+  "deleteConfirm": {
+    "title": "Supprimer la notification",
+    "message": "Êtes-vous sûr de vouloir supprimer cette notification ?",
+    "cancel": "Annuler",
+    "delete": "Supprimer"
+  },
+  "errors": {
+    "title": "Erreur",
+    "loadFailed": "Échec du chargement des notifications",
+    "markReadFailed": "Échec du marquage comme lu",
+    "deleteFailed": "Échec de la suppression de la notification"
+  },
+  "time": {
+    "recently": "Récemment"
+  }
+}

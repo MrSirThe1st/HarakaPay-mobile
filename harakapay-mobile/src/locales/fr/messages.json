@@ -1,0 +1,46 @@
+{
+  "title": "Messages",
+  "empty": {
+    "title": "Aucun message",
+    "description": "Envoyez un message à votre école pour commencer.",
+    "button": "Envoyer un message"
+  },
+  "status": {
+    "read": "✓ Lu par l'école",
+    "sent": "Envoyé"
+  },
+  "modal": {
+    "title": "Message",
+    "regarding": "Concernant :",
+    "sent": "Envoyé",
+    "readBySchool": "Lu par l'école"
+  },
+  "sendModal": {
+    "title": "Envoyer un message à l'école",
+    "regardingStudent": "Concernant l'étudiant",
+    "subject": "Sujet",
+    "subjectPlaceholder": "Entrez le sujet du message",
+    "message": "Message",
+    "messagePlaceholder": "Entrez votre message",
+    "sendButton": "Envoyer le message",
+    "discardTitle": "Abandonner le message",
+    "discardMessage": "Êtes-vous sûr de vouloir abandonner ce message ?",
+    "discardCancel": "Annuler",
+    "discardConfirm": "Abandonner"
+  },
+  "errors": {
+    "title": "Erreur",
+    "loadFailed": "Échec du chargement des messages",
+    "selectStudent": "Veuillez sélectionner un étudiant",
+    "enterSubject": "Veuillez entrer un sujet",
+    "enterMessage": "Veuillez entrer un message",
+    "sendFailed": "Échec de l'envoi du message. Veuillez réessayer."
+  },
+  "success": {
+    "title": "Succès",
+    "messageSent": "Message envoyé à l'école avec succès"
+  },
+  "time": {
+    "recently": "Récemment"
+  }
+}

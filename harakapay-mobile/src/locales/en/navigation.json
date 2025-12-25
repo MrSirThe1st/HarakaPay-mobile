@@ -1,0 +1,27 @@
+{
+  "tabs": {
+    "home": "Home",
+    "notifications": "Notifications",
+    "profile": "Profile"
+  },
+  "screens": {
+    "login": "Login",
+    "register": "Register",
+    "forgotPassword": "Forgot Password",
+    "resetPassword": "Reset Password",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "settings": "Settings",
+    "connectChild": "Connect Your Child",
+    "linkStudent": "Link Your Child",
+    "childDetails": "Child Details",
+    "feeDetails": "Fee Details",
+    "paymentPlans": "Payment Plans",
+    "paymentPlanDetails": "Payment Plan Details",
+    "payments": "Payments",
+    "paymentSchedule": "Payment Options",
+    "paymentStatus": "Payment Status",
+    "paymentHistory": "Payment History",
+    "notifications": "Notifications"
+  }
+}

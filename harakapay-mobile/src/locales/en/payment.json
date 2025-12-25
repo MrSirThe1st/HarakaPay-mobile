@@ -1,0 +1,261 @@
+{
+  "plans": {
+    "title": "Payment Plans",
+    "selectPlan": "Select a Plan",
+    "availablePlans": "Available Payment Plans",
+    "upfront": {
+      "title": "One-time Payment",
+      "description": "Pay the full amount in one transaction. This plan offers the best value with an upfront discount and eliminates the need for multiple payments.",
+      "shortDescription": "Pay everything once",
+      "shortDescriptionWithDiscount": "Pay everything once and get {{percent}}% discount"
+    },
+    "monthly": {
+      "title": "Monthly Plan",
+      "description": "Spread your payments over multiple months with fixed monthly installments. This makes budgeting easier with predictable payment amounts.",
+      "shortDescription": "Pay over {{count}} months"
+    },
+    "termly": {
+      "title": "Termly Plan",
+      "description": "Pay per school term with larger but less frequent installments. Ideal for aligning payments with school cycles.",
+      "shortDescription": "Pay over {{count}} terms"
+    },
+    "custom": {
+      "title": "Installment Plan",
+      "description": "Flexible payment schedule designed to fit your needs. Make payments according to a customized installment plan.",
+      "shortDescription": "Pay over {{count}} installments"
+    },
+    "default": {
+      "title": "Payment Plan",
+      "description": "A flexible payment option to help you manage your fees."
+    },
+    "discount": "{{percent}}% discount",
+    "installments": "{{count}} installment",
+    "installments_plural": "{{count}} installments",
+    "totalAmount": "Total Amount",
+    "discountedAmount": "Discounted Amount",
+    "amountPerInstallment": "Amount per Installment",
+    "noPlansAvailable": "No payment plans available",
+    "missingInformation": "Missing Information",
+    "periods": {
+      "monthly": "Monthly",
+      "perTerm": "per term",
+      "perInstallment": "per installment",
+      "perPayment": "per payment"
+    },
+    "dueBy": "Due by",
+    "firstDue": "First due",
+    "currentlyUsing": "Currently Using",
+    "emptyState": {
+      "title": "No payment plans available for this fee",
+      "description": "Payment plans for this specific fee category haven't been set up yet."
+    },
+    "helpText": "Select a payment plan to view detailed installment schedules and make payments.",
+    "errors": {
+      "missingInfo": "Missing Information",
+      "missingInfoDescription": "Required data is missing. Please go back and try again.",
+      "invalidCategory": "Invalid Category Data",
+      "invalidCategoryDescription": "Category amount is missing. Please go back and try again.",
+      "loadFailed": "Unable to Load Payment Plans",
+      "retryButton": "Try Again"
+    }
+  },
+  "details": {
+    "title": "Payment Plan Details",
+    "paymentSchedule": "Payment Schedule",
+    "installment": "Installment {{number}}",
+    "installments": "{{count}} installment",
+    "installments_plural": "{{count}} installments",
+    "payEverythingAtOnce": "Pay everything at once",
+    "fullPayment": "Full Payment",
+    "monthlyInstallment": "Monthly {{number}}",
+    "termlyInstallment": "Term {{number}}",
+    "dueDate": "Due Date",
+    "amount": "Amount",
+    "status": "Status",
+    "payNow": "Pay Now",
+    "totalDue": "Total Due",
+    "totalPaid": "Total Paid",
+    "remaining": "Remaining",
+    "originalAmount": "Original Amount:",
+    "discount": "Discount ({{percent}}%):",
+    "totalAmount": "Total Amount:",
+    "amountPaid": "Amount Paid:",
+    "remainingBalance": "Remaining Balance:",
+    "statusBadges": {
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "dueSoon": "Due Soon",
+      "pending": "Pending"
+    },
+    "emptyState": {
+      "noInstallments": "No installments available"
+    },
+    "helpText": {
+      "upfront": "Tap the payment card above to pay the full amount by the due date and receive your discount.",
+      "installments": "Tap any installment card above to make a payment. Make payments according to the schedule."
+    }
+  },
+  "history": {
+    "title": "Payment History",
+    "totalPayments": "Total Payments",
+    "totalAmountPaid": "Total Amount Paid",
+    "allTransactions": "All Transactions",
+    "noHistory": "No Payment History",
+    "noHistoryDescription": "You haven't made any payments yet. Payments will appear here once you complete a transaction.",
+    "paymentMethod": "Method",
+    "paymentDate": "Date",
+    "transactionId": "Transaction ID",
+    "method": {
+      "mobileMoney": "M-Pesa",
+      "airtelMoney": "Airtel Money",
+      "orangeMoney": "Orange Money",
+      "unknown": "Unknown"
+    }
+  },
+  "status": {
+    "pending": "Pending",
+    "completed": "Completed",
+    "failed": "Failed",
+    "processing": "Processing",
+    "cancelled": "Cancelled"
+  },
+  "makePayment": {
+    "title": "Make Payment",
+    "selectMethod": "Select Payment Method",
+    "enterPhone": "Enter your phone number",
+    "phonePlaceholder": "+243 XXX XXX XXX",
+    "amount": "Amount",
+    "payButton": "Pay {{amount}}",
+    "processing": "Processing...",
+    "success": {
+      "title": "Payment Successful",
+      "message": "Your payment has been processed successfully"
+    },
+    "failure": {
+      "title": "Payment Failed",
+      "message": "Unable to process payment. Please try again."
+    }
+  },
+  "fees": {
+    "title": "Fees",
+    "totalFees": "Total Fees",
+    "totalPaid": "Total Paid",
+    "balance": "Balance",
+    "remaining": "Remaining",
+    "category": "Category",
+    "amount": "Amount",
+    "dueDate": "Due Date",
+    "viewPlans": "View Payment Plans",
+    "makePayment": "Make Payment",
+    "noFees": "No Fees",
+    "noFeesDescription": "No fees are currently due for this student.",
+    "tuition": "Tuition",
+    "mandatory": "Mandatory",
+    "paymentHistory": "Payment History",
+    "feeSummary": "Fee Summary",
+    "categories": {
+      "tuition": "Tuition",
+      "transport": "Transport",
+      "books": "Books",
+      "uniform": "Uniform",
+      "meals": "Meals",
+      "food": "Food",
+      "registration": "Registration",
+      "activities": "Activities",
+      "sports": "Sports",
+      "library": "Library",
+      "laboratory": "Laboratory",
+      "technology": "Technology",
+      "exam": "Exam",
+      "excursion": "Excursion"
+    },
+    "badges": {
+      "mandatory": "Mandatory",
+      "recurring": "Recurring",
+      "oneTime": "One-time"
+    },
+    "emptyState": {
+      "title": "No Fee Data Available",
+      "description": "Fee information for this student has not been set up yet. Please check back later or contact your school."
+    },
+    "errorState": {
+      "title": "Unable to Load Fees",
+      "retryButton": "Try Again"
+    }
+  },
+  "makePaymentScreen": {
+    "title": "Make Payment",
+    "paymentFor": "Payment For",
+    "paymentDetails": "Payment Details",
+    "selectPaymentType": "Select Payment Type",
+    "fullPayment": "Full Payment",
+    "monthlyPayment": "Monthly Payment",
+    "phoneNumber": "M-Pesa Phone Number",
+    "phonePlaceholder": "0XXXXXXXXX",
+    "phoneHint": "Enter the M-Pesa number to charge",
+    "amountLabel": "Amount (USD)",
+    "amountPlaceholder": "0.00",
+    "selectMonth": "Select Month",
+    "monthSelector": "Month {{number}} - ${{amount}}",
+    "tapToSelectMonth": "Tap to select month",
+    "selectMonthModalTitle": "Select Month for Payment",
+    "payButton": "Pay ${{amount}} Now",
+    "paying": "Paying...",
+    "totalAmount": "Total Amount",
+    "monthlyAmount": "Monthly Amount",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "paymentMethod": {
+      "title": "Payment via M-Pesa",
+      "instructions": "1. Click \"Pay Now\" below\n2. Check your phone for M-Pesa prompt\n3. Enter your M-Pesa PIN\n4. Payment confirmation will be instant"
+    },
+    "months": {
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December",
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June"
+    }
+  },
+  "errors": {
+    "title": "Error",
+    "noAcademicYear": "No active academic year found",
+    "loadFailed": "Failed to load payment details",
+    "invalidPhone": "Invalid Phone Number",
+    "invalidPhoneMessage": "Please enter a valid M-Pesa phone number (e.g., 0XXXXXXXXX)",
+    "invalidAmount": "Invalid Amount",
+    "invalidAmountMessage": "Please enter a valid payment amount",
+    "selectMonth": "Select Month",
+    "selectMonthMessage": "Please select a month for payment",
+    "missingInfo": "Missing payment information. Please try again.",
+    "loginRequired": "Please log in again",
+    "paymentFailed": "Payment Failed",
+    "paymentError": "Payment Error"
+  },
+  "success": {
+    "paymentInitiated": "✅ Payment Initiated",
+    "paymentInitiatedMessage": "Please check your phone ({{phone}}) and enter your M-Pesa PIN to complete the payment.\n\nTransaction ID: {{transactionId}}",
+    "checkStatus": "Check Status"
+  },
+  "confirmPayment": {
+    "title": "Confirm Payment",
+    "message": "Pay ${{amount}} for {{studentName}}?\n\nYou will receive an M-Pesa prompt on {{phone}}",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  },
+  "notices": {
+    "title": "Notice",
+    "noPlan": "No payment plan assigned for this student"
+  },
+  "confirmPayment": {
+    "title": "Confirm Payment",
+    "message": "Pay {{amount}} for {{studentName}}?\n\nYou will receive an M-Pesa prompt on {{phone}}",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  }
+}

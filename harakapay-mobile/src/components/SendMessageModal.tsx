@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { useStudents } from '../contexts/StudentContext';
 import { sendMessage } from '../api/messageApi';
+import { useI18n } from '../hooks/useI18n';
 import colors from '../constants/colors';
 
 interface SendMessageModalProps {
@@ -29,6 +30,7 @@ const SendMessageModal: React.FC<SendMessageModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { t } = useI18n('messages');
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -44,15 +46,15 @@ const SendMessageModal: React.FC<SendMessageModalProps> = ({
 
   const handleSend = async () => {
     if (!selectedStudentId) {
-      Alert.alert('Error', 'Please select a student');
+      Alert.alert(t('errors.title'), t('errors.selectStudent'));
       return;
     }
     if (!subject.trim()) {
-      Alert.alert('Error', 'Please enter a subject');
+      Alert.alert(t('errors.title'), t('errors.enterSubject'));
       return;
     }
     if (!message.trim()) {
-      Alert.alert('Error', 'Please enter a message');
+      Alert.alert(t('errors.title'), t('errors.enterMessage'));
       return;
     }
 
@@ -64,14 +66,14 @@ const SendMessageModal: React.FC<SendMessageModalProps> = ({
         message: message.trim(),
       });
 
-      Alert.alert('Success', 'Message sent to school successfully');
+      Alert.alert(t('success.title'), t('success.messageSent'));
       setSubject('');
       setMessage('');
       onSuccess();
       onClose();
     } catch (error) {
       console.error('Error sending message:', error);
-      Alert.alert('Error', 'Failed to send message. Please try again.');
+      Alert.alert(t('errors.title'), t('errors.sendFailed'));
     } finally {
       setSending(false);
     }
@@ -80,12 +82,12 @@ const SendMessageModal: React.FC<SendMessageModalProps> = ({
   const handleClose = () => {
     if (subject || message) {
       Alert.alert(
-        'Discard Message',
-        'Are you sure you want to discard this message?',
+        t('sendModal.discardTitle'),
+        t('sendModal.discardMessage'),
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: t('sendModal.discardCancel'), style: 'cancel' },
           {
-            text: 'Discard',
+            text: t('sendModal.discardConfirm'),
             style: 'destructive',
             onPress: () => {
               setSubject('');
@@ -119,7 +121,7 @@ const SendMessageModal: React.FC<SendMessageModalProps> = ({
         >
           <TouchableOpacity style={styles.modalContent} activeOpacity={1} onPress={(e) => e.stopPropagation()}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Send Message to School</Text>
+              <Text style={styles.modalTitle}>{t('sendModal.title')}</Text>
               <TouchableOpacity
                 onPress={handleClose}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -135,7 +137,7 @@ const SendMessageModal: React.FC<SendMessageModalProps> = ({
               keyboardShouldPersistTaps="handled"
             >
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Regarding Student</Text>
+              <Text style={styles.label}>{t('sendModal.regardingStudent')}</Text>
               <View style={styles.pickerContainer}>
                 <Picker
                   selectedValue={selectedStudentId}
@@ -154,24 +156,24 @@ const SendMessageModal: React.FC<SendMessageModalProps> = ({
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Subject</Text>
+              <Text style={styles.label}>{t('sendModal.subject')}</Text>
               <TextInput
                 style={styles.input}
                 value={subject}
                 onChangeText={setSubject}
-                placeholder="Enter message subject"
+                placeholder={t('sendModal.subjectPlaceholder')}
                 placeholderTextColor={colors.text.secondary}
                 maxLength={255}
               />
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Message</Text>
+              <Text style={styles.label}>{t('sendModal.message')}</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
                 value={message}
                 onChangeText={setMessage}
-                placeholder="Enter your message"
+                placeholder={t('sendModal.messagePlaceholder')}
                 placeholderTextColor={colors.text.secondary}
                 multiline
                 numberOfLines={5}
@@ -189,7 +191,7 @@ const SendMessageModal: React.FC<SendMessageModalProps> = ({
               ) : (
                 <>
                   <Ionicons name="send" size={20} color="#FFFFFF" />
-                  <Text style={styles.sendButtonText}>Send Message</Text>
+                  <Text style={styles.sendButtonText}>{t('sendModal.sendButton')}</Text>
                 </>
               )}
             </TouchableOpacity>

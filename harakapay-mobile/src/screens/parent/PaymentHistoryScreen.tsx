@@ -12,6 +12,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { WEB_API_URL } from '../../config/env';
 import { supabase } from '../../config/supabase';
+import { useI18n } from '../../hooks/useI18n';
+import { formatCurrency, formatDateTime } from '../../utils/formatters';
 import colors from '../../constants/colors';
 
 interface PaymentHistoryScreenProps {
@@ -49,6 +51,7 @@ export default function PaymentHistoryScreen({ navigation, route }: PaymentHisto
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalPaid, setTotalPaid] = useState(0);
+  const { t } = useI18n('payment');
 
   useEffect(() => {
     if (student?.id) {
@@ -101,23 +104,6 @@ export default function PaymentHistoryScreen({ navigation, route }: PaymentHisto
     await loadPaymentHistory();
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -147,13 +133,13 @@ export default function PaymentHistoryScreen({ navigation, route }: PaymentHisto
   const getPaymentMethodLabel = (method: string) => {
     switch (method) {
       case 'mobile_money':
-        return 'M-Pesa';
+        return t('history.method.mobileMoney');
       case 'airtel_money':
-        return 'Airtel Money';
+        return t('history.method.airtelMoney');
       case 'orange_money':
-        return 'Orange Money';
+        return t('history.method.orangeMoney');
       default:
-        return method || 'Unknown';
+        return method || t('history.method.unknown');
     }
   };
 
@@ -168,7 +154,7 @@ export default function PaymentHistoryScreen({ navigation, route }: PaymentHisto
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}
@@ -180,12 +166,12 @@ export default function PaymentHistoryScreen({ navigation, route }: PaymentHisto
         <View style={styles.summaryCard}>
           <View style={styles.summaryRow}>
             <View>
-              <Text style={styles.summaryLabel}>Total Payments</Text>
+              <Text style={styles.summaryLabel}>{t('history.totalPayments')}</Text>
               <Text style={styles.summaryValue}>{payments.length}</Text>
             </View>
             <View style={styles.summaryDivider} />
             <View>
-              <Text style={styles.summaryLabel}>Total Amount Paid</Text>
+              <Text style={styles.summaryLabel}>{t('history.totalAmountPaid')}</Text>
               <Text style={styles.summaryValue}>{formatCurrency(totalPaid)}</Text>
             </View>
           </View>
@@ -207,7 +193,7 @@ export default function PaymentHistoryScreen({ navigation, route }: PaymentHisto
             <Ionicons name="alert-circle" size={24} color="#EF4444" />
             <Text style={styles.errorText}>{error}</Text>
             <TouchableOpacity style={styles.retryButton} onPress={loadPaymentHistory}>
-              <Text style={styles.retryButtonText}>Retry</Text>
+              <Text style={styles.retryButtonText}>{t('common:buttons.retry')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -215,7 +201,7 @@ export default function PaymentHistoryScreen({ navigation, route }: PaymentHisto
         {/* Payment List */}
         {!error && payments.length > 0 ? (
           <View style={styles.paymentsList}>
-            <Text style={styles.sectionTitle}>All Transactions</Text>
+            <Text style={styles.sectionTitle}>{t('history.allTransactions')}</Text>
             {payments.map((payment) => (
               <View key={payment.id} style={styles.paymentCard}>
                 <View style={styles.paymentHeader}>
@@ -244,18 +230,18 @@ export default function PaymentHistoryScreen({ navigation, route }: PaymentHisto
                 <View style={styles.paymentDetails}>
                   <View style={styles.detailRow}>
                     <Ionicons name="card" size={16} color="#6B7280" />
-                    <Text style={styles.detailLabel}>Method:</Text>
+                    <Text style={styles.detailLabel}>{t('history.paymentMethod')}:</Text>
                     <Text style={styles.detailValue}>{getPaymentMethodLabel(payment.payment_method)}</Text>
                   </View>
                   <View style={styles.detailRow}>
                     <Ionicons name="calendar" size={16} color="#6B7280" />
-                    <Text style={styles.detailLabel}>Date:</Text>
-                    <Text style={styles.detailValue}>{formatDate(payment.payment_date)}</Text>
+                    <Text style={styles.detailLabel}>{t('history.paymentDate')}:</Text>
+                    <Text style={styles.detailValue}>{formatDateTime(payment.payment_date)}</Text>
                   </View>
                   {payment.mpesa_transaction_id && (
                     <View style={styles.detailRow}>
                       <Ionicons name="receipt" size={16} color="#6B7280" />
-                      <Text style={styles.detailLabel}>Transaction ID:</Text>
+                      <Text style={styles.detailLabel}>{t('history.transactionId')}:</Text>
                       <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="middle">
                         {payment.mpesa_transaction_id}
                       </Text>
@@ -268,14 +254,14 @@ export default function PaymentHistoryScreen({ navigation, route }: PaymentHisto
         ) : !error ? (
           <View style={styles.emptyState}>
             <Ionicons name="receipt-outline" size={64} color="#9CA3AF" />
-            <Text style={styles.emptyStateTitle}>No Payment History</Text>
+            <Text style={styles.emptyStateTitle}>{t('history.noHistory')}</Text>
             <Text style={styles.emptyStateText}>
-              You haven't made any payments yet. Payments will appear here once you complete a transaction.
+              {t('history.noHistoryDescription')}
             </Text>
           </View>
         ) : null}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

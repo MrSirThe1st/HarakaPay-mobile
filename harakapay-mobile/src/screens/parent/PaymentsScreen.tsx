@@ -14,6 +14,8 @@ import {
 } from 'react-native';
 import { supabase } from '../../config/supabase';
 import { colors } from '../../constants';
+import { useI18n } from '../../hooks/useI18n';
+import { formatCurrency } from '../../utils/formatters';
 
 interface PaymentScreenProps {
   navigation: any;
@@ -35,7 +37,8 @@ interface PaymentScreenProps {
 
 export default function PaymentScreen({ route, navigation }: PaymentScreenProps) {
   const { student, paymentPlan, selectedInstallment } = route.params;
-  
+  const { t, currentLanguage } = useI18n('payment');
+
   // State
   const [phoneNumber, setPhoneNumber] = useState('');
   const [amount, setAmount] = useState('');
@@ -138,7 +141,7 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
         .single();
 
       if (!academicYear) {
-        Alert.alert('Error', 'No active academic year found');
+        Alert.alert(t('errors.title'), t('errors.noAcademicYear'));
         return;
       }
 
@@ -188,11 +191,11 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
           }
         }
       } else {
-        Alert.alert('Notice', 'No payment plan assigned for this student');
+        Alert.alert(t('notices.title'), t('notices.noPlan'));
       }
     } catch (error) {
       console.error('Error loading fee details:', error);
-      Alert.alert('Error', 'Failed to load payment details');
+      Alert.alert(t('errors.title'), t('errors.loadFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -222,24 +225,24 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
     // Validation
     if (!phoneNumber || !validatePhoneNumber(phoneNumber)) {
       Alert.alert(
-        'Invalid Phone Number',
-        'Please enter a valid M-Pesa phone number (e.g., 0XXXXXXXXX)'
+        t('errors.invalidPhone'),
+        t('errors.invalidPhoneMessage')
       );
       return;
     }
 
     if (!amount || parseFloat(amount) <= 0) {
-      Alert.alert('Invalid Amount', 'Please enter a valid payment amount');
+      Alert.alert(t('errors.invalidAmount'), t('errors.invalidAmountMessage'));
       return;
     }
 
     if (paymentType === 'monthly' && selectedMonth === null) {
-      Alert.alert('Select Month', 'Please select a month for payment');
+      Alert.alert(t('errors.selectMonth'), t('errors.selectMonthMessage'));
       return;
     }
 
     if (!parent || !feeDetails) {
-      Alert.alert('Error', 'Missing payment information. Please try again.');
+      Alert.alert(t('errors.title'), t('errors.missingInfo'));
       return;
     }
 
@@ -247,11 +250,15 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
     const paymentAmount = parseFloat(amount);
 
     Alert.alert(
-      'Confirm Payment',
-      `Pay $${paymentAmount} for ${student.first_name} ${student.last_name}?\n\nYou will receive an M-Pesa prompt on ${formattedPhone}`,
+      t('confirmPayment.title'),
+      t('confirmPayment.message', {
+        amount: paymentAmount.toFixed(2),
+        studentName: `${student.first_name} ${student.last_name}`,
+        phone: formattedPhone
+      }),
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Confirm', onPress: () => initiatePayment(formattedPhone, paymentAmount) }
+        { text: t('confirmPayment.cancel'), style: 'cancel' },
+        { text: t('confirmPayment.confirm'), onPress: () => initiatePayment(formattedPhone, paymentAmount) }
       ]
     );
   };
@@ -263,7 +270,7 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
       // Get auth token
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        Alert.alert('Error', 'Please log in again');
+        Alert.alert(t('errors.title'), t('errors.loginRequired'));
         navigation.navigate('Login');
         return;
       }
@@ -321,11 +328,14 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
 
       if (data.success) {
         Alert.alert(
-          '✅ Payment Initiated',
-          `Please check your phone (${formattedPhone}) and enter your M-Pesa PIN to complete the payment.\n\nTransaction ID: ${data.transactionId}`,
+          t('success.paymentInitiated'),
+          t('success.paymentInitiatedMessage', {
+            phone: formattedPhone,
+            transactionId: data.transactionId
+          }),
           [
             {
-              text: 'Check Status',
+              text: t('success.checkStatus'),
               onPress: () => navigation.navigate('PaymentStatus', {
                 paymentId: data.paymentId,
                 transactionId: data.transactionId,
@@ -336,13 +346,13 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
           ]
         );
       } else {
-        Alert.alert('Payment Failed', data.message || 'Please try again');
+        Alert.alert(t('errors.paymentFailed'), data.message || t('errors.paymentFailed'));
       }
     } catch (error: any) {
       console.error('Payment error:', error);
       Alert.alert(
-        'Payment Error',
-        error.message || 'Failed to initiate payment. Please try again.'
+        t('errors.paymentError'),
+        error.message || t('errors.paymentFailed')
       );
     } finally {
       setIsLoading(false);
@@ -367,20 +377,16 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
     setShowMonthPicker(false);
   };
 
-  const getMonthName = (month: number) => {
-    const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+  const getMonthName = (monthIndex: number) => {
+    const monthKeys = [
+      'september', 'october', 'november', 'december', 'january',
+      'february', 'march', 'april', 'may', 'june'
     ];
-    return months[month - 1];
+    return t(`makePaymentScreen.months.${monthKeys[monthIndex]}`);
   };
 
   const renderMonthPicker = () => {
     const months = Array.from({ length: 10 }, (_, i) => i + 1); // Sept-June (10 months)
-    const monthNames = [
-      'September', 'October', 'November', 'December', 'January',
-      'February', 'March', 'April', 'May', 'June'
-    ];
 
     return (
       <Modal
@@ -391,7 +397,7 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
       >
         <View style={styles.modalOverlay}>
           <View style={styles.monthPicker}>
-            <Text style={styles.modalTitle}>Select Month for Payment</Text>
+            <Text style={styles.modalTitle}>{t('makePaymentScreen.selectMonthModalTitle')}</Text>
             <ScrollView style={styles.monthList}>
               {months.map((month, index) => (
                 <TouchableOpacity
@@ -399,8 +405,8 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
                   style={styles.monthItem}
                   onPress={() => selectMonth(month)}
                 >
-                  <Text style={styles.monthText}>{monthNames[index]}</Text>
-                  <Text style={styles.monthAmount}>${getMonthlyAmount()}</Text>
+                  <Text style={styles.monthText}>{getMonthName(index)}</Text>
+                  <Text style={styles.monthAmount}>{formatCurrency(parseFloat(getMonthlyAmount()), currentLanguage)}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -408,7 +414,7 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
               style={styles.modalCloseButton}
               onPress={() => setShowMonthPicker(false)}
             >
-              <Text style={styles.modalCloseText}>Cancel</Text>
+              <Text style={styles.modalCloseText}>{t('makePaymentScreen.cancel')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -436,7 +442,7 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
        
         {/* Student Info Card */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Payment For</Text>
+          <Text style={styles.cardTitle}>{t('makePaymentScreen.paymentFor')}</Text>
           <Text style={styles.studentName}>
             {student.first_name} {student.last_name}
           </Text>
@@ -450,31 +456,31 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
 
         {/* Payment Form */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Payment Details</Text>
+          <Text style={styles.cardTitle}>{t('makePaymentScreen.paymentDetails')}</Text>
 
 
           {/* Month Selection for Monthly Payments */}
           {paymentType === 'monthly' && (
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Select Month</Text>
+              <Text style={styles.inputLabel}>{t('makePaymentScreen.selectMonth')}</Text>
               <TouchableOpacity
                 style={[styles.input, styles.monthSelector]}
                 onPress={() => setShowMonthPicker(true)}
               >
                 <Text style={[styles.monthSelectorText, !selectedMonth && styles.placeholderText]}>
-                  {selectedMonth ? 
-                    `Month ${selectedMonth} - $${getMonthlyAmount()}` : 
-                    'Tap to select month'}
+                  {selectedMonth ?
+                    t('makePaymentScreen.monthSelector', { number: selectedMonth, amount: getMonthlyAmount() }) :
+                    t('makePaymentScreen.tapToSelectMonth')}
                 </Text>
               </TouchableOpacity>
             </View>
           )}
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>M-Pesa Phone Number</Text>
+            <Text style={styles.inputLabel}>{t('makePaymentScreen.phoneNumber')}</Text>
             <TextInput
               style={styles.input}
-              placeholder="0XXXXXXXXX"
+              placeholder={t('makePaymentScreen.phonePlaceholder')}
               placeholderTextColor="#9CA3AF"
               value={phoneNumber}
               onChangeText={setPhoneNumber}
@@ -482,15 +488,15 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
               maxLength={14}
             />
             <Text style={styles.inputHint}>
-              Enter the M-Pesa number to charge
+              {t('makePaymentScreen.phoneHint')}
             </Text>
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Amount (USD)</Text>
+            <Text style={styles.inputLabel}>{t('makePaymentScreen.amountLabel')}</Text>
             <TextInput
               style={[styles.input, paymentType === 'one_time' && styles.inputReadonly]}
-              placeholder="0.00"
+              placeholder={t('makePaymentScreen.amountPlaceholder')}
               placeholderTextColor="#9CA3AF"
               value={amount}
               onChangeText={paymentType === 'one_time' ? undefined : setAmount}
@@ -504,12 +510,9 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
 
         {/* Payment Method Info */}
         <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>Payment via M-Pesa</Text>
+          <Text style={styles.infoTitle}>{t('makePaymentScreen.paymentMethod.title')}</Text>
           <Text style={styles.infoText}>
-            1. Click "Pay Now" below{'\n'}
-            2. Check your phone for M-Pesa prompt{'\n'}
-            3. Enter your M-Pesa PIN{'\n'}
-            4. Payment confirmation will be instant
+            {t('makePaymentScreen.paymentMethod.instructions')}
           </Text>
         </View>
 
@@ -524,7 +527,7 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
             <ActivityIndicator color="#fff" />
           ) : (
             <Text style={styles.payButtonText}>
-              Pay ${parseFloat(amount || '0').toFixed(2)} Now
+              {t('makePaymentScreen.payButton', { amount: parseFloat(amount || '0').toFixed(2) })}
             </Text>
           )}
         </TouchableOpacity>

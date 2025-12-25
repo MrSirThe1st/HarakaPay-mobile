@@ -1,0 +1,62 @@
+{
+  "buttons": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "back": "Retour",
+    "next": "Suivant",
+    "retry": "Réessayer",
+    "refresh": "Actualiser",
+    "continue": "Continuer",
+    "done": "Terminé",
+    "close": "Fermer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "add": "Ajouter",
+    "remove": "Retirer",
+    "ok": "OK",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "labels": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "warning": "Avertissement",
+    "info": "Information",
+    "noData": "Aucune donnée disponible",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "optional": "Optionnel",
+    "required": "Obligatoire"
+  },
+  "errors": {
+    "generic": "Une erreur s'est produite",
+    "network": "Erreur de connexion réseau",
+    "timeout": "La requête a expiré",
+    "unauthorized": "Non autorisé",
+    "forbidden": "Accès refusé",
+    "notFound": "Non trouvé",
+    "serverError": "Erreur du serveur",
+    "tryAgain": "Veuillez réessayer"
+  },
+  "validation": {
+    "required": "Ce champ est obligatoire",
+    "invalid": "Valeur invalide",
+    "tooShort": "Trop court",
+    "tooLong": "Trop long",
+    "invalidEmail": "Email invalide",
+    "invalidPhone": "Numéro de téléphone invalide"
+  },
+  "time": {
+    "now": "Maintenant",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "tomorrow": "Demain",
+    "thisWeek": "Cette semaine",
+    "lastWeek": "La semaine dernière",
+    "thisMonth": "Ce mois-ci",
+    "lastMonth": "Le mois dernier"
+  }
+}

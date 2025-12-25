@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import { useI18n } from '../../hooks/useI18n';
 import colors from '../../constants/colors';
 
 const { width, height } = Dimensions.get('window');
@@ -15,13 +16,15 @@ interface EmptyStateProps {
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({ onLinkStudent }) => {
+  const { t } = useI18n('dashboard');
+
   return (
     <View style={styles.container}>
       {/* Content */}
       <View style={styles.contentContainer}>
-        <Text style={styles.title}>Connect Your Children</Text> 
+        <Text style={styles.title}>{t('emptyState.title')}</Text>
         <Text style={styles.description}>
-          Click on teh button below and We'll automatically find your children.
+          {t('emptyState.description')}
         </Text>
       </View>
 
@@ -31,12 +34,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onLinkStudent }) => {
         onPress={onLinkStudent}
         activeOpacity={0.8}
       >
-        <Text style={styles.linkButtonText}>Link Your First Child</Text>
+        <Text style={styles.linkButtonText}>{t('emptyState.linkButton')}</Text>
       </TouchableOpacity>
 
       {/* Help Text */}
       <Text style={styles.helpText}>
-        Need help? Contact your school for assistance.
+        {t('emptyState.helpText')}
       </Text>
     </View>
   );

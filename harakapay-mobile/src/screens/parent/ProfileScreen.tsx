@@ -12,22 +12,28 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../hooks/useAuth';
+import { useI18n } from '../../hooks/useI18n';
 import { deleteAccount } from '../../api/authApi';
 import colors from '../../constants/colors';
 
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation();
   const { signOut, profile } = useAuth();
+  const { t, currentLanguage, changeLanguage } = useI18n('profile');
   const [deleting, setDeleting] = useState(false);
+
+  const handleLanguageChange = async (lang: string) => {
+    await changeLanguage(lang);
+  };
 
   const handleLogout = () => {
     Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
+      t('logoutConfirm.title'),
+      t('logoutConfirm.message'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('logoutConfirm.cancel'), style: 'cancel' },
         {
-          text: 'Logout',
+          text: t('logoutConfirm.confirm'),
           style: 'destructive',
           onPress: async () => {
             await signOut();
@@ -39,12 +45,12 @@ const ProfileScreen: React.FC = () => {
 
   const handleDeleteAccount = () => {
     Alert.alert(
-      'Delete Account',
-      'Are you sure you want to delete your account? This action cannot be undone.\n\n• All your data will be permanently deleted\n• Your linked students will be unlinked\n• Your message history will be removed',
+      t('deleteAccountConfirm.title'),
+      t('deleteAccountConfirm.message'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('deleteAccountConfirm.cancel'), style: 'cancel' },
         {
-          text: 'Delete Account',
+          text: t('deleteAccount'),
           style: 'destructive',
           onPress: () => confirmDeleteAccount(),
         },
@@ -54,25 +60,25 @@ const ProfileScreen: React.FC = () => {
 
   const confirmDeleteAccount = () => {
     Alert.alert(
-      'Final Confirmation',
-      'This is your last chance. Are you absolutely sure you want to delete your account?',
+      t('deleteAccountConfirm.title'),
+      t('deleteAccountConfirm.message'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('deleteAccountConfirm.cancel'), style: 'cancel' },
         {
-          text: 'I understand, delete my account',
+          text: t('deleteAccountConfirm.confirm'),
           style: 'destructive',
           onPress: async () => {
             setDeleting(true);
             try {
               await deleteAccount();
               Alert.alert(
-                'Account Deleted',
-                'Your account has been permanently deleted.',
-                [{ text: 'OK', onPress: () => signOut() }]
+                t('deleteAccountConfirm.title'),
+                t('success.updated'),
+                [{ text: t('common:buttons.ok'), onPress: () => signOut() }]
               );
             } catch (error) {
               console.error('Error deleting account:', error);
-              Alert.alert('Error', 'Failed to delete account. Please try again or contact support.');
+              Alert.alert(t('common:labels.error'), t('errors.updateFailed'));
             } finally {
               setDeleting(false);
             }
@@ -90,7 +96,7 @@ const ProfileScreen: React.FC = () => {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
+          <Text style={styles.sectionTitle}>{t('personalInfo')}</Text>
 
           <View style={styles.profileCard}>
             <View style={styles.avatarContainer}>
@@ -104,34 +110,58 @@ const ProfileScreen: React.FC = () => {
               <Text style={styles.profilePhone}>{profile.phone}</Text>
             )}
           </View>
+        </View>
 
-          <View style={styles.infoNotice}>
-            <View style={styles.infoHeader}>
-              <Ionicons name="information-circle" size={20} color={colors.primary} />
-              <Text style={styles.infoTitle}>Need to Update Your Information?</Text>
-            </View>
-            <Text style={styles.infoText}>
-              To modify your phone number, email, or other personal details, please contact your school via the messaging feature.
-            </Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('language.title')}</Text>
+          <View style={styles.languageContainer}>
             <TouchableOpacity
-              style={styles.messageLink}
-              onPress={handleNavigateToMessages}
+              style={[
+                styles.languageButton,
+                currentLanguage === 'fr' && styles.languageButtonActive
+              ]}
+              onPress={() => handleLanguageChange('fr')}
               activeOpacity={0.7}
             >
-              <Ionicons name="chatbubbles" size={18} color="#FFFFFF" />
-              <Text style={styles.messageLinkText}>Go to Messages</Text>
-              <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
+              <Text style={[
+                styles.languageButtonText,
+                currentLanguage === 'fr' && styles.languageButtonTextActive
+              ]}>
+                {t('language.french')}
+              </Text>
+              {currentLanguage === 'fr' && (
+                <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.languageButton,
+                currentLanguage === 'en' && styles.languageButtonActive
+              ]}
+              onPress={() => handleLanguageChange('en')}
+              activeOpacity={0.7}
+            >
+              <Text style={[
+                styles.languageButtonText,
+                currentLanguage === 'en' && styles.languageButtonTextActive
+              ]}>
+                {t('language.english')}
+              </Text>
+              {currentLanguage === 'en' && (
+                <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
+              )}
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Actions</Text>
+          <Text style={styles.sectionTitle}>{t('settings.title')}</Text>
 
           <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
             <View style={styles.menuItemLeft}>
               <Ionicons name="log-out-outline" size={24} color={colors.text.primary} />
-              <Text style={styles.menuItemText}>Logout</Text>
+              <Text style={styles.menuItemText}>{t('logout')}</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color={colors.text.secondary} />
           </TouchableOpacity>
@@ -152,7 +182,7 @@ const ProfileScreen: React.FC = () => {
                 <Ionicons name="trash-outline" size={24} color="#EF4444" />
               )}
               <Text style={[styles.menuItemText, styles.dangerText]}>
-                {deleting ? 'Deleting Account...' : 'Delete Account'}
+                {deleting ? t('common:labels.loading') : t('deleteAccount')}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#EF4444" />
@@ -280,6 +310,35 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 12,
     color: colors.text.secondary,
+  },
+  languageContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  languageButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.cardBackground,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    gap: 8,
+  },
+  languageButtonActive: {
+    borderColor: colors.primary,
+    backgroundColor: '#E8F4FD',
+  },
+  languageButtonText: {
+    fontSize: 16,
+    color: colors.text.primary,
+    fontWeight: '500',
+  },
+  languageButtonTextActive: {
+    color: colors.primary,
+    fontWeight: '700',
   },
 });
 

@@ -15,6 +15,8 @@ import { PaymentScheduleItem } from '../../api/paymentApi';
 import { WEB_API_URL } from '../../config/env';
 import { supabase } from '../../config/supabase';
 import colors from '../../constants/colors';
+import { useI18n } from '../../hooks/useI18n';
+import { formatCurrency as formatCurrencyUtil } from '../../utils/formatters';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.7; // 70% of screen width - narrower cards
@@ -55,6 +57,7 @@ interface PaymentPlanDetailsScreenProps {
 
 export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentPlanDetailsScreenProps) {
   const { plan, category, student } = route.params || {};
+  const { t, currentLanguage } = useI18n('payment');
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [paidInstallments, setPaidInstallments] = useState<Set<number>>(new Set());
@@ -70,14 +73,12 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+    return formatCurrencyUtil(amount, currentLanguage);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    const locale = currentLanguage === 'fr' ? 'fr-FR' : 'en-US';
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -86,20 +87,49 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
 
   const getPlanTitle = (type: string) => {
     switch (type) {
-      case 'upfront': return 'One-time Payment';
-      case 'monthly': return 'Monthly Plan';
-      case 'per-term': return 'Termly Plan';
-      case 'custom': return 'Installment Plan';
-      default: return 'Payment Plan';
+      case 'upfront': return t('plans.upfront.title');
+      case 'monthly': return t('plans.monthly.title');
+      case 'per-term': return t('plans.termly.title');
+      case 'custom': return t('plans.custom.title');
+      default: return t('plans.default.title');
     }
   };
 
   const getPlanSubtitle = (plan: PaymentScheduleItem) => {
+    const count = plan.installments?.length || 0;
     if (plan.schedule_type === 'upfront') {
-      return 'Pay everything at once';
+      return t('details.payEverythingAtOnce');
     } else {
-      return `${plan.installments?.length || 0} installments`;
+      return count === 1 ? t('details.installments', { count }) : t('details.installments_plural', { count });
     }
+  };
+
+  const translateInstallmentName = (name: string) => {
+    // Handle "Full Payment"
+    if (name.toLowerCase().includes('full payment')) {
+      return t('details.fullPayment');
+    }
+
+    // Handle "Installment 1", "Installment 2", etc.
+    const installmentMatch = name.match(/installment\s+(\d+)/i);
+    if (installmentMatch) {
+      return t('details.installment', { number: installmentMatch[1] });
+    }
+
+    // Handle "Monthly 1", "Monthly 2", etc.
+    const monthlyMatch = name.match(/monthly\s+(\d+)/i);
+    if (monthlyMatch) {
+      return t('details.monthlyInstallment', { number: monthlyMatch[1] });
+    }
+
+    // Handle "Term 1", "Term 2", etc.
+    const termMatch = name.match(/term\s+(\d+)/i);
+    if (termMatch) {
+      return t('details.termlyInstallment', { number: termMatch[1] });
+    }
+
+    // If no pattern matches, return the original name
+    return name;
   };
 
   const getTotalAmount = () => {
@@ -183,12 +213,12 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
 
   const handleMakePayment = (installment?: any) => {
     console.log('Make payment for plan:', plan.id, 'installment:', installment);
-    // Navigate to PaymentsScreen with student, payment plan, and selected installment data
+
     navigation.navigate('Payments', {
       student: student,
       paymentPlan: plan,
-      selectedInstallment: installment || null, // Pass the selected installment
-      feeAssignment: null // Will be loaded in PaymentsScreen
+      selectedInstallment: installment || null, 
+      feeAssignment: null 
     });
   };
 
@@ -280,7 +310,7 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
 
           {/* Month/Label - Most Prominent */}
           <Text style={[styles.carouselInstallmentLabel, isCurrent && styles.carouselInstallmentLabelActive]}>
-            {item.name}
+            {translateInstallmentName(item.name)}
           </Text>
 
           {/* Amount - Second Most Prominent */}
@@ -293,22 +323,22 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
             {isPaid ? (
               <View style={styles.carouselPaidBadge}>
                 <Ionicons name="checkmark-circle" size={14} color="#10B981" />
-                <Text style={styles.carouselPaidText}>Paid</Text>
+                <Text style={styles.carouselPaidText}>{t('details.statusBadges.paid')}</Text>
               </View>
             ) : isOverdue(item.due_date) ? (
               <View style={styles.carouselOverdueBadge}>
                 <Ionicons name="warning" size={14} color="#FCA5A5" />
-                <Text style={styles.carouselOverdueText}>Overdue</Text>
+                <Text style={styles.carouselOverdueText}>{t('details.statusBadges.overdue')}</Text>
               </View>
             ) : isUpcoming(item.due_date) ? (
               <View style={styles.carouselUpcomingBadge}>
                 <Ionicons name="time" size={14} color="#FCD34D" />
-                <Text style={styles.carouselUpcomingText}>Due Soon</Text>
+                <Text style={styles.carouselUpcomingText}>{t('details.statusBadges.dueSoon')}</Text>
               </View>
             ) : (
               <View style={styles.carouselPendingBadge}>
                 <Ionicons name="checkmark-circle" size={14} color="#6EE7B7" />
-                <Text style={styles.carouselPendingText}>Pending</Text>
+                <Text style={styles.carouselPendingText}>{t('details.statusBadges.pending')}</Text>
               </View>
             )}
           </View>
@@ -318,7 +348,7 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
             <Ionicons name="calendar-outline" size={14} color={isCurrent ? '#E0E7FF' : colors.text.secondary} style={styles.carouselCalendarIcon} />
             <View>
               <Text style={[styles.carouselDueDateLabel, isCurrent && styles.carouselDueDateLabelActive]}>
-                Due Date
+                {t('details.dueDate')}
               </Text>
               <Text style={[
                 styles.carouselDueDateValue,
@@ -335,10 +365,8 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* Header */}
-
-
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Plan Summary */}
         <View style={styles.summaryCard}>
@@ -358,27 +386,27 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
           
           <View style={styles.summaryAmounts}>
             <View style={styles.amountRow}>
-              <Text style={styles.amountLabel}>Original Amount:</Text>
+              <Text style={styles.amountLabel}>{t('details.originalAmount')}</Text>
               <Text style={styles.amountValue}>{formatCurrency(category.amount)}</Text>
             </View>
             {plan.discount_percentage && plan.discount_percentage > 0 ? (
               <View style={styles.amountRow}>
-                <Text style={styles.amountLabel}>Discount ({plan.discount_percentage}%):</Text>
+                <Text style={styles.amountLabel}>{t('details.discount', { percent: plan.discount_percentage })}</Text>
                 <Text style={styles.discountValue}>-{formatCurrency(getSavings())}</Text>
               </View>
             ) : null}
             <View style={[styles.amountRow, styles.totalRow]}>
-              <Text style={styles.totalLabel}>Total Amount:</Text>
+              <Text style={styles.totalLabel}>{t('details.totalAmount')}</Text>
               <Text style={styles.totalValue}>{formatCurrency(getTotalAmount())}</Text>
             </View>
             {paidAmount > 0 && (
               <>
                 <View style={styles.amountRow}>
-                  <Text style={styles.amountLabel}>Amount Paid:</Text>
+                  <Text style={styles.amountLabel}>{t('details.amountPaid')}</Text>
                   <Text style={styles.paidValue}>{formatCurrency(paidAmount)}</Text>
                 </View>
                 <View style={[styles.amountRow, styles.remainingRow]}>
-                  <Text style={styles.remainingLabel}>Remaining Balance:</Text>
+                  <Text style={styles.remainingLabel}>{t('details.remainingBalance')}</Text>
                   <Text style={styles.remainingValue}>{formatCurrency(remainingBalance)}</Text>
                 </View>
               </>
@@ -388,7 +416,7 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
 
         {/* Installment Timeline - Horizontal Carousel */}
         <View style={styles.timelineSection}>
-          <Text style={styles.sectionTitle}>Payment Schedule</Text>
+          <Text style={styles.sectionTitle}>{t('details.paymentSchedule')}</Text>
           {plan.installments && plan.installments.length > 0 ? (
             <View style={styles.carouselContainer}>
               <FlatList
@@ -402,7 +430,7 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
                 decelerationRate="fast"
                 contentContainerStyle={styles.carouselContent}
                 onScrollToIndexFailed={(info) => {
-                  // Handle scroll failure gracefully
+           
                   const wait = new Promise(resolve => setTimeout(resolve, 500));
                   wait.then(() => {
                     flatListRef.current?.scrollToIndex({
@@ -429,7 +457,7 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
           ) : (
             <View style={styles.emptyState}>
               <Ionicons name="calendar-outline" size={48} color={colors.text.caption} />
-              <Text style={styles.emptyStateText}>No installments available</Text>
+              <Text style={styles.emptyStateText}>{t('details.emptyState.noInstallments')}</Text>
             </View>
           )}
         </View>
@@ -440,14 +468,14 @@ export default function PaymentPlanDetailsScreen({ navigation, route }: PaymentP
             <Ionicons name="information-circle" size={20} color="#6B7280" />
             <Text style={styles.helpText}>
               {plan.schedule_type === 'upfront'
-                ? 'Tap the payment card above to pay the full amount by the due date and receive your discount.'
-                : 'Tap any installment card above to make a payment. Make payments according to the schedule. Late payments may incur additional fees.'
+                ? t('details.helpText.upfront')
+                : t('details.helpText.installments')
               }
             </Text>
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -461,20 +489,16 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   summaryCard: {
-    backgroundColor: colors.primary,
+
     borderRadius: 16,
-    padding: 24,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    padding: 18,
+    marginBottom: 18,
+
   },
   summaryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 18,
   },
   summaryIconContainer: {
     width: 64,
@@ -491,12 +515,12 @@ const styles = StyleSheet.create({
   summaryTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: 'white',
+
     marginBottom: 6,
   },
   summarySubtitle: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.85)',
+
   },
   summaryAmounts: {
     borderTopWidth: 1,
@@ -512,16 +536,16 @@ const styles = StyleSheet.create({
   totalRow: {
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.2)',
-    paddingTop: 16,
+    paddingTop: 12,
     marginTop: 12,
   },
   amountLabel: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.85)',
+
   },
   amountValue: {
     fontSize: 17,
-    color: 'white',
+
     fontWeight: '600',
   },
   discountValue: {
@@ -532,12 +556,12 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 18,
     fontWeight: '700',
-    color: 'white',
+
   },
   totalValue: {
     fontSize: 22,
     fontWeight: '700',
-    color: 'white',
+
   },
   timelineSection: {
     marginBottom: 24,

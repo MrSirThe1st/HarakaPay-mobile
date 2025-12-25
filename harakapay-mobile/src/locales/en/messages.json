@@ -1,0 +1,46 @@
+{
+  "title": "Messages",
+  "empty": {
+    "title": "No Messages",
+    "description": "Send a message to your school to get started.",
+    "button": "Send Message"
+  },
+  "status": {
+    "read": "✓ Read by school",
+    "sent": "Sent"
+  },
+  "modal": {
+    "title": "Message",
+    "regarding": "Regarding:",
+    "sent": "Sent",
+    "readBySchool": "Read by school"
+  },
+  "sendModal": {
+    "title": "Send Message to School",
+    "regardingStudent": "Regarding Student",
+    "subject": "Subject",
+    "subjectPlaceholder": "Enter message subject",
+    "message": "Message",
+    "messagePlaceholder": "Enter your message",
+    "sendButton": "Send Message",
+    "discardTitle": "Discard Message",
+    "discardMessage": "Are you sure you want to discard this message?",
+    "discardCancel": "Cancel",
+    "discardConfirm": "Discard"
+  },
+  "errors": {
+    "title": "Error",
+    "loadFailed": "Failed to load messages",
+    "selectStudent": "Please select a student",
+    "enterSubject": "Please enter a subject",
+    "enterMessage": "Please enter a message",
+    "sendFailed": "Failed to send message. Please try again."
+  },
+  "success": {
+    "title": "Success",
+    "messageSent": "Message sent to school successfully"
+  },
+  "time": {
+    "recently": "Recently"
+  }
+}

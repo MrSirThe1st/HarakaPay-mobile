@@ -14,6 +14,8 @@ import { FeeCategoryItem } from '../../api/paymentApi';
 import { supabase } from '../../config/supabase';
 import { WEB_API_URL } from '../../config/env';
 import colors from '../../constants/colors';
+import { useI18n } from '../../hooks/useI18n';
+import { formatCurrency } from '../../utils/formatters';
 
 const { width } = Dimensions.get('window');
 
@@ -47,7 +49,8 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
   console.log('PaymentPlansScreen route:', route);
   console.log('PaymentPlansScreen params:', route?.params);
   console.log('PaymentPlansScreen params keys:', route?.params ? Object.keys(route.params) : 'no params');
-  
+
+  const { t, currentLanguage } = useI18n('payment');
   const { category, student, feeStructure } = route.params || {};
   const [paymentPlans, setPaymentPlans] = useState<PaymentPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,8 +64,8 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={48} color="#EF4444"/>
-          <Text style={styles.errorTitle}>Missing Information</Text>
-          <Text style={styles.errorText}>Required data is missing. Please go back and try again.</Text>
+          <Text style={styles.errorTitle}>{t('plans.errors.missingInfo')}</Text>
+          <Text style={styles.errorText}>{t('plans.errors.missingInfoDescription')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -75,8 +78,8 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={48} color="#EF4444"/>
-          <Text style={styles.errorTitle}>Invalid Category Data</Text>
-          <Text style={styles.errorText}>Category amount is missing. Please go back and try again.</Text>
+          <Text style={styles.errorTitle}>{t('plans.errors.invalidCategory')}</Text>
+          <Text style={styles.errorText}>{t('plans.errors.invalidCategoryDescription')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -219,13 +222,6 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
     });
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
   const getPlanIcon = (type: string) => {
     switch (type) {
       case 'upfront': return 'card';
@@ -238,45 +234,48 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
 
   const getPlanTitle = (type: string) => {
     switch (type) {
-      case 'upfront': return 'One-time Payment';
-      case 'monthly': return 'Monthly Plan';
-      case 'per-term': return 'Termly Plan';
-      case 'custom': return 'Installment Plan';
-      default: return 'Payment Plan';
+      case 'upfront': return t('plans.upfront.title');
+      case 'monthly': return t('plans.monthly.title');
+      case 'per-term': return t('plans.termly.title');
+      case 'custom': return t('plans.custom.title');
+      default: return t('plans.default.title');
     }
   };
 
   const getPlanDescription = (plan: PaymentPlan) => {
+    const count = plan.installments?.length || 0;
     switch (plan.type) {
       case 'upfront':
-        return `Pay everything once${plan.discount_percentage ? ` and get ${plan.discount_percentage}% discount` : ''}`;
+        return plan.discount_percentage
+          ? t('plans.upfront.shortDescriptionWithDiscount', { percent: plan.discount_percentage })
+          : t('plans.upfront.shortDescription');
       case 'monthly':
-        return `Pay over ${plan.installments?.length || 0} months`;
+        return t('plans.monthly.shortDescription', { count });
       case 'per-term':
-        return `Pay over ${plan.installments?.length || 0} terms`;
+        return t('plans.termly.shortDescription', { count });
       case 'custom':
-        return `Pay over ${plan.installments?.length || 0} installments`;
+        return t('plans.custom.shortDescription', { count });
       default:
-        return 'Flexible payment option';
+        return t('plans.default.description');
     }
   };
 
   const getPlanAmount = (plan: PaymentPlan) => {
     if (plan.type === 'upfront') {
-      return formatCurrency((category?.amount || 0) * (1 - (plan.discount_percentage || 0) / 100));
+      return formatCurrency((category?.amount || 0) * (1 - (plan.discount_percentage || 0) / 100), currentLanguage);
     } else {
       const firstInstallment = plan.installments?.[0];
-      return firstInstallment ? formatCurrency(firstInstallment.amount || 0) : 'N/A';
+      return firstInstallment ? formatCurrency(firstInstallment.amount || 0, currentLanguage) : 'N/A';
     }
   };
 
   const getPlanSubAmount = (plan: PaymentPlan) => {
     if (plan.type === 'upfront') {
-      return `Total: ${formatCurrency((category?.amount || 0) * (1 - (plan.discount_percentage || 0) / 100))}`;
+      return `${t('plans.totalAmount')}: ${formatCurrency((category?.amount || 0) * (1 - (plan.discount_percentage || 0) / 100), currentLanguage)}`;
     } else {
-      const period = plan.type === 'monthly' ? 'monthly' : 
-                    plan.type === 'per-term' ? 'per term' : 
-                    plan.type === 'custom' ? 'per installment' : 'per payment';
+      const period = plan.type === 'monthly' ? t('plans.periods.monthly') :
+                    plan.type === 'per-term' ? t('plans.periods.perTerm') :
+                    plan.type === 'custom' ? t('plans.periods.perInstallment') : t('plans.periods.perPayment');
       return `${period.charAt(0).toUpperCase() + period.slice(1)}: ${getPlanAmount(plan)}`;
     }
   };
@@ -284,25 +283,25 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
   const getDueDate = (plan: PaymentPlan) => {
     if (plan.type === 'upfront') {
       const firstInstallment = plan.installments?.[0];
-      return firstInstallment?.due_date ? `Due by: ${new Date(firstInstallment.due_date).toLocaleDateString()}` : '';
+      return firstInstallment?.due_date ? `${t('plans.dueBy')}: ${new Date(firstInstallment.due_date).toLocaleDateString()}` : '';
     } else {
       const firstInstallment = plan.installments?.[0];
-      return firstInstallment?.due_date ? `First due: ${new Date(firstInstallment.due_date).toLocaleDateString()}` : '';
+      return firstInstallment?.due_date ? `${t('plans.firstDue')}: ${new Date(firstInstallment.due_date).toLocaleDateString()}` : '';
     }
   };
 
   const getPlanExplanation = (plan: PaymentPlan) => {
     switch (plan.type) {
       case 'upfront':
-        return 'Pay the full amount in one transaction. This plan offers the best value with an upfront discount and eliminates the need for multiple payments.';
+        return t('plans.upfront.description');
       case 'monthly':
-        return 'Spread your payments over multiple months with fixed monthly installments. This makes budgeting easier with predictable payment amounts.';
+        return t('plans.monthly.description');
       case 'per-term':
-        return 'Pay per academic term with installments aligned to the school calendar. Payments are due at the start of each term.';
+        return t('plans.termly.description');
       case 'custom':
-        return 'Flexible payment schedule designed to fit your needs. Make payments according to a customized installment plan.';
+        return t('plans.custom.description');
       default:
-        return 'A flexible payment option to help you manage your fees.';
+        return t('plans.default.description');
     }
   };
 
@@ -322,10 +321,10 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={48} color="#EF4444" />
-          <Text style={styles.errorTitle}>Unable to Load Payment Plans</Text>
+          <Text style={styles.errorTitle}>{t('plans.errors.loadFailed')}</Text>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={loadPaymentPlans}>
-            <Text style={styles.retryButtonText}>Try Again</Text>
+            <Text style={styles.retryButtonText}>{t('plans.errors.retryButton')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -333,14 +332,12 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Category Summary */}
-        
-
+        {/* Category Summary */}      
         {/* Payment Plans */}
         <View style={styles.plansSection}>
-          <Text style={styles.sectionTitle}>Available Payment Plans</Text>
+
           {paymentPlans.length > 0 ? (
             paymentPlans.map((plan) => {
               const isUsed = usedPaymentPlanId === plan.id;
@@ -371,7 +368,7 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
                     </View>
                     <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
                   </View>
-                  
+
                   <View style={styles.planDetails}>
                     <View style={styles.planAmountContainer}>
                       <Text style={styles.planAmount}>{getPlanAmount(plan)}</Text>
@@ -384,7 +381,7 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
                     <View style={styles.discountBadge}>
                       <Ionicons name="gift" size={16} color="#10B981" />
                       <Text style={styles.discountText}>
-                        {(plan.discount_percentage || 0)}% discount
+                        {t('plans.discount', { percent: plan.discount_percentage || 0 })}
                       </Text>
                     </View>
                   ) : null}
@@ -392,7 +389,7 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
                   {isUsed && (
                     <View style={styles.usedBadge}>
                       <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                      <Text style={styles.usedBadgeText}>Currently Using</Text>
+                      <Text style={styles.usedBadgeText}>{t('plans.currentlyUsing')}</Text>
                     </View>
                   )}
 
@@ -408,8 +405,8 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
           ) : (
             <View style={styles.emptyState}>
               <Ionicons name="calendar-outline" size={48} color="#9CA3AF" />
-              <Text style={styles.emptyStateText}>No payment plans available for this fee</Text>
-              <Text style={styles.emptyStateSubtext}>Payment plans for this specific fee category haven't been set up yet.</Text>
+              <Text style={styles.emptyStateText}>{t('plans.emptyState.title')}</Text>
+              <Text style={styles.emptyStateSubtext}>{t('plans.emptyState.description')}</Text>
             </View>
           )}
         </View>
@@ -419,12 +416,12 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
           <View style={styles.helpCard}>
             <Ionicons name="information-circle" size={20} color="#6B7280" />
             <Text style={styles.helpText}>
-              Select a payment plan to view detailed installment schedules and make payments.
+              {t('plans.helpText')}
             </Text>
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

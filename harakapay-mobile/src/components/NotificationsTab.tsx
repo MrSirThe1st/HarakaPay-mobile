@@ -19,9 +19,12 @@ import {
   deleteNotification,
 } from '../api/notificationApi';
 import { formatDistanceToNow } from 'date-fns';
+import { fr, enUS } from 'date-fns/locale';
+import { useI18n } from '../hooks/useI18n';
 import colors from '../constants/colors';
 
 const NotificationsTab: React.FC = () => {
+  const { t, currentLanguage } = useI18n('notifications');
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -45,7 +48,7 @@ const NotificationsTab: React.FC = () => {
       setHasMore(result.hasMore);
     } catch (error) {
       console.error('Error loading notifications:', error);
-      Alert.alert('Error', 'Failed to load notifications');
+      Alert.alert(t('errors.title'), t('errors.loadFailed'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -81,12 +84,12 @@ const NotificationsTab: React.FC = () => {
 
   const handleDeleteNotification = async (notificationId: string) => {
     Alert.alert(
-      'Delete Notification',
-      'Are you sure you want to delete this notification?',
+      t('deleteConfirm.title'),
+      t('deleteConfirm.message'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('deleteConfirm.cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('deleteConfirm.delete'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -95,7 +98,7 @@ const NotificationsTab: React.FC = () => {
               setModalVisible(false);
             } catch (error) {
               console.error('Error deleting notification:', error);
-              Alert.alert('Error', 'Failed to delete notification');
+              Alert.alert(t('errors.title'), t('errors.deleteFailed'));
             }
           },
         },
@@ -112,9 +115,10 @@ const NotificationsTab: React.FC = () => {
 
   const getRelativeTime = (dateString: string) => {
     try {
-      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+      const locale = currentLanguage === 'fr' ? fr : enUS;
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale });
     } catch {
-      return 'Recently';
+      return t('time.recently');
     }
   };
 
@@ -177,9 +181,9 @@ const NotificationsTab: React.FC = () => {
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
       <Ionicons name="notifications-off-outline" size={64} color="#D1D5DB" />
-      <Text style={styles.emptyTitle}>No Notifications</Text>
+      <Text style={styles.emptyTitle}>{t('empty.title')}</Text>
       <Text style={styles.emptyText}>
-        You don't have any notifications yet.
+        {t('empty.description')}
       </Text>
     </View>
   );
@@ -224,7 +228,7 @@ const NotificationsTab: React.FC = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Notification</Text>
+              <Text style={styles.modalTitle}>{t('modal.title')}</Text>
               <TouchableOpacity
                 onPress={() => setModalVisible(false)}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -273,7 +277,7 @@ const NotificationsTab: React.FC = () => {
                     onPress={() => handleDeleteNotification(selectedNotification.id)}
                   >
                     <Ionicons name="trash-outline" size={20} color="#FFFFFF" />
-                    <Text style={styles.deleteButtonText}>Delete Notification</Text>
+                    <Text style={styles.deleteButtonText}>{t('modal.deleteButton')}</Text>
                   </TouchableOpacity>
                 </>
               )}

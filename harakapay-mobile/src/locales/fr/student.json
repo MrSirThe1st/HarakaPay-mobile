@@ -1,0 +1,67 @@
+{
+  "link": {
+    "title": "Lier votre enfant",
+    "description": "Entrez les informations de votre enfant pour le lier à votre compte",
+    "searchTitle": "Rechercher un étudiant",
+    "searchDescription": "Entrez le nom et le numéro de téléphone de votre enfant",
+    "firstNamePlaceholder": "Prénom de l'étudiant",
+    "lastNamePlaceholder": "Nom de l'étudiant",
+    "phonePlaceholder": "+243 XXX XXX XXX",
+    "searchButton": "Rechercher",
+    "searching": "Recherche en cours...",
+    "noResults": "Aucun étudiant trouvé",
+    "noResultsDescription": "Aucun étudiant ne correspond à vos critères de recherche. Veuillez vérifier les informations et réessayer.",
+    "selectStudents": "Sélectionner les étudiants à lier",
+    "linkButton": "Lier {{count}} étudiant",
+    "linkButton_plural": "Lier {{count}} étudiants",
+    "linking": "Liaison en cours...",
+    "strongMatches": "Correspondances fortes",
+    "possibleMatches": "Correspondances possibles",
+    "otherMatches": "Autres correspondances",
+    "noAutoMatches": "Aucune correspondance automatique trouvée",
+    "noAutoMatchesDescription": "Nous n'avons pas pu trouver d'étudiants correspondant automatiquement à vos informations.",
+    "searchManually": "Rechercher manuellement",
+    "confirmLink": "Confirmer la liaison",
+    "grade": "Classe",
+    "studentId": "ID",
+    "linkStudentButton": "Lier l'étudiant",
+    "profileIncomplete": {
+      "title": "Profil incomplet",
+      "message": "Votre profil manque d'informations requises (nom ou téléphone). Veuillez d'abord mettre à jour votre profil."
+    },
+    "profileNotFound": {
+      "title": "Profil introuvable",
+      "message": "Impossible de charger votre profil. Veuillez réessayer."
+    },
+    "success": {
+      "title": "Succès !",
+      "message": "{{studentName}} a été lié à votre compte."
+    },
+    "errors": {
+      "title": "Erreur",
+      "firstNameRequired": "Le prénom est obligatoire",
+      "lastNameRequired": "Le nom est obligatoire",
+      "phoneRequired": "Le numéro de téléphone est obligatoire",
+      "phoneInvalid": "Le numéro doit contenir exactement 9 chiffres",
+      "searchFailed": "Échec de la recherche",
+      "linkFailed": "Échec de la liaison de l'étudiant. Veuillez réessayer.",
+      "noStudentsSelected": "Aucun étudiant sélectionné"
+    }
+  },
+  "details": {
+    "title": "Détails de l'étudiant",
+    "studentInfo": "Informations de l'étudiant",
+    "name": "Nom",
+    "class": "Classe",
+    "school": "École",
+    "studentNumber": "Numéro d'étudiant",
+    "fees": "Frais",
+    "payments": "Paiements",
+    "viewFees": "Voir les frais",
+    "viewPayments": "Voir les paiements"
+  },
+  "card": {
+    "unknownFirstName": "Inconnu",
+    "unknownLastName": "Étudiant"
+  }
+}

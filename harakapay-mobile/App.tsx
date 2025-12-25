@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -9,6 +9,8 @@ import { AuthProvider, useAuth } from "./src/contexts/AuthContext";
 import { StudentProvider } from "./src/contexts/StudentContext";
 import { supabase } from "./src/config/supabase";
 import colors from "./src/constants/colors";
+import './src/config/i18n';
+import { initializeLanguage } from './src/config/i18n';
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -125,6 +127,27 @@ const RootNavigation = () => {
 };
 
 export default function App() {
+  const [i18nInitialized, setI18nInitialized] = useState(false);
+
+  useEffect(() => {
+    // Initialize language on app start
+    initializeLanguage().then(() => {
+      setI18nInitialized(true);
+    }).catch((error) => {
+      console.error('Failed to initialize language:', error);
+      setI18nInitialized(true); // Continue anyway
+    });
+  }, []);
+
+  // Show loading while i18n is initializing
+  if (!i18nInitialized) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>

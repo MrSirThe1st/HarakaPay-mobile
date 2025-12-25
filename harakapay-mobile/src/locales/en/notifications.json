@@ -1,0 +1,46 @@
+{
+  "title": "Notifications",
+  "markAllRead": "Mark All as Read",
+  "deleteAll": "Delete All",
+  "filter": {
+    "all": "All",
+    "unread": "Unread",
+    "read": "Read"
+  },
+  "empty": {
+    "title": "No Notifications",
+    "description": "You don't have any notifications yet."
+  },
+  "types": {
+    "payment": "Payment",
+    "fee": "Fee",
+    "announcement": "Announcement",
+    "message": "Message",
+    "reminder": "Reminder",
+    "alert": "Alert"
+  },
+  "actions": {
+    "markRead": "Mark as Read",
+    "delete": "Delete",
+    "view": "View"
+  },
+  "modal": {
+    "title": "Notification",
+    "deleteButton": "Delete Notification"
+  },
+  "deleteConfirm": {
+    "title": "Delete Notification",
+    "message": "Are you sure you want to delete this notification?",
+    "cancel": "Cancel",
+    "delete": "Delete"
+  },
+  "errors": {
+    "title": "Error",
+    "loadFailed": "Failed to load notifications",
+    "markReadFailed": "Failed to mark as read",
+    "deleteFailed": "Failed to delete notification"
+  },
+  "time": {
+    "recently": "Recently"
+  }
+}

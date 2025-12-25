@@ -16,6 +16,7 @@ import { useStudents } from '../../contexts/StudentContext';
 import { ChildCard } from '../../components/home/ChildCard';
 import { EmptyState } from '../../components/home/EmptyState';
 import { LinkedStudent } from '../../api/studentApi';
+import { useI18n } from '../../hooks/useI18n';
 import colors from '../../constants/colors';
 
 const { width } = Dimensions.get('window');
@@ -23,6 +24,7 @@ const { width } = Dimensions.get('window');
 const HomeScreen: React.FC<{ navigation?: any }> = ({ navigation }) => {
   const { profile, loading: authLoading } = useAuth();
   const { linkedStudents, loadingStudents, error, fetchLinkedStudentsAsync } = useStudents();
+  const { t } = useI18n('dashboard');
 
   useEffect(() => {
     // Fetch linked students when component mounts
@@ -79,8 +81,8 @@ const HomeScreen: React.FC<{ navigation?: any }> = ({ navigation }) => {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Hello, {profile?.first_name}!</Text>
-            <Text style={styles.subtitle}>Manage your children's school activities</Text>
+            <Text style={styles.greeting}>{t('greeting', { name: profile?.first_name })}</Text>
+            <Text style={styles.subtitle}>{t('subtitle')}</Text>
           </View>
         </View>
 
@@ -95,7 +97,7 @@ const HomeScreen: React.FC<{ navigation?: any }> = ({ navigation }) => {
               <View style={styles.linkButton}>
                 <Ionicons name="add" size={32} color="white" />
               </View>
-              <Text style={styles.linkButtonLabel}>Add Child</Text>
+              <Text style={styles.linkButtonLabel}>{t('addChild')}</Text>
             </TouchableOpacity>
           </View>
 

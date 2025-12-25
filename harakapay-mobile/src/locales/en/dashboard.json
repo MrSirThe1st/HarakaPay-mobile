@@ -1,0 +1,12 @@
+{
+  "greeting": "Hello, {{name}}!",
+  "subtitle": "Manage your children's school activities",
+  "addChild": "Add Child",
+  "myChildren": "My Children",
+  "emptyState": {
+    "title": "Connect Your Children",
+    "description": "Click on the button below and we'll automatically find your children.",
+    "linkButton": "Link Your First Child",
+    "helpText": "Need help? Contact your school for assistance."
+  }
+}
