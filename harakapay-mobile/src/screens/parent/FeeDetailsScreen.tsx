@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   summaryCard: {
-    backgroundColor: '#1E3A8A',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     padding: 24,
     alignItems: 'center',
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   categoryCard: {
-    backgroundColor: '#1E3A8A',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,

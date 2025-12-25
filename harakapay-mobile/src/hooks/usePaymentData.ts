@@ -87,7 +87,7 @@ const fetchStudentFeeData = async (studentId: string, accessToken: string): Prom
     studentId,
     categories,
     paymentPlans,
-    feeStructure: studentData.fee_structure || null,
+    feeStructure: studentData.fee_template || null,
     lastUpdated: Date.now(),
   };
 };

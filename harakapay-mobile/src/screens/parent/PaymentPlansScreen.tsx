@@ -296,7 +296,7 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} style={{ transform: [{ scale: 2 }] }} />
-          <Text style={styles.loadingText}>Loading payment plans...</Text>
+
         </View>
       </SafeAreaView>
     );
@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   categorySummary: {
-    backgroundColor: '#1E3A8A',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     padding: 20,
     marginBottom: 24,
@@ -560,7 +560,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2C67A6',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 6,
     marginLeft: 8,
   },
   oneTimeText: {
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   planCard: {
-    backgroundColor: '#1E3A8A',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,

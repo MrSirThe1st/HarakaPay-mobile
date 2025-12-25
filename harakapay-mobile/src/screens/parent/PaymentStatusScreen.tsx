@@ -101,7 +101,6 @@ export default function PaymentStatusScreen() {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color={colors.primary} style={{ transform: [{ scale: 2 }] }} />
-        <Text style={styles.loadingText}>Loading payment status...</Text>
       </View>
     );
   }

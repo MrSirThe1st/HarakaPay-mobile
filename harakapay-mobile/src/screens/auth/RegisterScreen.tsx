@@ -410,7 +410,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background, // Very dark blue
+    backgroundColor: colors.background,
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -428,18 +428,18 @@ const styles = StyleSheet.create({
   logo: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: colors.primary, // Bright blue
+    color: colors.primary,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 24,
     fontWeight: '600',
-    color: colors.text.primary, // White
+    color: colors.text.primary,
     marginBottom: 8,
   },
   description: {
     fontSize: 16,
-    color: colors.text.secondary, // Light gray-blue
+    color: colors.text.secondary,
     textAlign: 'center',
     lineHeight: 24,
   },
@@ -462,34 +462,34 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '500',
-    color: colors.text.primary, // White
+    color: colors.text.primary,
     marginBottom: 8,
   },
   input: {
     height: 52,
     borderWidth: 1,
-    borderColor: colors.blue.dark, // Medium dark blue border
+    borderColor: '#000000',
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
     fontFamily: 'System',
-    backgroundColor: colors.blue.darker, // Dark blue background
-    color: colors.text.primary, // White text
+    backgroundColor: colors.surface,
+    color: colors.text.primary,
   },
   phoneInput: {
     height: 52,
     borderWidth: 1,
-    borderColor: colors.blue.dark,
+    borderColor: '#000000',
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
     fontFamily: 'System',
-    backgroundColor: colors.blue.darker,
+    backgroundColor: colors.surface,
     color: colors.text.primary,
   },
   inputError: {
     borderColor: colors.error,
-    backgroundColor: '#2A1A1A', // Dark red background
+    backgroundColor: '#FEF2F2',
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -500,26 +500,26 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 52,
     borderWidth: 1,
-    borderColor: colors.blue.dark,
+    borderColor: '#000000',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingRight: 50,
     fontSize: 16,
-    backgroundColor: colors.blue.darker,
+    backgroundColor: colors.surface,
     color: colors.text.primary,
   },
   pinInput: {
     flex: 1,
     height: 52,
     borderWidth: 1,
-    borderColor: colors.blue.dark,
+    borderColor: '#000000',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingRight: 50,
     fontSize: 24,
     fontWeight: '600',
     letterSpacing: 8,
-    backgroundColor: colors.blue.darker,
+    backgroundColor: colors.surface,
     color: colors.text.primary,
     textAlign: 'center',
   },
@@ -552,17 +552,17 @@ const styles = StyleSheet.create({
   },
   termsText: {
     fontSize: 14,
-    color: colors.text.secondary, // Light gray-blue
+    color: colors.text.secondary,
     textAlign: 'center',
     lineHeight: 20,
   },
   linkText: {
-    color: colors.blue.light, // Light blue
+    color: colors.blue.light,
     fontWeight: '500',
   },
   signUpButton: {
     height: 52,
-    backgroundColor: colors.primary, // Bright blue
+    backgroundColor: colors.primary,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
@@ -574,7 +574,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   signUpButtonDisabled: {
-    backgroundColor: colors.blue.medium, // Medium blue when disabled
+    backgroundColor: colors.blue.medium,
   },
   signUpButtonText: {
     fontSize: 16,
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   authErrorContainer: {
-    backgroundColor: '#2A1A1A', // Dark red background
+    backgroundColor: '#FEF2F2',
     borderRadius: 8,
     padding: 12,
     marginTop: 16,
@@ -603,11 +603,11 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 16,
-    color: colors.text.secondary, // Light gray-blue
+    color: colors.text.secondary,
   },
   signInText: {
     fontSize: 16,
-    color: colors.blue.light, // Light blue
+    color: colors.blue.light,
     fontWeight: '600',
   },
 });

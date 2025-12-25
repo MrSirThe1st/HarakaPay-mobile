@@ -142,7 +142,6 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
         {loadingSearch ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} style={{ transform: [{ scale: 2 }] }} />
-            <Text style={styles.loadingText}>Searching for your children...</Text>
           </View>
         ) : (
           <>
