@@ -54,8 +54,7 @@ const HomeScreen: React.FC<{ navigation?: any }> = ({ navigation }) => {
     console.log('⏳ Loading state - authLoading:', authLoading, 'loadingStudents:', loadingStudents);
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0080FF" />
-        <Text style={styles.loadingText}>Loading...</Text>
+        <ActivityIndicator size="large" color={colors.primary} style={{ transform: [{ scale: 2 }] }} />
       </SafeAreaView>
     );
   }
@@ -127,11 +126,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.background,
   },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: colors.text.secondary,
-  },
   scrollView: {
     flex: 1,
   },
@@ -172,13 +166,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   linkButton: {
-    backgroundColor: '#2C67A6', // #0080FF
+    backgroundColor: colors.accent,
     width: 64,
     height: 64,
     borderRadius: 32, // Half of width/height for perfect circle
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: colors.primary,
+    shadowColor: colors.accent,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

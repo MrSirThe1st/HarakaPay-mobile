@@ -23,32 +23,32 @@ interface ChildCardProps {
   variant?: number; // Variant number for different shades (0-4)
 }
 
-// Color schemes for different card variants - more distinct shades
+// Color schemes for different card variants - using primary blue with variations
 const cardVariants = [
   {
-    base: '#1E3A8A', // Medium blue
-    blob1: '#60A5FA', // Light blue
-    blob2: '#2C67A6', // Lighter blue
+    base: colors.primary, // Light blue
+    blob1: colors.blue.lighter, // Sky blue
+    blob2: colors.blue.light, // Medium light blue
   },
   {
-    base: '#0F4C75', // Deep ocean blue
-    blob1: '#3282B8', // Bright cyan-blue
-    blob2: '#1B5E7A', // Teal-blue
+    base: colors.blue.dark, // Medium dark blue
+    blob1: colors.primary, // Light blue
+    blob2: colors.blue.medium, // Medium blue
   },
   {
-    base: '#1A237E', // Deep indigo
-    blob1: '#5C6BC0', // Periwinkle
-    blob2: '#3949AB', // Indigo
+    base: colors.blue.darkest, // Deep blue
+    blob1: colors.blue.light, // Light blue
+    blob2: colors.blue.dark, // Dark blue
   },
   {
-    base: '#004D40', // Deep teal
-    blob1: '#26A69A', // Turquoise
-    blob2: '#00796B', // Teal
+    base: colors.accent, // Emerald green (accent color)
+    blob1: colors.accentLight, // Light green
+    blob2: colors.accentDark, // Dark green
   },
   {
-    base: '#311B92', // Deep purple-blue
-    blob1: '#7E57C2', // Lavender
-    blob2: '#5E35B1', // Purple
+    base: colors.blue.darker, // Darker blue
+    blob1: colors.blue.lighter, // Sky blue
+    blob2: colors.primary, // Light blue
   },
 ];
 

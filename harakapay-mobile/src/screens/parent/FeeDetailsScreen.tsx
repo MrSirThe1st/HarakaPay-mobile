@@ -100,8 +100,7 @@ export default function FeeDetailsScreen({ navigation, route }: ChildDetailsScre
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#3B82F6" />
-          <Text style={styles.loadingText}>Loading fee information...</Text>
+          <ActivityIndicator size="large" color={colors.primary} style={{ transform: [{ scale: 2 }] }} />
         </View>
       </SafeAreaView>
     );

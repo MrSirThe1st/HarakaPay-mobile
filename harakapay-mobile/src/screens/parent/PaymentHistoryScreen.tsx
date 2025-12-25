@@ -168,7 +168,7 @@ export default function PaymentHistoryScreen({ navigation, route }: PaymentHisto
           <View style={styles.backButton} />
         </View>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#3B82F6" />
+          <ActivityIndicator size="large" color={colors.primary} style={{ transform: [{ scale: 2 }] }} />
           <Text style={styles.loadingText}>Loading payment history...</Text>
         </View>
       </SafeAreaView>

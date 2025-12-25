@@ -61,7 +61,7 @@ export const createParentProfile = async (
     console.log('📤 Request data:', profileData);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
 
     const response = await fetch(`${API_URL}/api/parent/create-profile`, {
       method: 'POST',
@@ -96,10 +96,16 @@ export const createParentProfile = async (
 
   } catch (error) {
     console.error('💥 Profile creation exception:', error);
+    console.error('💥 Error type:', typeof error);
+    console.error('💥 Error constructor:', error?.constructor?.name);
     console.error('💥 Error details:', {
       name: error instanceof Error ? error.name : 'Unknown',
       message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : 'No stack trace'
+      code: (error as any)?.code,
+      errno: (error as any)?.errno,
+      syscall: (error as any)?.syscall,
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+      fullError: JSON.stringify(error, Object.getOwnPropertyNames(error))
     });
 
     const errorMessage = error instanceof Error && error.name === 'AbortError'

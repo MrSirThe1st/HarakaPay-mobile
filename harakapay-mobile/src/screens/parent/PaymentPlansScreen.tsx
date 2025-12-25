@@ -295,7 +295,7 @@ export default function PaymentPlansScreen({ navigation, route }: PaymentPlansSc
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#3B82F6" />
+          <ActivityIndicator size="large" color={colors.primary} style={{ transform: [{ scale: 2 }] }} />
           <Text style={styles.loadingText}>Loading payment plans...</Text>
         </View>
       </SafeAreaView>

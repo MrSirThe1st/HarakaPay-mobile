@@ -104,6 +104,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         console.log('Auth state change:', event);
+
+        // Skip TOKEN_REFRESHED during initial load - let initializeAuth handle it
+        if (event === 'TOKEN_REFRESHED' && !initialized) {
+          console.log('Skipping TOKEN_REFRESHED during initialization');
+          return;
+        }
+
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
@@ -114,7 +121,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setProfile(null);
         }
 
-        setInitialized(true);
+        // Ensure initialized is set for non-initial events
+        if (event !== 'INITIAL_SESSION') {
+          setInitialized(true);
+        }
       }
     );
 
@@ -123,6 +133,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, []);
 
+  // Transform 6-digit PIN to valid Supabase password
+  const transformPinToPassword = (pin: string): string => {
+    // If it's already a longer password, return as-is
+    if (pin.length > 6) {
+      return pin;
+    }
+    // If it's a 6-digit PIN, transform to meet Supabase requirements
+    // Format: HP{pin}@Sec (e.g., HP123456@Sec = 12 chars with upper, lower, digit, special)
+    return `HP${pin}@Sec`;
+  };
+
   // Sign in
   const signIn = async (email: string, password: string): Promise<AuthResponse> => {
     try {
@@ -130,9 +151,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setError(null);
       setSuccess(false);
 
+      const transformedPassword = transformPinToPassword(password);
+
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: email.toLowerCase().trim(),
-        password,
+        password: transformedPassword,
       });
 
       if (signInError) {
@@ -181,9 +204,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setError(null);
       setSuccess(false);
 
+      const transformedPassword = transformPinToPassword(password);
+
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.toLowerCase().trim(),
-        password,
+        password: transformedPassword,
         options: {
           data: {
             first_name: firstName,
@@ -298,8 +323,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setLoading(true);
       setError(null);
 
+      const transformedPassword = transformPinToPassword(newPassword);
+
       const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword,
+        password: transformedPassword,
       });
 
       if (updateError) {

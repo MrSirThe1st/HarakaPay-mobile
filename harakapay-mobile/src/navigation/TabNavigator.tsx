@@ -7,6 +7,7 @@ import HomeScreen from '../screens/parent/DashboardScreen';
 import NotificationsScreen from '../screens/parent/NotificationsScreen';
 import MessagesTab from '../components/MessagesTab';
 import ProfileScreen from '../screens/parent/ProfileScreen';
+import colors from '../constants/colors';
 
 const Tab = createBottomTabNavigator();
 
@@ -39,21 +40,25 @@ const TabNavigator = () => {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#60A5FA',
-        tabBarInactiveTintColor: 'white',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.gray[400],
         tabBarStyle: {
-          backgroundColor: '#040A13', 
-          borderTopWidth: 0, 
-          borderTopColor: 'transparent', 
+          backgroundColor: colors.background,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
           paddingBottom: Math.max(insets.bottom, 2),
-          paddingTop: 4,
-          height: 50 + Math.max(insets.bottom, 2),
-          elevation: 0, 
-          shadowOpacity: 0, 
+          paddingTop: 8,
+          height: 60 + Math.max(insets.bottom, 2),
+          elevation: 8,
+          shadowColor: colors.gray[900],
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 10,
+          fontSize: 11,
           fontWeight: '600',
+          marginTop: 4,
         },
         tabBarIconStyle: {
           marginTop: 0,

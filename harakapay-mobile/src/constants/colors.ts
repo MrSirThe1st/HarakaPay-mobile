@@ -2,48 +2,68 @@
 
 const colors = {
   // Brand & CTA
-  primary: '#0080FF', // Main brand color - bright blue
-  primaryDark: '#0066CC', // Darker blue for hover/pressed states
-  primaryLight: '#3399FF', // Lighter blue for accents
-  
+  primary: '#3B82F6', // Main brand color - light blue
+  primaryDark: '#2563EB', // Darker blue for hover/pressed states
+  primaryLight: '#60A5FA', // Lighter blue for accents
+
+  // Accent Color
+  accent: '#10B981', // Emerald green - for icons, small buttons, success states
+  accentDark: '#059669', // Darker green for hover/pressed states
+  accentLight: '#34D399', // Lighter green for subtle accents
+
   // Blue Shades Palette
   blue: {
-    darkest: '#040A13', // Very dark blue - main background
-    darker: '#0A1A2E', // Dark blue - secondary backgrounds
-    dark: '#1E3A5F', // Medium dark blue - borders, dividers
-    medium: '#2E5A8A', // Medium blue - subtle accents
-    light: '#4A90E2', // Light blue - highlights
-    lighter: '#87CEEB', // Sky blue - captions, inactive states
-    lightest: '#E6F2FF', // Very light blue - cards, surfaces
-    pale: '#F0F8FF', // Pale blue - subtle backgrounds
+    darkest: '#1E3A8A', // Deep blue - for headers/footers
+    darker: '#1E40AF', // Dark blue - secondary backgrounds
+    dark: '#2563EB', // Medium dark blue - borders, dividers
+    medium: '#3B82F6', // Medium blue - primary color
+    light: '#60A5FA', // Light blue - highlights
+    lighter: '#93C5FD', // Sky blue - captions, inactive states
+    lightest: '#DBEAFE', // Very light blue - cards, surfaces
+    pale: '#EFF6FF', // Pale blue - subtle backgrounds
   },
-  
+
   // States
-  success: '#00C851', // Payment confirmations
-  warning: '#FF8800', // Payment reminders
-  error: '#FF4444',   // Failed transactions
-  
+  success: '#10B981', // Payment confirmations (emerald green)
+  warning: '#F59E0B', // Payment reminders (amber)
+  error: '#EF4444',   // Failed transactions (red)
+  info: '#3B82F6',    // Information (light blue)
+
   // Backgrounds & Surfaces
-  background: '#040A13', // Very dark blue background
-  backgroundSecondary: '#0A1A2E', // Slightly lighter dark blue
-  surface: '#E6F2FF', // Light blue for cards
-  cardBackground: '#0A1A2E', // Light blue for cards
-  cardBackgroundAlt: '#F0F8FF', // Alternative card background (pale blue)
-  
+  background: '#FFFFFF', // White background
+  backgroundSecondary: '#F9FAFB', // Very light gray
+  surface: '#FFFFFF', // White for cards
+  cardBackground: '#FFFFFF', // White for cards
+  cardBackgroundAlt: '#F3F4F6', // Light gray alternative
+
   // Text
   text: {
-    primary: '#FFFFFF', // White text for dark background
-    secondary: '#B0C4DE', // Light gray-blue for secondary text
-    caption: '#87CEEB', // Sky blue for captions
-    disabled: '#4A5568', // Dark gray for disabled text
-    inverse: '#1D1D1F', // Dark text for light surfaces
-    accent: '#4A90E2', // Light blue for accent text
+    primary: '#111827', // Dark gray for main text
+    secondary: '#6B7280', // Medium gray for secondary text
+    caption: '#9CA3AF', // Light gray for captions
+    disabled: '#D1D5DB', // Very light gray for disabled text
+    inverse: '#FFFFFF', // White text for dark backgrounds
+    accent: '#3B82F6', // Light blue for accent text
   },
-  
+
   // Borders & Dividers
-  border: '#1E3A5F', // Dark blue-gray for borders
-  borderLight: '#2E5A8A', // Lighter blue for subtle borders
-  divider: '#1E3A5F', // Divider color
+  border: '#E5E7EB', // Light gray for borders
+  borderLight: '#F3F4F6', // Very light gray for subtle borders
+  divider: '#E5E7EB', // Divider color
+
+  // Grays
+  gray: {
+    50: '#F9FAFB',
+    100: '#F3F4F6',
+    200: '#E5E7EB',
+    300: '#D1D5DB',
+    400: '#9CA3AF',
+    500: '#6B7280',
+    600: '#4B5563',
+    700: '#374151',
+    800: '#1F2937',
+    900: '#111827',
+  },
 };
 
 export default colors;

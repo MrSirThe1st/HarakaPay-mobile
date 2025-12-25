@@ -100,7 +100,7 @@ export default function PaymentStatusScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color={colors.primary} style={{ transform: [{ scale: 2 }] }} />
         <Text style={styles.loadingText}>Loading payment status...</Text>
       </View>
     );
@@ -176,7 +176,7 @@ export default function PaymentStatusScreen() {
 
       {payment.status === 'pending' && (
         <View style={styles.pendingCard}>
-          <ActivityIndicator size="small" color="#F59E0B" />
+          <ActivityIndicator size="large" color={colors.primary} style={{ transform: [{ scale: 2 }] }} />
           <Text style={styles.pendingText}>
             Waiting for M-Pesa confirmation...{'\n'}
             This may take a few minutes.

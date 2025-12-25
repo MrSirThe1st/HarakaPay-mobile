@@ -52,22 +52,22 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
     console.log('🔍 LinkStudentScreen useEffect - profile:', profile);
     if (profile) {
       const parentName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
-      const parentEmail = profile.email || '';
       const parentPhone = profile.phone || '';
+      const parentEmail = profile.email || ''; // Email is optional, only used as fallback
 
-      console.log('🔍 LinkStudentScreen - parentName:', parentName, 'parentEmail:', parentEmail, 'parentPhone:', parentPhone);
+      console.log('🔍 LinkStudentScreen - parentName:', parentName, 'parentPhone:', parentPhone, 'parentEmail:', parentEmail);
 
-      if (!parentName || !parentEmail) {
-        console.log('❌ LinkStudentScreen - Missing required fields:', { parentName, parentEmail });
+      if (!parentName || !parentPhone) {
+        console.log('❌ LinkStudentScreen - Missing required fields:', { parentName, parentPhone });
         Alert.alert(
           'Profile Incomplete',
-          'Your profile is missing required information (name or email). Please update your profile first.',
+          'Your profile is missing required information (name or phone). Please update your profile first.',
           [{ text: 'OK', onPress: () => navigation.goBack() }]
         );
         return;
       }
 
-      console.log('🚀 LinkStudentScreen - Searching for students');
+      console.log('🚀 LinkStudentScreen - Searching for students by phone + name');
       searchStudentsAsync(parentName, parentEmail, parentPhone).catch(err => {
         console.error('Failed to search students:', err);
       });
@@ -141,7 +141,7 @@ export default function LinkStudentScreen({ navigation }: LinkStudentScreenProps
 
         {loadingSearch ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#3B82F6" />
+            <ActivityIndicator size="large" color={colors.primary} style={{ transform: [{ scale: 2 }] }} />
             <Text style={styles.loadingText}>Searching for your children...</Text>
           </View>
         ) : (
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#1E3A8A',
+    backgroundColor: colors.primary,
   },
   backButton: {
     width: 40,
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
   infoCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.blue.pale,
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 14,
-    color: '#6B7280',
+    color: colors.text.secondary,
     lineHeight: 20,
   },
   loadingContainer: {
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#B0C4DE',
+    color: colors.text.secondary,
   },
   section: {
     marginBottom: 24,
@@ -371,19 +371,21 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: 'white',
+    color: colors.text.primary,
     marginBottom: 12,
   },
   studentCard: {
-    backgroundColor: '#1E3A8A',
+    backgroundColor: colors.cardBackground,
     marginBottom: 12,
     padding: 16,
     borderRadius: 12,
-    shadowColor: '#000',
+    shadowColor: colors.gray[300],
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   studentCardContent: {
     flexDirection: 'row',
@@ -393,7 +395,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#2C67A6',
+    backgroundColor: colors.blue.lightest,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -404,7 +406,7 @@ const styles = StyleSheet.create({
   studentName: {
     fontSize: 18,
     fontWeight: '700',
-    color: 'white',
+    color: colors.text.primary,
     marginBottom: 8,
   },
   studentDetailsRow: {
@@ -415,11 +417,11 @@ const styles = StyleSheet.create({
   },
   studentDetails: {
     fontSize: 14,
-    color: '#B0C4DE',
+    color: colors.text.secondary,
   },
   studentId: {
     fontSize: 14,
-    color: '#B0C4DE',
+    color: colors.text.secondary,
   },
   noMatchesContainer: {
     alignItems: 'center',
@@ -433,19 +435,19 @@ const styles = StyleSheet.create({
   noMatchesTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: 'white',
+    color: colors.text.primary,
     marginBottom: 8,
     textAlign: 'center',
   },
   noMatchesSubtitle: {
     fontSize: 16,
-    color: '#B0C4DE',
+    color: colors.text.secondary,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
   },
   manualSearchButton: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: colors.primary,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -463,29 +465,31 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#1E3A8A',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 24,
     width: '100%',
     maxWidth: 400,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: 'white',
+    color: colors.text.primary,
     marginBottom: 16,
     textAlign: 'center',
   },
   modalStudentName: {
     fontSize: 18,
     fontWeight: '600',
-    color: 'white',
+    color: colors.text.primary,
     marginBottom: 8,
     textAlign: 'center',
   },
   modalStudentDetails: {
     fontSize: 14,
-    color: '#B0C4DE',
+    color: colors.text.secondary,
     marginBottom: 4,
     textAlign: 'center',
   },
@@ -498,18 +502,18 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#2C67A6',
+    borderColor: colors.border,
     alignItems: 'center',
     backgroundColor: 'transparent',
   },
   cancelButtonText: {
-    color: '#B0C4DE',
+    color: colors.text.secondary,
     fontSize: 16,
     fontWeight: '600',
   },
   confirmButton: {
     flex: 1,
-    backgroundColor: '#3B82F6',
+    backgroundColor: colors.primary,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',

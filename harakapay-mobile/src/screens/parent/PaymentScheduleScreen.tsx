@@ -61,7 +61,7 @@ const PaymentScheduleScreen: React.FC = () => {
 
         {loading && (
           <View style={styles.centered}> 
-            <ActivityIndicator size="large" />
+            <ActivityIndicator size="large" color={colors.primary} style={{ transform: [{ scale: 2 }] }} />
             <Text style={styles.loadingText}>Loading payment options…</Text>
           </View>
         )}

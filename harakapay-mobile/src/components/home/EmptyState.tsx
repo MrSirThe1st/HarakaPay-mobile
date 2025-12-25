@@ -19,13 +19,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onLinkStudent }) => {
     <View style={styles.container}>
       {/* Content */}
       <View style={styles.contentContainer}>
-        <Text style={styles.title}>Connect Your Children</Text>
-        <Text style={styles.subtitle}>
-          Link your children's accounts to manage their school fees, payments, and activities all in one place.
-        </Text>
-        
+        <Text style={styles.title}>Connect Your Children</Text> 
         <Text style={styles.description}>
-          We'll automatically find your children using your contact information, making the process quick and secure.
+          Click on teh button below and We'll automatically find your children.
         </Text>
       </View>
 
@@ -83,10 +79,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 12,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
     elevation: 4,
     marginBottom: 24,
   },

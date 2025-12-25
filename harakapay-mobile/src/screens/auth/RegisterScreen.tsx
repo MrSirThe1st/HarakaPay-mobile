@@ -12,6 +12,7 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
 import colors from '../../constants/colors';
 
@@ -26,18 +27,15 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [pin, setPin] = useState('');
+  const [showPin, setShowPin] = useState(false);
 
   // Form validation states
   const [firstNameError, setFirstNameError] = useState('');
   const [lastNameError, setLastNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [phoneError, setPhoneError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [pinError, setPinError] = useState('');
 
   const { signUp, loading, error: authError, user, initialized } = useAuth();
 
@@ -73,11 +71,12 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   };
 
   const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Email is optional
     if (!email.trim()) {
-      setEmailError('L\'adresse email est obligatoire');
-      return false;
+      setEmailError('');
+      return true;
     }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setEmailError('Veuillez entrer une adresse email valide');
       return false;
@@ -86,43 +85,57 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
     return true;
   };
 
-  const validatePhone = (phone: string): boolean => {
-    // Congo phone number format validation (optional field)
-    if (phone.trim() && phone.trim().length < 9) {
-      setPhoneError('Veuillez entrer un numéro de téléphone valide');
+  const formatPhoneNumber = (input: string): string => {
+    // Remove all non-digits
+    const digitsOnly = input.replace(/\D/g, '');
+
+    // Add +243 prefix and format
+    if (digitsOnly.length === 0) return '+243 ';
+
+    // Remove +243 if already present to avoid duplication
+    const localNumber = digitsOnly.startsWith('243') ? digitsOnly.slice(3) : digitsOnly;
+
+    // Format: +243 XXX XXX XXX
+    let formatted = '+243 ';
+    if (localNumber.length > 0) formatted += localNumber.slice(0, 3);
+    if (localNumber.length > 3) formatted += ' ' + localNumber.slice(3, 6);
+    if (localNumber.length > 6) formatted += ' ' + localNumber.slice(6, 9);
+
+    return formatted;
+  };
+
+  const validatePhone = (phoneValue: string): boolean => {
+    if (!phoneValue || phoneValue.trim() === '+243 ' || phoneValue.trim() === '') {
+      setPhoneError('Le numéro de téléphone est obligatoire');
       return false;
     }
+
+    const digitsOnly = phoneValue.replace(/\D/g, '');
+    const localNumber = digitsOnly.startsWith('243') ? digitsOnly.slice(3) : digitsOnly;
+
+    if (localNumber.length !== 9) {
+      setPhoneError('Le numéro doit contenir exactement 9 chiffres');
+      return false;
+    }
+
     setPhoneError('');
     return true;
   };
 
-  const validatePassword = (password: string): boolean => {
-    if (!password) {
-      setPasswordError('Le mot de passe est obligatoire');
+  const validatePin = (pinValue: string): boolean => {
+    if (!pinValue) {
+      setPinError('Le code PIN est obligatoire');
       return false;
     }
-    if (password.length < 8) {
-      setPasswordError('Le mot de passe doit contenir au moins 8 caractères');
+    if (pinValue.length !== 6) {
+      setPinError('Le code PIN doit contenir exactement 6 chiffres');
       return false;
     }
-    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-      setPasswordError('Le mot de passe doit contenir une majuscule, une minuscule et un chiffre');
+    if (!/^\d{6}$/.test(pinValue)) {
+      setPinError('Le code PIN doit contenir uniquement des chiffres');
       return false;
     }
-    setPasswordError('');
-    return true;
-  };
-
-  const validateConfirmPassword = (confirmPass: string): boolean => {
-    if (!confirmPass) {
-      setConfirmPasswordError('Veuillez confirmer votre mot de passe');
-      return false;
-    }
-    if (confirmPass !== password) {
-      setConfirmPasswordError('Les mots de passe ne correspondent pas');
-      return false;
-    }
-    setConfirmPasswordError('');
+    setPinError('');
     return true;
   };
 
@@ -132,28 +145,28 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
     const isLastNameValid = validateLastName(lastName);
     const isEmailValid = validateEmail(email);
     const isPhoneValid = validatePhone(phone);
-    const isPasswordValid = validatePassword(password);
-    const isConfirmPasswordValid = validateConfirmPassword(confirmPassword);
+    const isPinValid = validatePin(pin);
 
-    if (
-      !isFirstNameValid ||
-      !isLastNameValid ||
-      !isEmailValid ||
-      !isPhoneValid ||
-      !isPasswordValid ||
-      !isConfirmPasswordValid
-    ) {
+    if (!isFirstNameValid || !isLastNameValid || !isEmailValid || !isPhoneValid || !isPinValid) {
       return;
     }
 
     try {
-      const result = await signUp(
-        email,
-        password,
-        firstName,
-        lastName,
-        phone || undefined
-      );
+      // Format phone number
+      const digitsOnly = phone.replace(/\D/g, '');
+      const localNumber = digitsOnly.startsWith('243') ? digitsOnly.slice(3) : digitsOnly;
+      const formattedPhone = `+243${localNumber}`;
+
+      // Use provided email or generate from phone number
+      const emailToUse = email.trim() || `243${localNumber}@harakapay.app`;
+
+      const result = await signUp({
+        email: emailToUse.toLowerCase(),
+        password: pin,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        phone: formattedPhone
+      });
 
       if (result.success) {
         Alert.alert(
@@ -200,24 +213,19 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.logo}>HarakaPay</Text>
             <Text style={styles.subtitle}>Créer un compte</Text>
-            <Text style={styles.description}>
-              Rejoignez des milliers de parents qui simplifient le paiement des frais scolaires
-            </Text>
           </View>
 
           {/* Form */}
           <View style={styles.form}>
-            {/* Name Fields - Congolese Convention */}
+            {/* First Name Input */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Prénom</Text>
               <TextInput
                 style={[
                   styles.input,
                   firstNameError ? styles.inputError : null,
                 ]}
-                placeholder="Entrez votre prénom"
+                placeholder="Prénom"
                 placeholderTextColor="#9CA3AF"
                 value={firstName}
                 onChangeText={(text) => {
@@ -233,14 +241,14 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
               ) : null}
             </View>
 
+            {/* Last Name Input */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Nom de famille</Text>
               <TextInput
                 style={[
                   styles.input,
                   lastNameError ? styles.inputError : null,
                 ]}
-                placeholder="Entrez votre nom de famille"
+                placeholder="Nom de famille"
                 placeholderTextColor="#9CA3AF"
                 value={lastName}
                 onChangeText={(text) => {
@@ -256,15 +264,38 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
               ) : null}
             </View>
 
+            {/* Phone Input */}
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[
+                  styles.phoneInput,
+                  phoneError ? styles.inputError : null,
+                ]}
+                placeholder="+243 XXX XXX XXX"
+                placeholderTextColor="#9CA3AF"
+                value={phone}
+                onChangeText={(text) => {
+                  const formatted = formatPhoneNumber(text);
+                  setPhone(formatted);
+                  if (phoneError) setPhoneError('');
+                }}
+                onBlur={() => validatePhone(phone)}
+                keyboardType="phone-pad"
+                editable={!loading}
+              />
+              {phoneError ? (
+                <Text style={styles.errorText}>{phoneError}</Text>
+              ) : null}
+            </View>
+
             {/* Email Input */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Adresse email</Text>
               <TextInput
                 style={[
                   styles.input,
                   emailError ? styles.inputError : null,
                 ]}
-                placeholder="Entrez votre adresse email"
+                placeholder="Adresse email (Optionnel)"
                 placeholderTextColor="#9CA3AF"
                 value={email}
                 onChangeText={(text) => {
@@ -282,102 +313,46 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
               ) : null}
             </View>
 
-            {/* Phone Input */}
+            {/* PIN Input */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Numéro de téléphone (Optionnel)</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  phoneError ? styles.inputError : null,
-                ]}
-                placeholder="Ex: +243 XXX XXX XXX"
-                placeholderTextColor="#9CA3AF"
-                value={phone}
-                onChangeText={(text) => {
-                  setPhone(text);
-                  if (phoneError) setPhoneError('');
-                }}
-                onBlur={() => validatePhone(phone)}
-                keyboardType="phone-pad"
-                editable={!loading}
-              />
-              {phoneError ? (
-                <Text style={styles.errorText}>{phoneError}</Text>
-              ) : null}
-            </View>
-
-            {/* Password Input */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Mot de passe</Text>
+              <Text style={styles.label}>Code PIN (6 chiffres)</Text>
               <View style={styles.passwordContainer}>
                 <TextInput
                   style={[
-                    styles.passwordInput,
-                    passwordError ? styles.inputError : null,
+                    styles.pinInput,
+                    pinError ? styles.inputError : null,
                   ]}
-                  placeholder="Créez un mot de passe sécurisé"
+                  placeholder="••••••"
                   placeholderTextColor="#9CA3AF"
-                  value={password}
+                  value={pin}
                   onChangeText={(text) => {
-                    setPassword(text);
-                    if (passwordError) setPasswordError('');
-                    // Re-validate confirm password if it's already filled
-                    if (confirmPassword && confirmPasswordError) {
-                      setConfirmPasswordError('');
-                    }
+                    const digitsOnly = text.replace(/[^0-9]/g, '').slice(0, 6);
+                    setPin(digitsOnly);
+                    if (pinError) setPinError('');
                   }}
-                  onBlur={() => validatePassword(password)}
-                  secureTextEntry={!showPassword}
+                  onBlur={() => validatePin(pin)}
+                  secureTextEntry={!showPin}
+                  keyboardType="numeric"
+                  maxLength={6}
                   editable={!loading}
                 />
                 <TouchableOpacity
                   style={styles.eyeButton}
-                  onPress={() => setShowPassword(!showPassword)}
+                  onPress={() => setShowPin(!showPin)}
                   disabled={loading}
+                  activeOpacity={0.7}
                 >
-                  <Text style={styles.eyeButtonText}>
-                    {showPassword ? '👁️' : '👁️‍🗨️'}
-                  </Text>
+                  <Ionicons
+                    name={showPin ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color={colors.text.secondary}
+                  />
                 </TouchableOpacity>
               </View>
-              {passwordError ? (
-                <Text style={styles.errorText}>{passwordError}</Text>
+              {pinError ? (
+                <Text style={styles.errorText}>{pinError}</Text>
               ) : null}
-            </View>
-
-            {/* Confirm Password Input */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Confirmez le mot de passe</Text>
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  style={[
-                    styles.passwordInput,
-                    confirmPasswordError ? styles.inputError : null,
-                  ]}
-                  placeholder="Confirmez votre mot de passe"
-                  placeholderTextColor="#9CA3AF"
-                  value={confirmPassword}
-                  onChangeText={(text) => {
-                    setConfirmPassword(text);
-                    if (confirmPasswordError) setConfirmPasswordError('');
-                  }}
-                  onBlur={() => validateConfirmPassword(confirmPassword)}
-                  secureTextEntry={!showConfirmPassword}
-                  editable={!loading}
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                  disabled={loading}
-                >
-                  <Text style={styles.eyeButtonText}>
-                    {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              {confirmPasswordError ? (
-                <Text style={styles.errorText}>{confirmPasswordError}</Text>
-              ) : null}
+              <Text style={styles.pinCounter}>{pin.length}/6</Text>
             </View>
 
             {/* Terms and Conditions */}
@@ -497,8 +472,20 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
+    fontFamily: 'System',
     backgroundColor: colors.blue.darker, // Dark blue background
     color: colors.text.primary, // White text
+  },
+  phoneInput: {
+    height: 52,
+    borderWidth: 1,
+    borderColor: colors.blue.dark,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    fontFamily: 'System',
+    backgroundColor: colors.blue.darker,
+    color: colors.text.primary,
   },
   inputError: {
     borderColor: colors.error,
@@ -521,13 +508,39 @@ const styles = StyleSheet.create({
     backgroundColor: colors.blue.darker,
     color: colors.text.primary,
   },
+  pinInput: {
+    flex: 1,
+    height: 52,
+    borderWidth: 1,
+    borderColor: colors.blue.dark,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingRight: 50,
+    fontSize: 24,
+    fontWeight: '600',
+    letterSpacing: 8,
+    backgroundColor: colors.blue.darker,
+    color: colors.text.primary,
+    textAlign: 'center',
+  },
+  helperText: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    marginBottom: 8,
+    fontStyle: 'italic',
+  },
+  pinCounter: {
+    fontSize: 12,
+    color: colors.text.secondary,
+    marginTop: 4,
+    textAlign: 'right',
+  },
   eyeButton: {
     position: 'absolute',
     right: 16,
-    padding: 4,
-  },
-  eyeButtonText: {
-    fontSize: 18,
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   errorText: {
     fontSize: 14,

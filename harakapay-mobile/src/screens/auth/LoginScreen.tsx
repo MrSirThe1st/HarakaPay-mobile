@@ -23,11 +23,11 @@ interface LoginScreenProps {
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+  const [phone, setPhone] = useState('');
+  const [pin, setPin] = useState('');
+  const [showPin, setShowPin] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
+  const [pinError, setPinError] = useState('');
 
   const { signIn, loading, error: authError, user, initialized } = useAuth();
 
@@ -36,44 +36,65 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     // When user is authenticated, root navigation will switch to main app automatically
   }, [initialized, user]);
 
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.trim()) {
-      setEmailError('Email is required');
+  const formatPhoneNumber = (input: string): string => {
+    const digitsOnly = input.replace(/\D/g, '');
+    if (digitsOnly.length === 0) return '+243 ';
+    const localNumber = digitsOnly.startsWith('243') ? digitsOnly.slice(3) : digitsOnly;
+    let formatted = '+243 ';
+    if (localNumber.length > 0) formatted += localNumber.slice(0, 3);
+    if (localNumber.length > 3) formatted += ' ' + localNumber.slice(3, 6);
+    if (localNumber.length > 6) formatted += ' ' + localNumber.slice(6, 9);
+    return formatted;
+  };
+
+  const validatePhone = (phoneValue: string): boolean => {
+    if (!phoneValue || phoneValue.trim() === '+243 ' || phoneValue.trim() === '') {
+      setPhoneError('Le numéro de téléphone est obligatoire');
       return false;
     }
-    if (!emailRegex.test(email)) {
-      setEmailError('Please enter a valid email address');
+    const digitsOnly = phoneValue.replace(/\D/g, '');
+    const localNumber = digitsOnly.startsWith('243') ? digitsOnly.slice(3) : digitsOnly;
+    if (localNumber.length !== 9) {
+      setPhoneError('Le numéro doit contenir exactement 9 chiffres');
       return false;
     }
-    setEmailError('');
+    setPhoneError('');
     return true;
   };
 
-  const validatePassword = (password: string): boolean => {
-    if (!password) {
-      setPasswordError('Password is required');
+  const validatePin = (pinValue: string): boolean => {
+    if (!pinValue) {
+      setPinError('Le code PIN est obligatoire');
       return false;
     }
-    if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
+    if (pinValue.length !== 6) {
+      setPinError('Le code PIN doit contenir 6 chiffres');
       return false;
     }
-    setPasswordError('');
+    if (!/^\d{6}$/.test(pinValue)) {
+      setPinError('Le code PIN doit contenir uniquement des chiffres');
+      return false;
+    }
+    setPinError('');
     return true;
   };
 
   const handleLogin = async () => {
     // Validate inputs
-    const isEmailValid = validateEmail(email);
-    const isPasswordValid = validatePassword(password);
+    const isPhoneValid = validatePhone(phone);
+    const isPinValid = validatePin(pin);
 
-    if (!isEmailValid || !isPasswordValid) {
+    if (!isPhoneValid || !isPinValid) {
       return;
     }
 
     try {
-      const result = await signIn(email, password);
+      // Generate email from phone for authentication
+      const digitsOnly = phone.replace(/\D/g, '');
+      const localNumber = digitsOnly.startsWith('243') ? digitsOnly.slice(3) : digitsOnly;
+      const generatedEmail = `243${localNumber}@harakapay.app`;
+
+      const result = await signIn(generatedEmail, pin);
       
       if (result.success) {
         // Navigation will be handled by useEffect when user state changes
@@ -116,76 +137,75 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.logo}>HarakaPay</Text>
-            <Text style={styles.subtitle}>Welcome back!</Text>
-            <Text style={styles.description}>
-              Sign in to manage your children's school fees
-            </Text>
           </View>
 
           {/* Form */}
           <View style={styles.form}>
-            {/* Email Input */}
+            {/* Phone Input */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email Address</Text>
+              <Text style={styles.label}>Numéro de téléphone</Text>
               <TextInput
                 style={[
-                  styles.input,
-                  emailError ? styles.inputError : null,
+                  styles.phoneInput,
+                  phoneError ? styles.inputError : null,
                 ]}
-                placeholder="Enter your email"
+                placeholder="+243 XXX XXX XXX"
                 placeholderTextColor="#9CA3AF"
-                value={email}
+                value={phone}
                 onChangeText={(text) => {
-                  setEmail(text);
-                  if (emailError) setEmailError('');
+                  const formatted = formatPhoneNumber(text);
+                  setPhone(formatted);
+                  if (phoneError) setPhoneError('');
                 }}
-                onBlur={() => validateEmail(email)}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
+                onBlur={() => validatePhone(phone)}
+                keyboardType="phone-pad"
                 editable={!loading}
               />
-              {emailError ? (
-                <Text style={styles.errorText}>{emailError}</Text>
+              {phoneError ? (
+                <Text style={styles.errorText}>{phoneError}</Text>
               ) : null}
             </View>
 
-            {/* Password Input */}
+            {/* PIN Input */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Password</Text>
+              <Text style={styles.label}>Code PIN (6 chiffres)</Text>
               <View style={styles.passwordContainer}>
                 <TextInput
                   style={[
-                    styles.passwordInput,
-                    passwordError ? styles.inputError : null,
+                    styles.pinInput,
+                    pinError ? styles.inputError : null,
                   ]}
-                  placeholder="Enter your password"
+                  placeholder="••••••"
                   placeholderTextColor="#9CA3AF"
-                  value={password}
+                  value={pin}
                   onChangeText={(text) => {
-                    setPassword(text);
-                    if (passwordError) setPasswordError('');
+                    const digitsOnly = text.replace(/[^0-9]/g, '').slice(0, 6);
+                    setPin(digitsOnly);
+                    if (pinError) setPinError('');
                   }}
-                  onBlur={() => validatePassword(password)}
-                  secureTextEntry={!showPassword}
+                  onBlur={() => validatePin(pin)}
+                  secureTextEntry={!showPin}
+                  keyboardType="numeric"
+                  maxLength={6}
                   editable={!loading}
                 />
                 <TouchableOpacity
                   style={styles.eyeButton}
-                  onPress={() => setShowPassword(!showPassword)}
+                  onPress={() => setShowPin(!showPin)}
                   disabled={loading}
                   activeOpacity={0.7}
                 >
                   <Ionicons
-                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    name={showPin ? 'eye-off-outline' : 'eye-outline'}
                     size={20}
                     color={colors.text.secondary}
                   />
                 </TouchableOpacity>
               </View>
-              {passwordError ? (
-                <Text style={styles.errorText}>{passwordError}</Text>
+              {pinError ? (
+                <Text style={styles.errorText}>{pinError}</Text>
               ) : null}
+              <Text style={styles.pinCounter}>{pin.length}/6</Text>
             </View>
 
             {/* Forgot Password Link */}
@@ -287,8 +307,20 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
+    fontFamily: 'System',
     backgroundColor: colors.blue.darker, // Dark blue background
     color: colors.text.primary, // White text
+  },
+  phoneInput: {
+    height: 52,
+    borderWidth: 1,
+    borderColor: colors.blue.dark,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    fontFamily: 'System',
+    backgroundColor: colors.blue.darker,
+    color: colors.text.primary,
   },
   inputError: {
     borderColor: colors.error,
@@ -310,6 +342,33 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: colors.blue.darker,
     color: colors.text.primary,
+  },
+  pinInput: {
+    flex: 1,
+    height: 52,
+    borderWidth: 1,
+    borderColor: colors.blue.dark,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingRight: 50,
+    fontSize: 24,
+    fontWeight: '600',
+    letterSpacing: 8,
+    backgroundColor: colors.blue.darker,
+    color: colors.text.primary,
+    textAlign: 'center',
+  },
+  helperText: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    marginBottom: 8,
+    fontStyle: 'italic',
+  },
+  pinCounter: {
+    fontSize: 12,
+    color: colors.text.secondary,
+    marginTop: 4,
+    textAlign: 'right',
   },
   eyeButton: {
     position: 'absolute',

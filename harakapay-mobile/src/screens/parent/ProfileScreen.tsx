@@ -212,10 +212,10 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
   },
   infoNotice: {
-    backgroundColor: '#1E3A8A',
     borderRadius: 12,
     padding: 16,
     marginTop: 16,
+    borderWidth:1
   },
   infoHeader: {
     flexDirection: 'row',

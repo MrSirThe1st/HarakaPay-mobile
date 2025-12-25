@@ -420,7 +420,7 @@ export default function PaymentScreen({ route, navigation }: PaymentScreenProps)
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={colors.primary} style={{ transform: [{ scale: 2 }] }} />
           <Text style={styles.loadingText}>Loading payment details...</Text>
         </View>
       </SafeAreaView>
