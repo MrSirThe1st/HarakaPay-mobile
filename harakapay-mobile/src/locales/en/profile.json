@@ -21,6 +21,11 @@
     "security": "Security",
     "about": "About"
   },
+  "legal": {
+    "title": "Legal",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy"
+  },
   "logout": "Logout",
   "logoutConfirm": {
     "title": "Logout",

@@ -7,10 +7,12 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import Constants from 'expo-constants';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../hooks/useI18n';
 import { deleteAccount } from '../../api/authApi';
@@ -92,6 +94,28 @@ const ProfileScreen: React.FC = () => {
     (navigation as any).navigate('Tabs', { screen: 'Messages' });
   };
 
+  const handleOpenTerms = async () => {
+    const webUrl = Constants.expoConfig?.extra?.WEB_API_URL || 'https://www.harakapayment.com';
+    const termsUrl = `${webUrl}/terms`;
+    const supported = await Linking.canOpenURL(termsUrl);
+    if (supported) {
+      await Linking.openURL(termsUrl);
+    } else {
+      Alert.alert(t('common:labels.error'), 'Cannot open URL');
+    }
+  };
+
+  const handleOpenPrivacy = async () => {
+    const webUrl = Constants.expoConfig?.extra?.WEB_API_URL || 'https://www.harakapayment.com';
+    const privacyUrl = `${webUrl}/privacy`;
+    const supported = await Linking.canOpenURL(privacyUrl);
+    if (supported) {
+      await Linking.openURL(privacyUrl);
+    } else {
+      Alert.alert(t('common:labels.error'), 'Cannot open URL');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container}>
@@ -162,6 +186,26 @@ const ProfileScreen: React.FC = () => {
             <View style={styles.menuItemLeft}>
               <Ionicons name="log-out-outline" size={24} color={colors.text.primary} />
               <Text style={styles.menuItemText}>{t('logout')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.text.secondary} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('legal.title')}</Text>
+
+          <TouchableOpacity style={styles.menuItem} onPress={handleOpenTerms}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="document-text-outline" size={24} color={colors.text.primary} />
+              <Text style={styles.menuItemText}>{t('legal.terms')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.text.secondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.menuItem} onPress={handleOpenPrivacy}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="shield-checkmark-outline" size={24} color={colors.text.primary} />
+              <Text style={styles.menuItemText}>{t('legal.privacy')}</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color={colors.text.secondary} />
           </TouchableOpacity>

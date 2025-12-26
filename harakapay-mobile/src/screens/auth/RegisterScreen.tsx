@@ -11,8 +11,10 @@ import {
   SafeAreaView,
   ScrollView,
   Dimensions,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../hooks/useI18n';
 import colors from '../../constants/colors';
@@ -139,6 +141,28 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
     }
     setPinError('');
     return true;
+  };
+
+  const handleOpenTerms = async () => {
+    const webUrl = Constants.expoConfig?.extra?.WEB_API_URL || 'https://www.harakapayment.com';
+    const termsUrl = `${webUrl}/terms`;
+    const supported = await Linking.canOpenURL(termsUrl);
+    if (supported) {
+      await Linking.openURL(termsUrl);
+    } else {
+      Alert.alert(t('common:labels.error'), t('register.errors.cannotOpenUrl'));
+    }
+  };
+
+  const handleOpenPrivacy = async () => {
+    const webUrl = Constants.expoConfig?.extra?.WEB_API_URL || 'https://www.harakapayment.com';
+    const privacyUrl = `${webUrl}/privacy`;
+    const supported = await Linking.canOpenURL(privacyUrl);
+    if (supported) {
+      await Linking.openURL(privacyUrl);
+    } else {
+      Alert.alert(t('common:labels.error'), t('register.errors.cannotOpenUrl'));
+    }
   };
 
   const handleRegister = async () => {
@@ -358,9 +382,9 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
             <View style={styles.termsContainer}>
               <Text style={styles.termsText}>
                 {t('register.termsText')}
-                <Text style={styles.linkText}>{t('register.termsLink')}</Text>
+                <Text style={styles.linkText} onPress={handleOpenTerms}>{t('register.termsLink')}</Text>
                 {t('register.termsAnd')}
-                <Text style={styles.linkText}>{t('register.privacyLink')}</Text>
+                <Text style={styles.linkText} onPress={handleOpenPrivacy}>{t('register.privacyLink')}</Text>
               </Text>
             </View>
 
@@ -559,6 +583,7 @@ const styles = StyleSheet.create({
   linkText: {
     color: colors.blue.light,
     fontWeight: '500',
+    textDecorationLine: 'underline',
   },
   signUpButton: {
     height: 52,
